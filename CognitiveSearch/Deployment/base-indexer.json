@@ -1,0 +1,60 @@
+﻿{
+  "description": null,
+  "disabled": null,
+  "schedule": { "interval" : "PT1H", "startTime" : "2019-01-01T00:00:00Z" },
+  "name":"demoindexer",	
+  "dataSourceName" : "demodata",
+  "targetIndexName" : "demoindex",
+  "skillsetName" :  "demoskillset",
+  "parameters": {
+    "batchSize": 20,
+    "maxFailedItems": -1,
+    "maxFailedItemsPerBatch": -1,
+    "base64EncodeKeys": true,
+    "configuration": {
+      "dataToExtract": "contentAndMetadata",
+      "firstLineContainsHeaders": false,
+      "delimitedTextDelimiter": ",",
+      "imageAction": "generateNormalizedImages"
+    }
+  },
+  "fieldMappings": [
+    {
+      "sourceFieldName": "metadata_storage_path",
+      "targetFieldName": "id",
+      "mappingFunction": null
+    },
+    {
+      "sourceFieldName": "metadata_storage_path",
+      "targetFieldName": "metadata_storage_path",
+      "mappingFunction": null
+    }
+  ],
+  "outputFieldMappings": [
+    {
+      "sourceFieldName": "/document/content/keyphrases",
+      "targetFieldName": "keyphrases",
+      "mappingFunction": null
+    },
+    {
+      "sourceFieldName": "/document/content/people",
+      "targetFieldName": "people",
+      "mappingFunction": null
+    },
+    {
+      "sourceFieldName": "/document/content/organizations",
+      "targetFieldName": "organizations",
+      "mappingFunction": null
+    },
+    {
+      "sourceFieldName": "/document/content/locations",
+      "targetFieldName": "locations",
+      "mappingFunction": null
+    },
+    {
+      "sourceFieldName": "/document/language",
+      "targetFieldName": "language",
+      "mappingFunction": null
+    }
+  ]
+}

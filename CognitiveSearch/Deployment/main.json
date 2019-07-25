@@ -1,0 +1,249 @@
+﻿{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "prefix": {
+      "type": "string",
+      "defaultValue": "jfk",
+      "metadata": {
+        "description": "A prefix added to all created resources."
+      }
+    },
+    "githubRepo": {
+      "type": "string",
+      "defaultValue": "https://cognitivesearchcontent.blob.core.windows.net/packages",
+      "metadata": {
+        "description": "The github location for deployment files."
+      }
+    },
+    "searchSku": {
+      "type": "string",
+      "defaultValue": "basic",
+      "metadata": {
+        "description": "Size of the Azure Search instance."
+      }
+    }
+  },
+  "variables": {
+
+  },
+  "resources": [
+    {
+      "type": "Microsoft.CognitiveServices/accounts",
+      "apiVersion": "2016-02-01-preview",
+      "name": "[concat(parameters('prefix'),'-cogs')]",
+      "location": "centralus",
+      "sku": {
+        "name": "S0"
+      },
+      "kind": "CognitiveServices",
+      "properties": {}
+    },
+    {
+      "type": "Microsoft.Search/searchServices",
+      "apiVersion": "2015-08-19",
+      "name": "[concat(parameters('prefix'),'-search')]",
+      "location": "centralus",
+      "identity": {
+        "type": "SystemAssigned"
+      },    
+	  "sku":
+	  {
+	    "name": "[parameters('searchSku')]"
+	  },
+	  "properties":
+	  {
+	    "replicaCount": 1,
+	    "partitionCount": 1,
+	    "hostingMode": "default"
+	  }
+    },
+    {
+      "type": "Microsoft.Storage/storageAccounts",
+      "apiVersion": "2019-04-01",
+      "name": "[concat(parameters('prefix'),'storage')]",
+      "location": "centralus",
+      "sku": {
+        "name": "Standard_LRS",
+        "tier": "Standard"
+      },
+      "kind": "Storage",
+      "properties": {
+        "networkAcls": {
+          "bypass": "AzureServices",
+          "virtualNetworkRules": [],
+          "ipRules": [],
+          "defaultAction": "Allow"
+        },
+        "supportsHttpsTrafficOnly": false,
+        "encryption": {
+          "services": {
+            "file": {
+              "enabled": true
+            },
+            "blob": {
+              "enabled": true
+            }
+          },
+          "keySource": "Microsoft.Storage"
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Web/serverfarms",
+      "apiVersion": "2016-09-01",
+      "name": "[concat(parameters('prefix'),'-appsvc-web')]",
+      "location": "centralus",
+      "sku": {
+        "name": "B2",
+        "tier": "Basic",
+        "size": "B2",
+        "family": "B",
+        "capacity": 1
+      },
+      "kind": "app",
+      "properties": {
+        "name": "[concat(parameters('prefix'),'-appsvc-web')]",
+        "perSiteScaling": false,
+        "reserved": false,
+        "targetWorkerCount": 0,
+        "targetWorkerSizeId": 0
+      }
+    },
+    {
+      "type": "Microsoft.Web/serverfarms",
+      "apiVersion": "2016-09-01",
+      "name": "[concat(parameters('prefix'),'-appsvc-func')]",
+      "location": "centralus",
+      "sku": {
+        "name": "B1",
+        "tier": "Basic",
+        "size": "B1",
+        "family": "B",
+        "capacity": 1
+      },
+      "kind": "app",
+      "properties": {
+        "name": "[concat(parameters('prefix'),'-appsvc-func')]",
+        "perSiteScaling": false,
+        "reserved": false,
+        "targetWorkerCount": 0,
+        "targetWorkerSizeId": 0
+      }
+    },
+    {
+      "type": "Microsoft.Web/sites",
+      "apiVersion": "2016-08-01",
+      "name": "[concat(parameters('prefix'),'-func01')]",
+      "location": "centralus",
+      "identity": {
+        "type": "SystemAssigned"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/serverfarms', concat(parameters('prefix'),'-appsvc-func'))]"
+      ],
+      "kind": "functionapp",
+      "properties": {
+        "enabled": true,
+        "reserved": false,
+        "scmSiteAlsoStopped": false,
+        "clientAffinityEnabled": false,
+        "clientCertEnabled": false,
+        "hostNamesDisabled": false,
+        "containerSize": 1536,
+        "dailyMemoryTimeQuota": 0,
+        "httpsOnly": false,
+        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', concat(parameters('prefix'),'-appsvc-func'))]"
+      },
+      "resources": [
+        {
+          "name": "MSDeploy",
+          "type": "Extensions",
+          "apiVersion": "2015-02-01",
+          "dependsOn": [
+            "[resourceId('Microsoft.Web/Sites', concat(parameters('prefix'),'-func01'))]"
+          ],
+          "properties": {
+            "packageUri": "[concat(parameters('githubRepo'), '/CognitiveSearch.Skills.zip?raw=true')]"
+          }
+        }
+      ]
+    },
+    {
+      "type": "Microsoft.Web/sites",
+      "apiVersion": "2016-08-01",
+      "name": "[concat(parameters('prefix'),'-webui')]",
+      "location": "centralus",
+      "identity": {
+        "type": "SystemAssigned"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/serverfarms', concat(parameters('prefix'),'-appsvc-web'))]"
+      ],
+      "kind": "app",
+      "properties": {
+        "enabled": true,
+        "reserved": false,
+        "scmSiteAlsoStopped": false,
+        "clientAffinityEnabled": true,
+        "clientCertEnabled": false,
+        "hostNamesDisabled": false,
+        "containerSize": 0,
+        "dailyMemoryTimeQuota": 0,
+        "httpsOnly": true,
+        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', concat(parameters('prefix'),'-appsvc-web'))]"
+      },
+      "resources": [
+        {
+          "name": "MSDeploy",
+          "type": "Extensions",
+          "apiVersion": "2015-02-01",
+          "dependsOn": [
+            "[resourceId('Microsoft.Web/Sites', concat(parameters('prefix'),'-webui'))]"
+          ],
+          "properties": {
+            "packageUri": "[concat(parameters('githubRepo'), '/CognitiveSearch.UI.zip?raw=true')]"
+          }
+        }
+      ]
+    },
+    {
+      "type": "Microsoft.Web/sites",
+      "apiVersion": "2016-08-01",
+      "name": "[concat(parameters('prefix'),'-webapi')]",
+      "location": "centralus",
+      "identity": {
+        "type": "SystemAssigned"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/serverfarms', concat(parameters('prefix'),'-appsvc-web'))]"
+      ],
+      "kind": "app",
+      "properties": {
+        "enabled": true,
+        "reserved": false,
+        "scmSiteAlsoStopped": false,
+        "clientAffinityEnabled": true,
+        "clientCertEnabled": false,
+        "hostNamesDisabled": false,
+        "containerSize": 0,
+        "dailyMemoryTimeQuota": 0,
+        "httpsOnly": true,
+        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', concat(parameters('prefix'),'-appsvc-web'))]"
+      },
+      "resources": [
+        {
+          "name": "MSDeploy",
+          "type": "Extensions",
+          "apiVersion": "2015-02-01",
+          "dependsOn": [
+            "[resourceId('Microsoft.Web/Sites', concat(parameters('prefix'),'-webapi'))]"
+          ],
+          "properties": {
+            "packageUri": "[concat(parameters('githubRepo'), '/CognitiveSearch.API.zip?raw=true')]"
+          }
+        }
+      ]
+    }
+  ]
+}

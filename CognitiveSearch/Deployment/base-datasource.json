@@ -1,0 +1,10 @@
+{
+  "name" : "demodata",
+  "description" : "Demo files to demonstrate cognitive search capabilities.",
+  "type" : "azureblob",
+  "credentials" :
+  { "connectionString" :
+    "DefaultEndpointsProtocol=https;AccountName=%%storageAccountName%%;AccountKey=%%storageAccountKey%%;"
+  },
+  "container" : { "name" : "%%storageContainerName%%" }
+}
