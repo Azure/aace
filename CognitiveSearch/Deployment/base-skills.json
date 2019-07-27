@@ -191,5 +191,20 @@
     	"@odata.type": "#Microsoft.Azure.Search.CognitiveServicesByKey",
     	"description": "democogsvcs",
     	"key": "%%cognitiveServiceKey%%"
-    }
+    },
+  "knowledgeStore": { 
+    "storageConnectionString": "DefaultEndpointsProtocol=https;AccountName=%%storageAccountName%%;AccountKey=%%storageAccountKey%%;", 
+    "projections": [ 
+        { 
+            "tables": [  
+            { "tableName": "KeyPhrases", "generatedKeyName": "KeyPhrasesId", "source": "/document/pages/*/keyPhrases/*" , "sourceContext": null, "inputs": []}, 
+            { "tableName": "Organization", "generatedKeyName": "OrganizationId", "source": "/document/pages/*/organizations/*", "sourceContext": null, "inputs": []}, 
+            { "tableName": "Persons", "generatedKeyName": "PersonId", "source": "/document/pages/*/persons/*", "sourceContext": null, "inputs": []}, 
+            { "tableName": "Locations", "generatedKeyName": "LocationId", "source": "/document/pages/*/locations/*" ,"sourceContext": null, "inputs": []} 
+
+            ], 
+            "objects": []     
+        }    
+    ]     
+    } 
 }

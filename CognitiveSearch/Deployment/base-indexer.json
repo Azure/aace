@@ -20,13 +20,13 @@
   },
   "fieldMappings": [
     {
-      "sourceFieldName": "metadata_storage_path",
+      "sourceFieldName": "metadata_storage_name",
       "targetFieldName": "id",
       "mappingFunction": null
     },
     {
-      "sourceFieldName": "metadata_storage_path",
-      "targetFieldName": "metadata_storage_path",
+      "sourceFieldName": "metadata_storage_name",
+      "targetFieldName": "metadata_storage_name",
       "mappingFunction": null
     }
   ],

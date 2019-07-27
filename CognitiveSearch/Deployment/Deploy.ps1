@@ -70,7 +70,7 @@ $url = $baseSearchUrl + "/datasources?api-version=2019-05-06"
 
 Invoke-RestMethod -Uri $url -Headers $headers -Method Post -Body $dataSourceBody | ConvertTo-Json
 
-$url = $baseSearchUrl + "/skillsets/demoskillset?api-version=2019-05-06"
+$url = $baseSearchUrl + "/skillsets/demoskillset?api-version=2019-05-06-Preview"
 
 $skillBody = Get-Content -Path .\base-skills.json
 
@@ -78,6 +78,8 @@ $cognitiveServiceKeys = Get-AzCognitiveServicesAccountKey -ResourceGroupName $re
 
 $skillBody = $skillBody -replace "%%cognitiveServiceKey%%", $cognitiveServiceKeys.Key1
 $skillBody = $skillBody -replace "%%azure_webapi_name%%", $webAPIAppName
+$skillBody = $skillBody -replace "%%storageAccountName%%", $storageAccountName
+$skillBody = $skillBody -replace "%%storageAccountKey%%", $storageAccountKey
 
 Invoke-RestMethod -Uri $url -Headers $headers -Method Put -Body $skillBody | ConvertTo-Json
 
