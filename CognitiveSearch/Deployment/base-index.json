@@ -141,7 +141,7 @@
       "synonymMaps": []
     },
     {
-      "name": "keyphrases",
+      "name": "keyPhrases",
       "type": "Collection(Edm.String)",
       "searchable": true,
       "filterable": true,
@@ -155,7 +155,7 @@
       "synonymMaps": []
     },
 	{
-      "name": "people",
+      "name": "persons",
       "type": "Collection(Edm.String)",
       "searchable": true,
       "filterable": true,
@@ -213,7 +213,13 @@
   ],
   "scoringProfiles": [],
   "corsOptions": null,
-  "suggesters": [],
+  "suggesters": [
+    {
+      "name": "sg",
+      "searchMode": "analyzingInfixMatching",
+      "sourceFields": [ "persons", "locations", "organizations","keyPhrases" ]
+    }
+  ],
   "analyzers": [],
   "tokenizers": [],
   "tokenFilters": [],

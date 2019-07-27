@@ -28,8 +28,12 @@ if($subscriptionId -ne "default"){
 
 New-AzResourceGroup -Name $resourceGroupName -Location $location
 
-New-AzResourceGroupDeployment -ResourceGroupName $resourceGroupName -TemplateFile .\main.json -prefix $prefix
+$result = New-AzResourceGroupDeployment -ResourceGroupName $resourceGroupName -TemplateFile .\main.json -prefix $prefix
 
+
+$azureFunctionKey = $result.Outputs["azureFunctionKey"].value
+$storageAccountKey = $result.Outputs["storageAccountKey"].value
+$searchServiceKey = $result.Outputs["searchServiceKey"].Value
 
 $sampleContentStorageAccountName = "cognitivesearchcontent"
 $webUIAppName = $prefix+"-webui"
@@ -38,10 +42,7 @@ $searchServiceName = $prefix + "-search"
 $storageAccountName = $prefix + "storage"
 $storageContainerName = $prefix + "rawdata"
 $cognitiveServiceName = $prefix + "-cogs"
-
-$keys = Get-AzSearchAdminKeyPair -ResourceGroupName $resourceGroupName -ServiceName $searchServiceName
-
-$searchServiceKey = $keys.Primary
+$azureFunctionName = $prefix + "-func01"
 
 $headers = @{
 'api-key' = $searchServiceKey
@@ -49,9 +50,6 @@ $headers = @{
 'Accept' = 'application/json' }
 
 $baseSearchUrl = "https://"+$searchServiceName+".search.windows.net"
-
-
-$storageAccountKey = (Get-AzStorageAccountKey -ResourceGroupName $resourceGroupName -Name $storageAccountName).Value[0]
 
 $storageContext = New-AzStorageContext -StorageAccountName $storageAccountName -StorageAccountKey $storageAccountKey
 
@@ -81,6 +79,8 @@ $skillBody = Get-Content -Path .\base-skills.json
 $cognitiveServiceKeys = Get-AzCognitiveServicesAccountKey -ResourceGroupName $resourceGroupName -Name $cognitiveServiceName
 
 $skillBody = $skillBody -replace "%%cognitiveServiceKey%%", $cognitiveServiceKeys.Key1
+$skillBody = $skillBody -replace "%%azure_function_name%%", $azureFunctionName
+$skillBody = $skillBody -replace "%%azure_function_key%%", $azureFunctionKey
 
 Invoke-RestMethod -Uri $url -Headers $headers -Method Put -Body $skillBody | ConvertTo-Json
 
@@ -108,7 +108,6 @@ $appsettings["StorageAccountName"] = $storageAccountName;
 $appsettings["StorageAccountKey"] = $storageAccountKey;
 $appsettings["StorageAccountContainerName"] = $storageContainerName;
 
-
 Set-AzWebApp -ResourceGroupName $resourceGroupName -Name $webAPIAppName -AppSettings $appsettings
 
 $appsettings = @{}
@@ -121,3 +120,5 @@ $appsettings["OrganizationLogo"] = "org-logo.svg";
 
 Set-AzWebApp -ResourceGroupName $resourceGroupName -Name $webUIAppName -AppSettings $appsettings
 
+$webUIUrl = "https://"+$prefix+"-webui.azurewebsites.net/"
+Start-Process -FilePath $webUIUrl

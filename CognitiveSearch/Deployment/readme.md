@@ -9,3 +9,5 @@ Other parameters:
 -resourceGroup: The resource group name. By default it will use the -uniqueName
 -location: The location of all resources. By default it will be centralus
 -sampleCategory: The sample data which will be copied to the storage. Value should be one of the followings: healthcare, oilandgas, retail
+
+In the end of deployment, the script will open the demo web UI page in your default browser. You may need to wait for 1 to 2 minutes for the indexing to finish before querying any data.

@@ -32,27 +32,32 @@
   ],
   "outputFieldMappings": [
     {
-      "sourceFieldName": "/document/content/keyphrases",
-      "targetFieldName": "keyphrases",
+        "sourceFieldName": "/document/mergedText",
+        "targetFieldName": "content",
+        "mappingFunction": null
+    },
+    {
+      "sourceFieldName": "/document/pages/*/keyphrasesfiltered/*",
+      "targetFieldName": "keyPhrases",
       "mappingFunction": null
     },
     {
-      "sourceFieldName": "/document/content/people",
-      "targetFieldName": "people",
+      "sourceFieldName": "/document/pages/*/persons/*",
+      "targetFieldName": "persons",
       "mappingFunction": null
     },
     {
-      "sourceFieldName": "/document/content/organizations",
+      "sourceFieldName": "/document/pages/*/organizations/*",
       "targetFieldName": "organizations",
       "mappingFunction": null
     },
     {
-      "sourceFieldName": "/document/content/locations",
+      "sourceFieldName": "/document/pages/*/locations/*",
       "targetFieldName": "locations",
       "mappingFunction": null
     },
     {
-      "sourceFieldName": "/document/language",
+      "sourceFieldName": "/document/languageCode",
       "targetFieldName": "language",
       "mappingFunction": null
     }

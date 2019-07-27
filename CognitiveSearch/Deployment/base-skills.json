@@ -1,80 +1,190 @@
 ﻿{
   "description": "Text Cognitive Skills",
   "skills": [
-    {
-      "@odata.type": "#Microsoft.Skills.Text.EntityRecognitionSkill",
-      "description": null,
-      "context": "/document/content",
-      "categories": [
-        "Person",
-        "Organization",
-        "Location"
-      ],
-      "defaultLanguageCode": "en",
-      "minimumPrecision": null,
-      "includeTypelessEntities": null,
-      "inputs": [
         {
-          "name": "text",
-          "source": "/document/content",
-          "sourceContext": null,
-          "inputs": []
-        }
-      ],
-      "outputs": [
-        {
-          "name": "persons",
-          "targetName": "people"
+            "@odata.type": "#Microsoft.Skills.Vision.OcrSkill",
+            "name": "#1",
+            "description": "Extract text (plain and structured) from image.",
+            "context": "/document/normalized_images/*",
+            "textExtractionAlgorithm": "printed",
+            "lineEnding": "Space",
+            "defaultLanguageCode": "en",
+            "detectOrientation": true,
+            "inputs": [
+                {
+                    "name": "image",
+                    "source": "/document/normalized_images/*",
+                    "sourceContext": null,
+                    "inputs": []
+                }
+            ],
+            "outputs": [
+                {
+                    "name": "text",
+                    "targetName": "myOcrText"
+                }
+            ]
         },
         {
-          "name": "organizations",
-          "targetName": "organizations"
+            "@odata.type": "#Microsoft.Skills.Text.MergeSkill",
+            "name": "#2",
+            "description": "Create mergedText, which includes all the textual representation of each image inserted at the right location in the content field.",
+            "context": "/document",
+            "insertPreTag": " ",
+            "insertPostTag": " ",
+            "inputs": [
+                {
+                    "name": "text",
+                    "source": "/document/content",
+                    "sourceContext": null,
+                    "inputs": []
+                },
+                {
+                    "name": "itemsToInsert",
+                    "source": "/document/normalized_images/*/myOcrText",
+                    "sourceContext": null,
+                    "inputs": []
+                },
+                {
+                    "name": "offsets",
+                    "source": "/document/normalized_images/*/contentOffset",
+                    "sourceContext": null,
+                    "inputs": []
+                }
+            ],
+            "outputs": [
+                {
+                    "name": "mergedText",
+                    "targetName": "mergedText"
+                }
+            ]
         },
         {
-          "name": "locations",
-          "targetName": "locations"
-        }
-      ]
-    },
+            "@odata.type": "#Microsoft.Skills.Text.SplitSkill",
+            "name": "#3",
+            "description": null,
+            "context": "/document",
+            "defaultLanguageCode": "en",
+            "textSplitMode": "pages",
+            "maximumPageLength": 5000,
+            "inputs": [
+                {
+                    "name": "text",
+                    "source": "/document/mergedText",
+                    "sourceContext": null,
+                    "inputs": []
+                }
+            ],
+            "outputs": [
+                {
+                    "name": "textItems",
+                    "targetName": "pages"
+                }
+            ]
+        },
+        {
+            "@odata.type": "#Microsoft.Skills.Text.LanguageDetectionSkill",
+            "name": "#4",
+            "description": null,
+            "context": "/document",
+            "inputs": [
+                {
+                    "name": "text",
+                    "source": "/document/pages/0",
+                    "sourceContext": null,
+                    "inputs": []
+                }
+            ],
+            "outputs": [
+                {
+                    "name": "languageCode",
+                    "targetName": "languageCode"
+                }
+            ]
+        },
+        {
+            "@odata.type": "#Microsoft.Skills.Text.KeyPhraseExtractionSkill",
+            "name": "#5",
+            "description": null,
+            "context": "/document/pages/*",
+            "defaultLanguageCode": "en",
+            "maxKeyPhraseCount": 200,
+            "inputs": [
+                {
+                    "name": "text",
+                    "source": "/document/pages/*",
+                    "sourceContext": null,
+                    "inputs": []
+                },
+                {
+                    "name": "languageCode",
+                    "source": "/document/languageCode",
+                    "sourceContext": null,
+                    "inputs": []
+                }
+            ],
+            "outputs": [
+                {
+                    "name": "keyPhrases",
+                    "targetName": "keyPhrases"
+                }
+            ]
+        },
+        {
+            "@odata.type": "#Microsoft.Skills.Text.EntityRecognitionSkill",
+            "name": "#6",
+            "description": "Entities",
+            "context": "/document/pages/*",
+            "categories": [
+                "Organization",
+                "Person",
+                "Location"
+            ],
+            "defaultLanguageCode": "en",
+            "minimumPrecision": null,
+            "includeTypelessEntities": null,
+            "inputs": [
+                {
+                    "name": "text",
+                    "source": "/document/pages/*"
+                },
+                {
+                    "name": "languageCode",
+                    "source": "/document/languageCode"
+                }
+            ],
+            "outputs": [
+                {
+                    "name": "organizations",
+                    "targetName": "organizations"
+                },
+                {
+                    "name": "persons",
+                    "targetName": "persons"
+                },
+                {
+                    "name": "locations",
+                    "targetName": "locations"
+                }
+            ]
+        },
     {
-      "@odata.type": "#Microsoft.Skills.Text.KeyPhraseExtractionSkill",
-      "description": null,
-      "context": "/document/content",
-      "defaultLanguageCode": "en",
-      "maxKeyPhraseCount": null,
-      "inputs": [
-        {
-          "name": "text",
-          "source": "/document/content",
-          "sourceContext": null,
-          "inputs": []
-        }
-      ],
-      "outputs": [
-        {
-          "name": "keyPhrases",
-          "targetName": "keyphrases"
-        }
-      ]
-    },
-    {
-      "@odata.type": "#Microsoft.Skills.Text.LanguageDetectionSkill",
-      "description": null,
-      "context": "/document",
-      "inputs": [
-        {
-          "name": "text",
-          "source": "/document/content",
-          "sourceContext": null,
-          "inputs": []
-        }
-      ],
-      "outputs": [
-        {
-          "name": "languageCode",
-          "targetName": "language"
-        }
-      ]
+      "@odata.type": "#Microsoft.Skills.Custom.WebApiSkill",
+      "description": "Fitler the facets",
+      "uri": "https://%%azure_function_name%%.azurewebsites.net/api/FilterTermsPerFacetSkill?code=%%azure_function_key%%",
+        "context": "/document/pages/*",
+        "inputs": [
+          {
+            "name": "facets",
+            "source": "/document/pages/*/keyPhrases"
+          }
+        ],
+        "outputs": [
+          {
+            "name": "facets",
+            "targetName": "keyphrasesfiltered"
+          }
+        ]
     }
   ],
     "cognitiveServices": {

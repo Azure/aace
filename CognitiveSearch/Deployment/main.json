@@ -140,6 +140,7 @@
         "type": "SystemAssigned"
       },
       "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts', concat(parameters('prefix'),'storage'))]",
         "[resourceId('Microsoft.Web/serverfarms', concat(parameters('prefix'),'-appsvc-func'))]"
       ],
       "kind": "functionapp",
@@ -153,7 +154,32 @@
         "containerSize": 1536,
         "dailyMemoryTimeQuota": 0,
         "httpsOnly": false,
-        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', concat(parameters('prefix'),'-appsvc-func'))]"
+        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', concat(parameters('prefix'),'-appsvc-func'))]",
+		
+		"siteConfig": {
+			"appSettings": [
+				{
+					"name": "AzureWebJobsStorage",
+					"value": "[concat('DefaultEndpointsProtocol=https;AccountName=', concat(parameters('prefix'),'storage'), ';AccountKey=', listKeys(resourceId('Microsoft.Storage/storageAccounts', concat(parameters('prefix'),'storage')), '2015-05-01-preview').key1)]"
+				},
+				{
+					"name": "AzureWebJobsDashboard",
+					"value": "[concat('DefaultEndpointsProtocol=https;AccountName=', concat(parameters('prefix'),'storage'), ';AccountKey=', listKeys(resourceId('Microsoft.Storage/storageAccounts', concat(parameters('prefix'),'storage')), '2015-05-01-preview').key1)]"
+				},
+                {
+                    "name": "FUNCTIONS_WORKER_RUNTIME",
+                    "value": "dotnet"
+                },
+                {
+                    "name": "WEBSITE_NODE_DEFAULT_VERSION",
+                    "value": "10.14.1"
+                },
+				{
+					"name": "FUNCTIONS_EXTENSION_VERSION",
+					"value": "~2"
+				}
+			]
+		}
       },
       "resources": [
         {
@@ -245,5 +271,25 @@
         }
       ]
     }
-  ]
+  ],
+  "outputs": {
+      "AzureFunctionKey":{
+          "type":"string",
+
+          "value":"[listKeys(resourceId('Microsoft.Web/sites/host/', concat(parameters('prefix'),'-func01'), 'default'),'2016-08-01').functionkeys.default]"
+
+      },
+	  "StorageAccountKey":{
+          "type":"string",
+
+          "value":"[listKeys(resourceId('Microsoft.Storage/storageAccounts', concat(parameters('prefix'),'storage')), '2015-05-01-preview').key1]"
+
+	  },
+	  "SearchServiceKey":{
+          "type":"string",
+
+          "value":"[listAdminKeys(resourceId('Microsoft.Search/searchServices', concat(parameters('prefix'),'-search')), '2015-08-19').primaryKey]"
+
+	  }
+  }
 }
