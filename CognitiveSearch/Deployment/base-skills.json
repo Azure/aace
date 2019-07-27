@@ -171,7 +171,7 @@
     {
       "@odata.type": "#Microsoft.Skills.Custom.WebApiSkill",
       "description": "Fitler the facets",
-      "uri": "https://%%azure_function_name%%.azurewebsites.net/api/FilterTermsPerFacetSkill?code=%%azure_function_key%%",
+      "uri": "https://%%azure_webapi_name%%.azurewebsites.net/api/facets",
         "context": "/document/pages/*",
         "inputs": [
           {

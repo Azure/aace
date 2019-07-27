@@ -31,7 +31,6 @@ New-AzResourceGroup -Name $resourceGroupName -Location $location
 $result = New-AzResourceGroupDeployment -ResourceGroupName $resourceGroupName -TemplateFile .\main.json -prefix $prefix
 
 
-$azureFunctionKey = $result.Outputs["azureFunctionKey"].value
 $storageAccountKey = $result.Outputs["storageAccountKey"].value
 $searchServiceKey = $result.Outputs["searchServiceKey"].Value
 
@@ -42,7 +41,6 @@ $searchServiceName = $prefix + "-search"
 $storageAccountName = $prefix + "storage"
 $storageContainerName = $prefix + "rawdata"
 $cognitiveServiceName = $prefix + "-cogs"
-$azureFunctionName = $prefix + "-func01"
 
 $headers = @{
 'api-key' = $searchServiceKey
@@ -79,8 +77,7 @@ $skillBody = Get-Content -Path .\base-skills.json
 $cognitiveServiceKeys = Get-AzCognitiveServicesAccountKey -ResourceGroupName $resourceGroupName -Name $cognitiveServiceName
 
 $skillBody = $skillBody -replace "%%cognitiveServiceKey%%", $cognitiveServiceKeys.Key1
-$skillBody = $skillBody -replace "%%azure_function_name%%", $azureFunctionName
-$skillBody = $skillBody -replace "%%azure_function_key%%", $azureFunctionKey
+$skillBody = $skillBody -replace "%%azure_webapi_name%%", $webAPIAppName
 
 Invoke-RestMethod -Uri $url -Headers $headers -Method Put -Body $skillBody | ConvertTo-Json
 
