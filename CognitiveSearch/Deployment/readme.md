@@ -11,6 +11,7 @@ If latest Az or Az.Search module is not installed, following the instruction at 
 1. Sync the current repo or download the deployment package.zip
 2. Run following command:
 .\Deploy.ps1 -uniqueName <unique_name> -subscriptionId <subscription_id>
+3. Login to your Azure subscription in the popup window
 
 In the end of deployment, the script will open the demo web UI page in your default browser. You may need to wait for 1 to 2 minutes for the indexing to finish before querying any data. It will also print the storage account name and key for Power BI report.
 
