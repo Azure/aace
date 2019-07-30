@@ -8,7 +8,7 @@ If latest Az or Az.Search module is not installed, following the instruction at 
 2. If you don't want to deploy to the default subscription, get the subscription id.
 
 ## Deploy:
-1. Sync the current repo or download the [deployment package.zip](deployment package.zip)
+1. Sync the current repo or download the deployment package.zip
 2. Run following command:
 .\Deploy.ps1 -uniqueName <unique_name> -subscriptionId <subscription_id>
 
