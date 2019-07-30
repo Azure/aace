@@ -11,7 +11,7 @@
     },
     "githubRepo": {
       "type": "string",
-      "defaultValue": "https://cognitivesearchcontent.blob.core.windows.net/packages-test",
+      "defaultValue": "https://cognitivesearchcontent.blob.core.windows.net/packages",
       "metadata": {
         "description": "The github location for deployment files."
       }
