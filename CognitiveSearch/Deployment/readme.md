@@ -15,9 +15,9 @@ If latest Az or Az.Search module is not installed, following the instruction at 
 In the end of deployment, the script will open the demo web UI page in your default browser. You may need to wait for 1 to 2 minutes for the indexing to finish before querying any data. It will also print the storage account name and key for Power BI report.
 
 ### Additional parameters:
--resourceGroup: The resource group name. By default it will use the -uniqueName
--location: The location of all resources. By default it will be centralus
--sampleCategory: The sample data which will be copied to the storage. Value should be one of the followings: healthcare, oilandgas, retail
++ resourceGroup: The resource group name. By default it will use the -uniqueName
++ location: The location of all resources. By default it will be centralus
++ sampleCategory: The sample data which will be copied to the storage. Value should be one of the followings: healthcare, oilandgas, retail
 
 ## Power BI Report:
 You can update the Power BI report to load data from your own knowledge store:
