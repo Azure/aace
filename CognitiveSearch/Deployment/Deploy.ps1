@@ -135,3 +135,7 @@ Set-AzWebApp -ResourceGroupName $resourceGroupName -Name $webUIAppName -AppSetti
 
 $webUIUrl = "https://"+$prefix+"-webui.azurewebsites.net/"
 Start-Process -FilePath $webUIUrl
+
+Write-Host "For Power BI Report:"
+Write-Host "Storage Account Name:" $storageAccountName
+Write-Host "Storage Account Key:" $storageAccountKey 

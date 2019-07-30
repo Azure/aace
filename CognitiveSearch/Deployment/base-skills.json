@@ -239,6 +239,51 @@
             "targetName": "locationsfiltered"
           }
         ]
+    },
+    {
+        "@odata.type": "#Microsoft.Skills.Util.ShaperSkill",
+        "name": "shapreskill",
+        "description": null,
+        "context": "/document",
+        "inputs": [
+            {
+                "name": "pages",
+                "source": null,
+                "sourceContext": "/document/pages/*",
+                "inputs": [
+                    {
+                        "name": "keyphrasesfiltered",
+                        "source": "/document/pages/*/keyphrasesfiltered/*",
+                        "sourceContext": null,
+                        "inputs": []
+                    },
+                    {
+                        "name": "organizationsfiltered",
+                        "source": "/document/pages/*/organizationsfiltered/*",
+                        "sourceContext": null,
+                        "inputs": []
+                    },
+                    {
+                        "name": "locationsfiltered",
+                        "source": "/document/pages/*/locationsfiltered/*",
+                        "sourceContext": null,
+                        "inputs": []
+                    },
+                    {
+                        "name": "personsfiltered",
+                        "source": "/document/pages/*/personsfiltered/*",
+                        "sourceContext": null,
+                        "inputs": []
+                    }
+                ]
+            }
+        ],
+        "outputs": [
+            {
+                "name": "output",
+                "targetName": "tableprojection"
+            }
+        ]
     }
   ],
     "cognitiveServices": {
@@ -251,11 +296,62 @@
     "projections": [ 
         { 
             "tables": [  
-            { "tableName": "KeyPhrases", "generatedKeyName": "KeyPhrasesId", "source": "/document/tableprojection/pages/*/keyPhrases/*" , "sourceContext": null, "inputs": []}, 
-            { "tableName": "Organization", "generatedKeyName": "OrganizationId", "source": "/document/tableprojection/pages/*/organizations/*", "sourceContext": null, "inputs": []}, 
-            { "tableName": "Persons", "generatedKeyName": "PersonId", "source": "/document/tableprojection/pages/*/persons/*", "sourceContext": null, "inputs": []}, 
-            { "tableName": "Locations", "generatedKeyName": "LocationId", "source": "/document/tableprojection/pages/*/locations/*" ,"sourceContext": null, "inputs": []} 
-
+                    {
+                        "tableName": "KeyPhrases",
+                        "generatedKeyName": "KeyPhrasesId",
+                        "source": null,
+                        "sourceContext": "/document/tableprojection/pages/*/keyphrasesfiltered/*",
+                        "inputs": [
+                            {
+                                "name": "keyphrasesfiltered",
+                                "source": "/document/tableprojection/pages/*/keyphrasesfiltered/*",
+                                "sourceContext": null,
+                                "inputs": []
+                            }
+                        ]
+                    },
+                    {
+                        "tableName": "Persons",
+                        "generatedKeyName": "PersonId",
+                        "source": null,
+                        "sourceContext": "/document/tableprojection/pages/*/personsfiltered/*",
+                        "inputs": [
+                            {
+                                "name": "personsfiltered",
+                                "source": "/document/tableprojection/pages/*/personsfiltered/*",
+                                "sourceContext": null,
+                                "inputs": []
+                            }
+                        ]
+                    },
+                    {
+                        "tableName": "Organizations",
+                        "generatedKeyName": "OragnizationId",
+                        "source": null,
+                        "sourceContext": "/document/tableprojection/pages/*/organizationsfiltered/*",
+                        "inputs": [
+                            {
+                                "name": "organizationsfiltered",
+                                "source": "/document/tableprojection/pages/*/organizationsfiltered/*",
+                                "sourceContext": null,
+                                "inputs": []
+                            }
+                        ]
+                    },
+                    {
+                        "tableName": "Locations",
+                        "generatedKeyName": "LocationId",
+                        "source": null,
+                        "sourceContext": "/document/tableprojection/pages/*/locationsfiltered/*",
+                        "inputs": [
+                            {
+                                "name": "locationsfiltered",
+                                "source": "/document/tableprojection/pages/*/locationsfiltered/*",
+                                "sourceContext": null,
+                                "inputs": []
+                            }
+                        ]
+                    }
             ], 
             "objects": []     
         }    
