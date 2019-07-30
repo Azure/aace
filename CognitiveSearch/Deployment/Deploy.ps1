@@ -14,6 +14,14 @@ if($sampleCategory -notin "None", "healthcare", "oilandgas", "retail"){
     Break;
 }
 
+if($uniqueName -eq "default")
+{
+    Write-Error "Please specify a unique name."
+    break;
+}
+
+$uniqueName = $uniqueName.ToLower();
+
 $prefix = $uniqueName
 if($resourceGroup -eq "default"){
     $resourceGroupName = $uniqueName
@@ -39,7 +47,9 @@ $webUIAppName = $prefix+"-webui"
 $webAPIAppName = $prefix + "-webapi"
 $searchServiceName = $prefix + "-search"
 $storageAccountName = $prefix + "storage"
-$storageContainerName = $prefix + "rawdata"
+$storageContainerName = "rawdata"
+$facetFiltersStorageContainerName = "facetfilters"
+$facetFiltersSourceStorageContainerName = $prefix + "-" + $sampleCategory
 $cognitiveServiceName = $prefix + "-cogs"
 
 $headers = @{
@@ -52,10 +62,13 @@ $baseSearchUrl = "https://"+$searchServiceName+".search.windows.net"
 $storageContext = New-AzStorageContext -StorageAccountName $storageAccountName -StorageAccountKey $storageAccountKey
 
 New-AzStorageContainer -Name $storageContainerName -Context $storageContext
+New-AzStorageContainer -Name $facetFiltersStorageContainerName -Context $storageContext
+
+$sampleContentStorageContext = New-AzStorageContext -StorageAccountName $sampleContentStorageAccountName -Anonymous
+
+Get-AzStorageBlob -Container $facetFiltersStorageContainerName -Context $sampleContentStorageContext | Start-AzStorageBlobCopy -DestContainer $facetFiltersStorageContainerName -DestContext $storageContext
 
 if ($sampleCategory -ne "None"){
-    $sampleContentStorageContext = New-AzStorageContext -StorageAccountName $sampleContentStorageAccountName -Anonymous
-
     Get-AzStorageBlob -Container $sampleCategory -Context $sampleContentStorageContext | Start-AzStorageBlobCopy -DestContainer $storageContainerName -DestContext $storageContext
 }
 
@@ -106,6 +119,7 @@ $appsettings["SearchIndexName"] = "demoindex";
 $appsettings["StorageAccountName"] = $storageAccountName;
 $appsettings["StorageAccountKey"] = $storageAccountKey;
 $appsettings["StorageAccountContainerName"] = $storageContainerName;
+$appsettings["FacetsFilteringContainerName"] = $facetFiltersStorageContainerName;
 
 Set-AzWebApp -ResourceGroupName $resourceGroupName -Name $webAPIAppName -AppSettings $appsettings
 

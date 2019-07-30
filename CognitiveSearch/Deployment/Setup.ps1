@@ -1,3 +1,2 @@
-﻿Install-Module -Name Az
-
-Install-Module -Name Az.Search
+﻿Install-Module -Name Az -AllowClobber
+Install-Module -Name Az.Search -AllowClobber

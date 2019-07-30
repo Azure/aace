@@ -11,14 +11,14 @@
     },
     "githubRepo": {
       "type": "string",
-      "defaultValue": "https://cognitivesearchcontent.blob.core.windows.net/packages",
+      "defaultValue": "https://cognitivesearchcontent.blob.core.windows.net/packages-test",
       "metadata": {
         "description": "The github location for deployment files."
       }
     },
     "searchSku": {
       "type": "string",
-      "defaultValue": "basic",
+      "defaultValue": "standard",
       "metadata": {
         "description": "Size of the Azure Search instance."
       }

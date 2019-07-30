@@ -170,8 +170,8 @@
         },
     {
       "@odata.type": "#Microsoft.Skills.Custom.WebApiSkill",
-      "description": "Fitler the facets",
-      "uri": "https://%%azure_webapi_name%%.azurewebsites.net/api/facets",
+      "description": "Fitler the keyPhrases",
+      "uri": "https://%%azure_webapi_name%%.azurewebsites.net/api/facetsfiltering?facetname=keyphrases",
         "context": "/document/pages/*",
         "inputs": [
           {
@@ -183,6 +183,60 @@
           {
             "name": "facets",
             "targetName": "keyphrasesfiltered"
+          }
+        ]
+    },
+    {
+      "@odata.type": "#Microsoft.Skills.Custom.WebApiSkill",
+      "description": "Fitler the organizations",
+      "uri": "https://%%azure_webapi_name%%.azurewebsites.net/api/facetsfiltering?facetname=organizations",
+        "context": "/document/pages/*",
+        "inputs": [
+          {
+            "name": "facets",
+            "source": "/document/pages/*/organizations"
+          }
+        ],
+        "outputs": [
+          {
+            "name": "facets",
+            "targetName": "organizationsfiltered"
+          }
+        ]
+    },
+    {
+      "@odata.type": "#Microsoft.Skills.Custom.WebApiSkill",
+      "description": "Fitler the persons",
+      "uri": "https://%%azure_webapi_name%%.azurewebsites.net/api/facetsfiltering?facetname=persons",
+        "context": "/document/pages/*",
+        "inputs": [
+          {
+            "name": "facets",
+            "source": "/document/pages/*/persons"
+          }
+        ],
+        "outputs": [
+          {
+            "name": "facets",
+            "targetName": "personsfiltered"
+          }
+        ]
+    },
+    {
+      "@odata.type": "#Microsoft.Skills.Custom.WebApiSkill",
+      "description": "Fitler the locations",
+      "uri": "https://%%azure_webapi_name%%.azurewebsites.net/api/facetsfiltering?facetname=locations",
+        "context": "/document/pages/*",
+        "inputs": [
+          {
+            "name": "facets",
+            "source": "/document/pages/*/locations"
+          }
+        ],
+        "outputs": [
+          {
+            "name": "facets",
+            "targetName": "locationsfiltered"
           }
         ]
     }
@@ -197,10 +251,10 @@
     "projections": [ 
         { 
             "tables": [  
-            { "tableName": "KeyPhrases", "generatedKeyName": "KeyPhrasesId", "source": "/document/pages/*/keyPhrases/*" , "sourceContext": null, "inputs": []}, 
-            { "tableName": "Organization", "generatedKeyName": "OrganizationId", "source": "/document/pages/*/organizations/*", "sourceContext": null, "inputs": []}, 
-            { "tableName": "Persons", "generatedKeyName": "PersonId", "source": "/document/pages/*/persons/*", "sourceContext": null, "inputs": []}, 
-            { "tableName": "Locations", "generatedKeyName": "LocationId", "source": "/document/pages/*/locations/*" ,"sourceContext": null, "inputs": []} 
+            { "tableName": "KeyPhrases", "generatedKeyName": "KeyPhrasesId", "source": "/document/tableprojection/pages/*/keyPhrases/*" , "sourceContext": null, "inputs": []}, 
+            { "tableName": "Organization", "generatedKeyName": "OrganizationId", "source": "/document/tableprojection/pages/*/organizations/*", "sourceContext": null, "inputs": []}, 
+            { "tableName": "Persons", "generatedKeyName": "PersonId", "source": "/document/tableprojection/pages/*/persons/*", "sourceContext": null, "inputs": []}, 
+            { "tableName": "Locations", "generatedKeyName": "LocationId", "source": "/document/tableprojection/pages/*/locations/*" ,"sourceContext": null, "inputs": []} 
 
             ], 
             "objects": []     

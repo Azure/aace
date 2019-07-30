@@ -42,17 +42,17 @@
       "mappingFunction": null
     },
     {
-      "sourceFieldName": "/document/pages/*/persons/*",
+      "sourceFieldName": "/document/pages/*/personsfiltered/*",
       "targetFieldName": "persons",
       "mappingFunction": null
     },
     {
-      "sourceFieldName": "/document/pages/*/organizations/*",
+      "sourceFieldName": "/document/pages/*/organizationsfiltered/*",
       "targetFieldName": "organizations",
       "mappingFunction": null
     },
     {
-      "sourceFieldName": "/document/pages/*/locations/*",
+      "sourceFieldName": "/document/pages/*/locationsfiltered/*",
       "targetFieldName": "locations",
       "mappingFunction": null
     },
