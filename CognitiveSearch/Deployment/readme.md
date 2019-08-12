@@ -50,9 +50,9 @@ In the end of deployment, the script will open the demo web UI page in your defa
 
 ### Additional parameters
 
-+ resourceGroup: The resource group name. By default it will use the informed **-uniqueName**
-+ location: The location of all resources. By default it will be **centralus**
-+ sampleCategory: The sample data which will be copied to the storage. Value should be one of the followings: healthcare, oilandgas, retail
++ ```-resourceGroup```: The resource group name. By default it will use the informed **-uniqueName**
++ ```-location```: The location of all resources. By default it will be **centralus**
++ ```-sampleCategory```: The sample data which will be copied to the storage. Value should be one of the followings: healthcare, oilandgas, retail
 
 ## Power BI Report
 
