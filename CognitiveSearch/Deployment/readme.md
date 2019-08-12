@@ -77,16 +77,16 @@ The final price depends on multiple factors like contract type, account type, pa
 + Storage Account
 + Azure Search - Standard tier
 + Azure Cognitive Services
-+ App Service (x2) with one instance for Service plan
-Actual prices may vary depending upon the date of purchase, currency of payment, and type of agreement you enter with Microsoft. Contact a Microsoft sales representative for additional information on pricing. The size of your dataset also have influence in the final price, and this is another factor beyond our control.
++ App Service (x2) with one instance for Service plan.
+Actual prices may vary depending upon the date of purchase, currency of payment, and type of agreement you have with Microsoft. Contact a Microsoft sales representative for additional information on pricing. The size of your dataset also will have influence in the final price. Your dataset size is a factor beyond our control.
 
-The order of magnitude of the estimated cost to keep this solution running, is close **US$ 350.50** per month. Please check [this](https://docs.microsoft.com/en-us/azure/search/search-limits-quotas-capacity) link to understand the standard sku tier limits.
+The order of magnitude of the estimated cost to keep this solution running is close to **US$ 350.50** per month. Please check [this](https://docs.microsoft.com/en-us/azure/search/search-limits-quotas-capacity) link to understand the standard sku tier limits.
 
-If you want to reduce up to 50% of the costs, you can change the **searchSku / defaultValue** property of the **main.json** file, located in the **Deployment**. The provided value is **standard**, you can replace it with the basic or free sku tiers. But doing so, we can't predict/support the errors and the performance of your deployment.
+If you want to reduce the costs, you can change the **searchSku / defaultValue** property of the **main.json** file, located in the **Deployment** folder. The provided value is **standard**, and you can replace it with the **basic** or **free** sku tiers. However, by doing this, we can't predict/support the errors and the performance of your deployment.
 
 Use [this](https://docs.microsoft.com/en-us/azure/search/search-sku-tier) link to guide you on how to choose an Azure Search sku tier.
 
-> If you want to eliminate all costs any moment after the deployment, we recommend you delete the created resource group.
+> If you want to eliminate the costs at any moment after the deployment, we recommend you delete the created **resource group**.
 
 ## Additional Content - Knowledge Mining
 
