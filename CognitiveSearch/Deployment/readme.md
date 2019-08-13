@@ -1,6 +1,6 @@
 # Cognitive Search sales accelerator deployment guidance
 
-This repo contains all code and data required to deploy the ACE Team's Knowledge Mining Accelerator: [KMA](http://aka.ms/kma).
+This repo contains all code, instructions, and data required to deploy the ACE Team's Knowledge Mining Accelerator: [KMA](http://aka.ms/kma).
 
 This solution was build to help KM demos, POCs, MVPs, and etc.
 
@@ -8,7 +8,7 @@ This solution was build to help KM demos, POCs, MVPs, and etc.
 
 These are the key pre-requisites to deploy this solution:
 
-1. You need a Microsoft Azure account to create the services used in this solution. You can create a [free account](https://azure.microsoft.com/en-us/free/), use your MSDN account or any other subscription where you have permission to create Azure services
+1. You need a Microsoft Azure account to create the services used in this solution. You can create a [free account](https://azure.microsoft.com/en-us/free/), use your MSDN account, or any other subscription where you have permission to create Azure services.
 2. PowerShell: The one-command deployment process uses PowerShell to execute all the required activities to get the solution up and running. If you don't have PowerShell, install it from [here](https://docs.microsoft.com/en-us/powershell/scripting/install/installing-windows-powershell?view=powershell-6)
 
 ## Environment Setup
@@ -91,5 +91,6 @@ Use [this](https://docs.microsoft.com/en-us/azure/search/search-sku-tier) link t
 ## Additional Content - Knowledge Mining
 
 + [ACE Team Blog](http://aka.ms/ACE-Blog)
++ [KMA Demo](http://aka.ms/kma)
 + [Learn how to use Cognitive Search on Audio Files](https://techcommunity.microsoft.com/t5/AI-Customer-Engineering-Team/Mine-knowledge-from-audio-files-with-Microsoft-AI/ba-p/781957)
 + [Knowledge Mining Bootcamp](http://aka.ms/kmb)
