@@ -22,7 +22,14 @@ The deployment runs locally in your computer. You have 2 alternative methods to 
 1. Download and extract the file **deployment package.zip** located [here](https://github.com/Azure/AIPlatform/tree/master/CognitiveSearch/Deployment)
 1. Clone the repo, using [Git for Windows](https://gitforwindows.org/) or any other git app you want. The command is ```git clone https://github.com/Azure/https://github.com/Azure/AIPlatform.git```
 
-### Step 2 - PowerShell Privileges
+### Step 2 - Install Azure PowerShell Module
+
+The deployment uses this module. You have 2 alternative methods to install it:
+
+1. Follow [these](https://docs.microsoft.com/en-us/powershell/azure/install-az-ps?view=azps-2.4.0) instructions.
+1. Using `cd` commands, navigate to the cloned or extracted folder and run ```.\setup.ps1``` in a PowerShell terminal. If you get an error, again use the terminal running it as administrator.
+
+### Step 3 - PowerShell Privileges
 
 You need to change PowerShell permissions to run all necessary commands:
 
@@ -32,13 +39,6 @@ You need to change PowerShell permissions to run all necessary commands:
 
      1. Run the PowerShell terminal as an Administrator
      1. Set the priorities running ```Set-ExecutionPolicy -ExecutionPolicy unrestricted```.
-
-### Step 3 - Install Azure PowerShell Module
-
-The deployment uses this module. You have 2 alternative methods to install it:
-
-1. Follow [these](https://docs.microsoft.com/en-us/powershell/azure/install-az-ps?view=azps-2.4.0) instructions.
-1. Using `cd` commands, navigate to the cloned or extracted folder and run ```.\setup.ps1``` in a PowerShell terminal. If you get an error, again use the terminal running it as administrator.
 
 ## Deployment
 
