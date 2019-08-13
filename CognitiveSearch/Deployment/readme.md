@@ -72,6 +72,12 @@ You can update the Power BI report to load data from your own knowledge store:
 10. Click Save
 11. Close all windows and refresh your data sources
 
+## Architecture Diagram
+
+The solution architecture diagram is shared not only as the image below, but also its Visio file, located in the **Architecture** folder of the repo. You are free do use it or customize it as you want.
+
+![Diagram](./architecture/diagram.PNG)
+
 ## Pricing and SLA
 
 The final price depends on multiple factors like contract type, account type, partner, taxes, discounts, and etc. These factors are beyond the scope of this section. You can use the [Azure Calculator](https://azure.microsoft.com/en-us/pricing/calculator/) for pricing **estimation**. The used Azure Services are:
