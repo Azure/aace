@@ -9,6 +9,7 @@ This solution was build to help KM demos, POCs, MVPs, and etc.
 These are the key pre-requisites to deploy this solution:
 
 1. You need a Microsoft Azure account to create the services used in this solution. You can create a [free account](https://azure.microsoft.com/en-us/free/), use your MSDN account, or any other subscription where you have permission to create Azure services.
+
 2. PowerShell: The one-command deployment process uses PowerShell to execute all the required activities to get the solution up and running. If you don't have PowerShell, install it from [here](https://docs.microsoft.com/en-us/powershell/scripting/install/installing-windows-powershell?view=powershell-6)
 
 ## Environment Setup
@@ -24,10 +25,11 @@ The deployment runs locally in your computer. You have 2 alternative methods to 
 
 ### Step 2 - Install Azure PowerShell Module
 
-The deployment uses this module. You have 2 alternative methods to install it:
+The deployment process is based on this PowerShell module. If you don't have it on your computer, choose one of these two methods to install it:
 
-1. Follow [these](https://docs.microsoft.com/en-us/powershell/azure/install-az-ps?view=azps-2.4.0) instructions.
-1. Using `cd` commands, navigate to the cloned or extracted folder and run ```.\setup.ps1``` in a PowerShell terminal. If you get an error, again use the terminal running it as administrator.
+1. Follow [these](https://docs.microsoft.com/en-us/powershell/azure/install-az-ps?view=azps-2.4.0) instructions
+
+1. Using `cd` commands, navigate to the cloned or extracted folder and run ```.\setup.ps1``` in a PowerShell terminal. If you get an error, run the terminal as an administrator and run command again.
 
 ### Step 3 - PowerShell Privileges
 
