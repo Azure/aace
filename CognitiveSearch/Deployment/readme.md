@@ -70,7 +70,7 @@ You can update the Power BI report to load data from your own knowledge store:
 10. Click Save
 11. Close all windows and refresh your data sources
 
-## Pricing
+## Pricing and SLA
 
 The final price depends on multiple factors like contract type, account type, partner, taxes, discounts, and etc. These factors are beyond the scope of this section. You can use the [Azure Calculator](https://azure.microsoft.com/en-us/pricing/calculator/) for pricing **estimation**. The used Azure Services are:
 
@@ -82,15 +82,15 @@ Actual prices may vary depending upon the date of purchase, currency of payment,
 
 The order of magnitude of the estimated cost to keep this solution running is close to **US$ 350.50** per month. Please check [this](https://docs.microsoft.com/en-us/azure/search/search-limits-quotas-capacity) link to understand the standard sku tier limits.
 
-If you want to reduce the costs, you can change the **searchSku / defaultValue** property of the **main.json** file, located in the **Deployment** folder. The provided value is **standard**, and you can replace it with the **basic** or **free** sku tiers. However, by doing this, we can't predict/support the errors and the performance of your deployment.
+If you want to reduce the costs, you can change the **searchSku / defaultValue** property of the **main.json** file, located in the **Deployment** folder. The provided value is **standard**, and you can replace it with the **basic** or **free** sku tiers. However, by doing this, we can't predict/support the errors and the performance of your deployment. Use [this](https://docs.microsoft.com/en-us/azure/search/search-sku-tier) link to guide you on how to choose an Azure Search sku tier.
 
-Use [this](https://docs.microsoft.com/en-us/azure/search/search-sku-tier) link to guide you on how to choose an Azure Search sku tier.
+This solution was not designed to provide SLA. If you need 99.9% of uptime, click [here](https://azure.microsoft.com/en-us/support/legal/sla/search/v1_0/) to learn more about Azure Search SLA.
 
 > If you want to eliminate the costs at any moment after the deployment, we recommend you delete the created **resource group**.
 
 ## Additional Content - Knowledge Mining
 
 + [ACE Team Blog](http://aka.ms/ACE-Blog)
-+ [KMA Demo](http://aka.ms/kma)
++ [ACE Team KMA Demo](http://aka.ms/kma)
 + [Learn how to use Cognitive Search on Audio Files](https://techcommunity.microsoft.com/t5/AI-Customer-Engineering-Team/Mine-knowledge-from-audio-files-with-Microsoft-AI/ba-p/781957)
 + [Knowledge Mining Bootcamp](http://aka.ms/kmb)
