@@ -76,7 +76,7 @@ You can update the Power BI report to load data from your own knowledge store:
 
 The solution architecture diagram is shared not only as the image below, but also its Visio file, located in the **Architecture** folder of the repo. You are free do use it or customize it as you want.
 
-![Diagram](./architecture/diagram.PNG)
+![Diagram](./Architecture/diagram.PNG)
 
 ## Pricing and SLA
 
