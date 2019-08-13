@@ -29,7 +29,7 @@ The deployment process is based on this PowerShell module. If you don't have it 
 
 1. Follow [these](https://docs.microsoft.com/en-us/powershell/azure/install-az-ps?view=azps-2.4.0) instructions
 
-1. Using `cd` commands, navigate to the cloned or extracted folder and run ```.\setup.ps1``` in a PowerShell terminal. If you get an error, run the terminal as an administrator and run command again.
+1. Using `cd` commands, navigate to the cloned or extracted folder and run ```.\setup.ps1``` in a PowerShell terminal. If you get a permission related error, run the terminal as an administrator and run command again.
 
 ### Step 3 - PowerShell Privileges
 
