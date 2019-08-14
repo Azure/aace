@@ -4,7 +4,7 @@
   "parameters": {
     "prefix": {
       "type": "string",
-      "defaultValue": "jfk",
+      "defaultValue": "default",
       "metadata": {
         "description": "A prefix added to all created resources."
       }
