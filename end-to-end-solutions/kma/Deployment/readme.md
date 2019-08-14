@@ -21,6 +21,7 @@ Follow these steps to prepare the deployment:
 The deployment runs locally in your computer. You have 2 alternative methods to do it:
 
 1. Download and extract the file **deployment package.zip** located [here](https://github.com/Azure/AIPlatform/tree/master/CognitiveSearch/Deployment)
+
 1. Clone the repo, using [Git for Windows](https://gitforwindows.org/) or any other git app you want. The command is ```git clone https://github.com/Azure/https://github.com/Azure/AIPlatform.git```
 
 ### Step 2 - Install Azure PowerShell Module
@@ -54,7 +55,7 @@ In the end of deployment, the script will open the demo web UI page in your defa
 
 + ```-resourceGroup```: The resource group name. By default it will use the informed **-uniqueName**
 + ```-location```: The location of all resources. By default it will be **centralus**
-+ ```-sampleCategory```: The sample dataset which you want to initialize your deployment. By defaul it will be **none**, meaning that your deployment will be created without any data. If used, the value should be one of the followings: healthcare, oilandgas, or retail
++ ```-sampleCategory```: The sample dataset which you want to initialize your deployment. By defaul it will be **none**, meaning that your deployment will be created without any data. If used, the value should be one of the followings: **healthcare**, **oilandgas**, or **retail**
 
 ## Datasets
 
@@ -107,7 +108,7 @@ The final price depends on multiple factors like contract type, account type, pa
 + App Service (x2) with one instance for Service plan.
 Actual prices may vary depending upon the date of purchase, currency of payment, and type of agreement you have with Microsoft. Contact a Microsoft sales representative for additional information on pricing. The size of your dataset also will have influence in the final price. Your dataset size is a factor beyond our control.
 
-The order of magnitude of the estimated cost to keep this solution running is close to **US$ 350.50** per month. Please check [this](https://docs.microsoft.com/en-us/azure/search/search-limits-quotas-capacity) link to understand the standard sku tier limits.
+The order of magnitude of the estimated cost to keep this solution running is close to **US$ 350.50** per month. Please check [this](https://docs.microsoft.com/en-us/azure/search/search-limits-quotas-capacity) link to understand the standard sku tiers limits.
 
 If you want to reduce the costs, you can change the **searchSku / defaultValue** property of the **main.json** file, located in the **Deployment** folder. The provided value is **standard**, and you can replace it with the **basic** or **free** sku tiers. However, by doing this, we can't predict/support the errors and the performance of your deployment. Use [this](https://docs.microsoft.com/en-us/azure/search/search-sku-tier) link to guide you on how to choose an Azure Search sku tier.
 
