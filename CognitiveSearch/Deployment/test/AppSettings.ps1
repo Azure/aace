@@ -77,7 +77,7 @@ $appsettings["ApiUrl"] = "https://"+$webAPIAppName+".azurewebsites.net";
 $appsettings["OrganizationName"] = "Microsoft";
 $appsettings["OrganizationWebSiteUrl"] = "https://www.microsoft.com";
 $appsettings["OrganizationLogo"] = "logo.png";
-$appsettings["Customizable"] = "true";
+$appsettings["Customizable"] = "false";
 
 Set-AzWebApp -ResourceGroupName $resourceGroupName -Name $webUIAppName -AppSettings $appsettings
 

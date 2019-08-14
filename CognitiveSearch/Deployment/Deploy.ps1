@@ -4,12 +4,12 @@ param (
     [string]$resourceGroup = "default",    
     [string]$subscriptionId = "default",
     [string]$location = "centralus",
-    [string]$sampleCategory = "None"
+    [string]$sampleCategory = "none"
 )
 
 Connect-AzAccount
 
-if($sampleCategory -notin "None", "healthcare", "oilandgas", "retail"){
+if($sampleCategory -notin "none", "healthcare", "oilandgas", "retail"){
     Write-Error "The -sampleCategory needs to be one of the followings: healthcare, oilandgas, retail"
     Break;
 }
@@ -18,6 +18,11 @@ if($uniqueName -eq "default")
 {
     Write-Error "Please specify a unique name."
     break;
+}
+
+if($uniqueName.Length > 17)
+{
+    Write-Error "The unique name is too long. Please specify a name with less than 17 characters."
 }
 
 $uniqueName = $uniqueName.ToLower();
@@ -49,6 +54,7 @@ $searchServiceName = $prefix + "-search"
 $storageAccountName = $prefix + "storage"
 $storageContainerName = "rawdata"
 $facetFiltersStorageContainerName = "facetfilters"
+$facetFiltersSourceContainerName = "facetfilters-" + $sampleCategory
 $facetFiltersSourceStorageContainerName = $prefix + "-" + $sampleCategory
 $cognitiveServiceName = $prefix + "-cogs"
 
@@ -66,9 +72,9 @@ New-AzStorageContainer -Name $facetFiltersStorageContainerName -Context $storage
 
 $sampleContentStorageContext = New-AzStorageContext -StorageAccountName $sampleContentStorageAccountName -Anonymous
 
-Get-AzStorageBlob -Container $facetFiltersStorageContainerName -Context $sampleContentStorageContext | Start-AzStorageBlobCopy -DestContainer $facetFiltersStorageContainerName -DestContext $storageContext
+Get-AzStorageBlob -Container $facetFiltersSourceContainerName -Context $sampleContentStorageContext | Start-AzStorageBlobCopy -DestContainer $facetFiltersStorageContainerName -DestContext $storageContext
 
-if ($sampleCategory -ne "None"){
+if ($sampleCategory -ne "none"){
     Get-AzStorageBlob -Container $sampleCategory -Context $sampleContentStorageContext | Start-AzStorageBlobCopy -DestContainer $storageContainerName -DestContext $storageContext
 }
 
