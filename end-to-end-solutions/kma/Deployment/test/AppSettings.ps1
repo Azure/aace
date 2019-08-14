@@ -8,7 +8,7 @@ param (
 
 ##inputs
 $subscriptionId = "a6c2a7cc-d67e-4a1a-b765-983f08c0423a"
-$uniqueName = "kmahc"
+$uniqueName = "kmaretail"
 
 Connect-AzAccount
 
