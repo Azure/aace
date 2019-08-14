@@ -50,11 +50,30 @@ You need to change PowerShell permissions to run all necessary commands:
 1. If you are not logged in, the script will ask you to do it.
 In the end of deployment, the script will open the demo web UI page in your default browser. There will be no data. Use the **Upload Files** link to upload your data. You may need to wait for 1 to 4 minutes for the indexing to finish before querying any data. It will also print the storage account name and key for Power BI report.
 
-### Additional parameters
+### Optional Parameters
 
 + ```-resourceGroup```: The resource group name. By default it will use the informed **-uniqueName**
 + ```-location```: The location of all resources. By default it will be **centralus**
-+ ```-sampleCategory```: The sample data which will be copied to the storage. Value should be one of the followings: healthcare, oilandgas, retail
++ ```-sampleCategory```: The sample dataset which you want to initialize your deployment. By defaul it will be **none**, meaning that your deployment will be created without any data. If used, the value should be one of the followings: healthcare, oilandgas, or retail
+
+## Datasets
+
+As you can see in the last optional parameter above, we offer 3 sample datasets.
+
+| Dataset    | Size            | Suggested terms for your search |
+| ---------- | --------------  | ------------------------------- |
+| Healthcare | 90 MB, 80 files | diabetes, high blood pressure, heart disease, heart attack, cigarettes, overweight, patient readmission, treatments, risks |
+| Oil & Gas  | 61 MB, 29 files | upstream, downstream, pollution, crude oil, real time leak detection, peipeline control center, transient models  |
+| Retail     | 39 MB, 31 files | pipeline management, customer profiling, profile, estimation, consumption, predictive analytics, time series analysis, seasonality, retail marketing, logistics |
+
+These 3 datasets include documents types that will leverage Cognitive Search and Cognitive Services AI capabilities. The types are:
+
++ Images
++ Images with text
++ Microsoft Office documents
++ Pdfs
+
+For more information about the datasets, including its sources and licencese, click [here](../UseOfDatasets/readme.md).
 
 ## Power BI Report
 
