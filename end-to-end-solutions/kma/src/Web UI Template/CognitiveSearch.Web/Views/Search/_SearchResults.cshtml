@@ -1,0 +1,58 @@
+﻿<div id="results-list-view" class="col-md-12">
+    <div class="clearfix">
+        <ul id="paginationFooter" class="pagination pull-right"></ul>
+    </div>
+    <div style="margin:0 10px 10px 10px;">
+        <h2 id="doc-count" style="margin-top:-10px; font-size:14px; display:inline"></h2>
+        <div style="display:inline;position: relative;top:-10px;left:10px;">
+            <span id="loading-indicator" class="ms-Spinner ms-Spinner--large" style="display:none;"></span>
+        </div>
+    </div>
+    <div id="doc-details-div">
+        <div id="progress-indicator" class="ms-Spinner ms-Spinner--large" style="display:none;">
+            <div class="ms-Spinner-label">Fetching your results...</div>
+        </div>
+    </div>
+</div>
+
+
+<!--Details Modal-->
+<div class="modal" id="details-modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div id="details-modal-body" class="modal-body">
+                <div class="row" style="height: 5%;">
+                    <div class="modal-control-group">
+                        <span id="close-control" class="modal-control" data-dismiss="modal"><span class="ms-Icon ms-Icon--Clear"></span></span>
+                    </div>
+                    </div>
+                    <div class="row" style="height: 95%;">
+                        <div id="details-pivot" class="ms-Pivot col-md-8">
+                            <ul id="details-pivot-links" class="ms-Pivot-links"></ul>
+                            <div id="details-pivot-content">
+                            </div>
+                        </div>
+                        <div id="tags-panel" class="col-md-4">
+                            <div id="transcript-search-box" class="ms-SearchBox">
+                                <input class="ms-SearchBox-field" type="text" value="" id="transcript-search-input" placeholder="Search...">
+                                <label class="ms-SearchBox-label">
+                                    <span class="ms-SearchBox-icon ms-Icon ms-Icon--Search"></span>
+                                </label>
+                                <div class="ms-CommandButton ms-SearchBox-clear ms-CommandButton--noLabel">
+                                    <button class="ms-CommandButton-button">
+                                        <span class="ms-CommandButton-icon"><span class="ms-Icon ms-Icon--Clear"></span></span>
+                                        <span class="ms-CommandButton-label"></span>
+                                    </button>
+                                </div>
+                            </div>
+                            <div id="details-viewer" style="display:none"></div>
+                            <div id="tag-viewer"></div>
+                            <hr />
+                            <div id="reference-viewer"></div>
+                        </div>
+                        <input id="result-id" type="hidden" />
+                    </div>
+                </div>
+            </div>
+    </div>
+</div>

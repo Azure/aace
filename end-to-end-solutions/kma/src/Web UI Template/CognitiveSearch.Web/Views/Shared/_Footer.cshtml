@@ -1,0 +1,13 @@
+﻿@using CognitiveSearch.Web.Configuration
+@inject OrganizationConfig OrgConfig
+
+<footer class="border-top footer text-muted fixed-bottom p-0 footer-bg footer-text">
+    <div class="footer-content container-fluid">
+        <div class="statement-area footer-text">
+            &copy; @DateTime.Now.Year - @OrgConfig.Name
+        </div>
+        <div class="link-area">
+            <a asp-area="" asp-action="Privacy" asp-controller="Home" class="footer-link footer-text">Privacy</a>
+        </div>
+    </div>
+</footer>
