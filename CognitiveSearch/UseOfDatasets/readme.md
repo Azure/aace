@@ -4,7 +4,9 @@
 
 ## THIS DATASET IS PROVIDED UNDER THE ORIGINAL TERMS THAT MICROSOFT RECEIVED SOURCE DATA. THE DATASET MAY INCLUDE DATA SOURCED FROM MICROSOFT. SEE BELOW FOR MORE INFORMATION
 
-## Oil and Gas
+## THE INFORMATION FORMAT BELOW IS: FILE NAME + SOURCE URL + (LICENSE)
+
+## OIL AND GAS
 
 ### Downstream
 
@@ -44,7 +46,7 @@
 + Evaluation of Cyclic Gas Injection in Enhanced Recovery from Unconventional Light Oil Reservoirs: Effect of Gas Type and Fracture Spacing
 <https://www.mdpi.com/1996-1073/12/7/1370> (CC BY 4.0)
 
-## Retail
+## RETAIL
 
 ### Customer Profiling
 
@@ -88,7 +90,7 @@
 + Data Science Solutions for Retail Strategy to Reduce Waste Keeping High Proﬁt
 <https://www.mdpi.com/2071-1050/11/13/3589?type=check_update&version=2> (CC BY 4.0)
 
-## HealthCare
+## HEALTHCARE
 
 ### Diabetes
 
