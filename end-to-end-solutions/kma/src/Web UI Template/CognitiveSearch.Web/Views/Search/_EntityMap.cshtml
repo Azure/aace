@@ -1,0 +1,64 @@
+﻿<div id="results-entity-map" class="col-md-12 justify-content-center" style="display:none">
+    <div id="entity-map">
+        <div class="float-lg-right">
+            <label>Select a facet for the graph:</label>
+            <select id="facet-picker"></select>
+        </div>
+        <div style="display:inline;position: relative;top:-10px;left:10px;">
+            <div id="entity-loading-indicator" class="ms-Spinner ms-Spinner--large" style="display:none;">
+                <div class="ms-Spinner-label">Loading your graph results...</div>
+            </div>
+        </div>
+        <svg id="graph-svg" width="1000" height="620"></svg>
+    </div>
+    <!--Details Modal-->
+    <div class="modal" id="details-modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div id="details-modal-body" class="modal-body">
+                    <div class="row" style="height: 100%;">
+                        <div class="modal-control-group">
+                            <span id="prev-control" class="modal-control"><span class="ms-Icon ms-Icon--ChevronLeftMed"></span></span>
+                            <span id="next-control" class="modal-control"><span class="ms-Icon ms-Icon--ChevronRightMed"></span></span>
+                            <span id="close-control" class="modal-control" data-dismiss="modal"><span class="ms-Icon ms-Icon--Clear"></span></span>
+                        </div>
+                        <div id="details-pivot" class="ms-Pivot col-md-8">
+                            <ul id="details-pivot-links" class="ms-Pivot-links"></ul>
+                            <div id="details-pivot-content">
+                            </div>
+                        </div>
+                        <div id="tags-panel" class="col-md-4">
+                            <div id="transcript-search-box" class="ms-SearchBox">
+                                <input class="ms-SearchBox-field" type="text" value="" id="transcript-search-input" placeholder="Search...">
+                                <label class="ms-SearchBox-label">
+                                    <span class="ms-SearchBox-icon ms-Icon ms-Icon--Search"></span>
+                                </label>
+                                <div class="ms-CommandButton ms-SearchBox-clear ms-CommandButton--noLabel">
+                                    <button class="ms-CommandButton-button">
+                                        <span class="ms-CommandButton-icon"><span class="ms-Icon ms-Icon--Clear"></span></span>
+                                        <span class="ms-CommandButton-label"></span>
+                                    </button>
+                                </div>
+                            </div>
+                            <div id="details-viewer" style="display:none"></div>
+                            <div id="tag-viewer"></div>
+                            <hr />
+                            <div id="reference-viewer"></div>
+                        </div>
+                        <input id="result-id" type="hidden" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        GetFacets('locations');
+        $('#facet-picker').change(function () {
+            var selectedFacet = $(this).find(':selected').val();
+            SearchEntities(selectedFacet);
+        });
+    });
+</script>

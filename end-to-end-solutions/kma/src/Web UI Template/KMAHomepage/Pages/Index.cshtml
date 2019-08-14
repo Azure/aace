@@ -1,0 +1,38 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Knowledge Mining Sales Accelerator v1";
+}
+
+<div class="text-center" style="background-image:url('../image/background.png');color:white;padding-top:90px;padding-bottom:80px;margin-top:0px;margin-bottom:0px">
+    <h1>Knowledge Mining Sales Accelerator v1</h1>
+    <br />
+    <br />
+    <h3>Start with one of pre-deployed industries</h3>
+    <div>
+        <a href="https://kmahc-webui.azurewebsites.net">
+            <img src="~/image/hc.png" class="industry" onmouseover="hover(this);" onmouseout="unhover(this);" />
+        </a>
+        <a href="https://kmaretail-webui.azurewebsites.net">
+            <img src="~/image/retail.png" class="industry" onmouseover="hover(this);" onmouseout="unhover(this);" />
+        </a>
+        <a href="https://kmaoilgas-webui.azurewebsites.net">
+            <img src="~/image/oilgas.png" class="industry" onmouseover="hover(this);" onmouseout="unhover(this);" />
+        </a>
+</div>
+    <br />
+    <h3>Or <a href="https://github.com/Azure/AIPlatform/tree/master/end-to-end-solutions/kma/Deployment">create your own deployment.</a></h3>
+</div>
+
+<script type="text/javascript">
+
+    function hover(element) {
+        var src = element.getAttribute('src').replace(".png", "-hover.png");
+        element.setAttribute('src', src);
+    }
+
+    function unhover(element) {
+        var src = element.getAttribute('src').replace("-hover.png", ".png");
+        element.setAttribute('src', src);
+    }
+</script>

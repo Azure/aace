@@ -1,0 +1,24 @@
+﻿<div class="bg-light facetsettingmodal" id="facet-settings-modal" style="display:none">
+    <div class="m-2"><h2>Facets Settings</h2></div>
+    <div class="m-2" id="facet-setting-list">
+        Facet type:
+        <select id="facet-settings-select" onchange="OnFacetSettingSelectChange()"></select>
+    </div>
+    <div class="m-2"><span style="display:inline">Hide facet&nbsp;&nbsp; </span><input id="facet_settings-checkbox" type="checkbox" style="transform:scale(2)"/></div>
+    <div class="m-2" id="facet-settings-content">
+        Restriction list:<br/>
+        <textarea id="facet-settings-text" style="width:600px;height:250px"></textarea>
+    </div>
+    <div class="m-2">
+        <button onclick="SaveFacetSettings()">Update</button>
+        <button onclick="SaveFacetSettingsAndResetIndexer()">Update and re-index</button>
+        <button onclick="GetFacetFilterFiles()">Reset</button>
+    </div>
+    <div class="m-2" id="facet-settings-status"></div>
+</div>
+
+
+<script type="text/javascript">
+    $(document).ready(function () {
+    });
+</script>

@@ -1,0 +1,74 @@
+﻿
+@{
+    ViewData["Title"] = "Deploy";
+}
+
+    <main role="main" class="m-5">
+        <h3>Azure Cognitive Search Solution Deployment</h3>
+
+        <h5>Welcome to the Cognitive Services Knowledge Mining Deployment tool.</h5>
+
+        <p>
+            You can use this tool to deploy all the items necessary to have an Azure Resource Group with all the Azure resources necessary
+            to implement a working Cognitive Search website, using custom data sources and data, as well as a fully customizable UI.
+        </p>
+
+        <h5>Before you Begin</h5>
+
+        <p>You will need the following items before you can utilize this deployment tool:</p>
+
+        <ul>
+            <li>Paid Azure Subscription</li>
+            <li>Azure Application Client Id and Secret with access to your subscription to create a resource group and all the necessary items</li>
+            <li>Bing Instance (for the Bing Skill)</li>
+        </ul>
+        
+        <h5>Configuration</h5>
+
+        <p>Everything is driven by the configuration.{mode}.json file.  This file contains all the settings the EXE will need to deploy the various resources to the items created in the ARM template.</p>
+
+        <p>
+            The {mode} paramter is driven by the app.config (KnowledgeMiningDeployer.exe.config) and is default set to "production".  Therefore the tool will look for the **configuration.production.json** file in the same directory.
+        </p>
+
+        <p>
+            Everything the tool needs to do the deployment is inside the configuration file.  You will need the following items added to the configuration file based on the following major sections:
+        </p>
+        
+        <ul>
+            <li>Configuration variables</li>
+            <li>Azure Search Skillsets</li>
+            <li>Data Sources</li>
+        </ul>
+
+        <h5>Configuration variables</h5>
+
+        <pre id="json"></pre>
+    </main>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        var data = {
+            "ResourceGroupName": "[recource-group-name]",  //name of resource group you want to deploy too
+            "ResourcePrefix": "[resource-group-prefix]",  //a prefix added to all resources created
+            "SubscriptionId": "[your-azure-subscription-id]",  //the azure subscription id
+            "AdminAzureClientId": "[your-azure-app-client-id]", //the azure client id of the azure application
+            "AdminAzureClientSecret": "[your-azure-app-client-secret]",  //the azure client secret of the azure application
+            "TenantId": "[your-azure-active-directory-tenant-id]",  //the AAD tenantid
+            "Region": "[target-region]",  //the region you want to deploy items too
+            "SearchServiceApiVersion": "2019-05-06-Preview",  //the search service application version
+            "DeployMain": false,  //whether to deploy the main ARM template
+            "DoDeployments": false,  //whether to deploy the Web, API and function zip files
+            "UseSampleData": "true", //whether to import the sample data
+            "BlobStorageConnectionString": "[your-blob-storage-account-connection-string]",  //the storage account you want to point to for indexing
+            "StorageContainer": "documents",  //the container in the storage account to index
+            "ConfigFilePath": "https://raw.githubusercontent.com/solliancenet/Cognitive-search-JFK/knowledge-mining/00%20-%20Resource%20Deployment/KnowledgeMiningDeployer/KnowledgeMiningDeployer/configuration.development.json",//an external config file you might want to reference when running from ARM deployment
+            "CustomDataZip": "https://raw.githubusercontent.com/solliancenet/Cognitive-search-JFK/knowledge-mining/00%20-%20Resource%20Deployment/KnowledgeMiningDeployer/KnowledgeMiningDeployer/Deployment/CustomDocuments.zip", //your custom data set your want to pre-populate in your storage account and search index
+            "Username": "s2admin", //the username of the deployment VM and SQL server
+            "Password": "******",  //the password of the deployment VM and SQL server
+        }
+
+
+        document.getElementById("json").innerHTML = JSON.stringify(data, undefined, 2);
+    });
+</script>
