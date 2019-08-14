@@ -4,14 +4,14 @@
 
 ## THIS DATASET IS PROVIDED UNDER THE ORIGINAL TERMS THAT MICROSOFT RECEIVED SOURCE DATA. THE DATASET MAY INCLUDE DATA SOURCED FROM MICROSOFT. SEE BELOW FOR MORE INFORMATION
 
+## NO DOCUMENTS HAD THEIR ORIGINALS FORMAT OR CONTENT CHANGED
+
 ## THE INFORMATION FORMAT BELOW IS: FILE NAME + SOURCE URL + (LICENSE)
 
 ## OIL AND GAS
 
 ### Downstream
 
-+ Calculation of transient ﬂow model for long-distance transportation pipeline
-<https://link.springer.com/article/10.1007%2Fs13202-016-0299-6> (Open Access)
 + Crypto Hash Algorithm-Based Blockchain Technology for Managing Decentralized Ledger Database in Oil and Gas Industry
 <https://www.mdpi.com/2571-8800/2/3/21> (CC BY 4.0)
 + Design and Research of Real Time Monitoring System for the Refined Oil Logistics
@@ -22,8 +22,6 @@
 <https://www.mdpi.com/1996-1073/10/8/1105> (CC BY 4.0)
 + Impacts of ocean current and seabed friction on the picking-up and laying-down processes of oil and gas pipelines
 <https://www.sciencedirect.com/science/article/pii/S1876380413600130> (CC BY 4.0)
-+ Optimization of Water Reuse Network Using Water Pinch Technology (WPT) by Considering Single Contaminant for Kaduna Refinery and Petrochemical Company, Nigeria
-<https://www.longdom.org/abstract/optimization-of-water-reuse-network-using-water-pinch-technology-wpt-by-considering-single-contaminant-for-kaduna-refine-40886.html> (Open Access)
 + Recent Advances in Pipeline Monitoring and Oil Leakage Detection Technologies: Principles and Approaches
 <https://www.mdpi.com/1424-8220/19/11/2548> (CC BY 4.0)
 + Study on the thermal characteristics of crude oil pipeline during its consecutive process from shutdown to restart
@@ -35,8 +33,6 @@
 <https://www.mdpi.com/2073-4433/10/8/455> (CC BY 4.0)
 + Technical Innovation of Ultra-Deep Well Drilling Rig and Its Development Trend
 <http://www.sciencepublishinggroup.com/journal/paperinfo?journalid=268&doi=10.11648/j.ogce.20190701.15> (CC BY 4.0)
-+ Possible pitfalls in pressure transient analysis: Effect of adjacent wells
-<https://link.springer.com/article/10.1007%2Fs13202-019-0701-2#enumeration> (CC BY 4.0)
 + Removal of Diesel Oil in Soil Microcosms and Implication for Geophysical Monitoring
 <https://www.mdpi.com/2073-4441/11/8/1661?type=check_update&version=2> (CC BY 4.0)
 + Waste to Wealth as a Tool for Environmental Sustainability in Crude Oil- Impacted Soil
@@ -97,9 +93,7 @@
 + The Risk of Type 2 Diabetes in Men Is Synergistically Affected by Parental History of Diabetes and Overweight
 <https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3632519/> (CC BY 4.0)
 + Evaluating All Potential Oral Complications of Diabetes Mellitus
-<https://www.frontiersin.org/articles/10.3389/fendo.2019.00056/full> (Open Access)
-+ EADSG Guidelines: Insulin Therapy in Diabetes
-<https://link.springer.com/article/10.1007%2Fs13300-018-0384-6> (Open Access)
+<https://www.frontiersin.org/articles/10.3389/fendo.2019.00056/full> (CC BY 4.0)
 + Fetal overgrowth in women with type 1 and type 2 diabetes mellitus
 <https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0187917> (CC BY 4.0)
 + Inverse Association between Organic Food Purchase and Diabetes Mellitus in US Adults
@@ -127,8 +121,6 @@
 
 + Myocardial infarction and pregnancy
 <https://obgyn.onlinelibrary.wiley.com/doi/full/10.1111/tog.12052> (CC BY 4.0)
-+ Association of obesity and long-term mortality in patients with acute myocardial infarction with and without diabetes mellitus: results from the MONICA/KORA myocardial infarction registry
-<https://link.springer.com/article/10.1186/s12933-015-0189-0> (Open Access)
 + Active and passive smoking and the risk of myocardial infarction in 24,968 men and women during 11 year of follow-up: the Tromsø Study
 <https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3779067/> (CC BY 4.0)
 + Dietary patterns and mental health after myocardial infarction
