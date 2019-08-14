@@ -21,6 +21,7 @@ Follow these steps to prepare the deployment:
 The deployment runs locally in your computer. You have 2 alternative methods to do it:
 
 1. Download and extract the file **deployment package.zip** located [here](https://github.com/Azure/AIPlatform/tree/master/CognitiveSearch/Deployment)
+
 1. Clone the repo, using [Git for Windows](https://gitforwindows.org/) or any other git app you want. The command is ```git clone https://github.com/Azure/https://github.com/Azure/AIPlatform.git```
 
 ### Step 2 - Install Azure PowerShell Module
@@ -54,7 +55,7 @@ In the end of deployment, the script will open the demo web UI page in your defa
 
 + ```-resourceGroup```: The resource group name. By default it will use the informed **-uniqueName**
 + ```-location```: The location of all resources. By default it will be **centralus**
-+ ```-sampleCategory```: The sample dataset which you want to initialize your deployment. By defaul it will be **none**, meaning that your deployment will be created without any data. If used, the value should be one of the followings: healthcare, oilandgas, or retail
++ ```-sampleCategory```: The sample dataset which you want to initialize your deployment. By defaul it will be **none**, meaning that your deployment will be created without any data. If used, the value should be one of the followings: **healthcare**, **oilandgas**, or **retail**
 
 ## Datasets
 
