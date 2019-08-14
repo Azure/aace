@@ -76,7 +76,7 @@ You can update the Power BI report to load data from your own knowledge store:
 
 The solution architecture diagram is shared not only as the image below, but also its Visio file, located in the **Architecture** folder of the repo. You are free do use it or customize it as you want.
 
-![Diagram](./Architecture/diagram.PNG)
+![Diagram](../Architecture/diagram.PNG)
 
 ## Pricing and SLA
 
@@ -92,7 +92,7 @@ The order of magnitude of the estimated cost to keep this solution running is cl
 
 If you want to reduce the costs, you can change the **searchSku / defaultValue** property of the **main.json** file, located in the **Deployment** folder. The provided value is **standard**, and you can replace it with the **basic** or **free** sku tiers. However, by doing this, we can't predict/support the errors and the performance of your deployment. Use [this](https://docs.microsoft.com/en-us/azure/search/search-sku-tier) link to guide you on how to choose an Azure Search sku tier.
 
-This solution was not designed to provide SLA. If you need 99.9% of uptime, click [here](https://azure.microsoft.com/en-us/support/legal/sla/search/v1_0/) to learn more about Azure Search SLA.
+This solution was not designed to provide SLA, it is an accelerator and a showcase, not a production environment suggestion. If you need 99.9% of uptime, click [here](https://azure.microsoft.com/en-us/support/legal/sla/search/v1_0/) to learn more about Azure Search SLA.
 
 > If you want to eliminate the costs at any moment after the deployment, we recommend you delete the created **resource group**.
 
