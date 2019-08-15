@@ -44,7 +44,7 @@ Figure 2: The solution architecture 
 
 ## Feedback
 
-We really appreciate your feedback! Please create issues on GitHub for any glitches that you may experience, as well as any suggestions on missing functionality. If you coded any improvement that you want to share, create a Pull Request and we will analyze your work.  
+We really appreciate your feedback! Please create issues on GitHub for any glitches that you may experience, as well as any suggestions on missing functionality.
 
 ## Conclusion  
 
