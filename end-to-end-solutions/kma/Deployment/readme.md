@@ -55,7 +55,7 @@ In the end of deployment, the script will open the demo web UI page in your defa
 
 + ```-resourceGroup```: The resource group name. By default it will use the informed **-uniqueName**
 + ```-location```: The location of all resources. By default it will be **centralus**
-+ ```-sampleCategory```: The sample dataset which you want to initialize your deployment. By defaul it will be **none**, meaning that your deployment will be created without any data. If used, the value should be one of the followings: **healthcare**, **oilandgas**, or **retail**
++ ```-sampleCategory```: The sample dataset which you want to initialize your deployment. By default it will be **none**, meaning that your deployment will be created without any data. If used, the value should be one of the followings: **healthcare**, **oilandgas**, or **retail**
 
 ## Datasets
 
