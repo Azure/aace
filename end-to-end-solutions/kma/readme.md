@@ -42,7 +42,7 @@ A custom skill deployed on a App Service will do all of the filtering you may wa
 The metadata is also stored into Azure Tables, leveraging the Cognitive Search [knowledge store](https://docs.microsoft.com/en-us/azure/search/knowledge-store-concept-intro), a brand new feature just annonced on Build 2019. It generates structured data about your unstructured content and allows you to create Power BI reports, as those ones provided with this solution.
 
 ![Diagram](./images/diagram.PNG)
-Figure 3: The solution architecture  
+Figure 2: The solution architecture  
 
 ## Feedback
 
