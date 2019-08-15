@@ -2,14 +2,14 @@
 
 We are excited to share with you the Knowledge Mining Solution Accelerator, an open source end-to-end application that enables you to quickly get up to speed and try out the latest features of Azure Cognitive Search!  
 
-[LINK TO MAIN LANDING PAGE](http://aka.ms/kma) | [LINK TO SOURCE CODE](https://github.com/Azure/AIPlatform/tree/master/end-to-end-solutions/kma/src) | [LINK TO CUSTOM DEPLOYMENT](http://aka.ms/kmadeployment)
+[KMA Homepage](http://aka.ms/kma) | [SOURCE CODE](https://github.com/Azure/AIPlatform/tree/master/end-to-end-solutions/kma/src) | [1-CLICK DEPLOYMENT](http://aka.ms/kmadeployment)
 
 The solution includes the most popular features of the previous Microsoft Cognitive Search demos, like [JFK](https://jfk-demo.azurewebsites.net/#/), as well as a set of new important features and capabilities - use it with your own data, customizable UI (graph visualization, colors, logos for white-labeling), facets filtering of unwanted terms, and many more (see below for a full list)!  
 
 New features/capabilities of KMA v1.0:
 
 + Bring your own data: upload your files right from the web search interface and create demos or POCs in minutes  
-+ Graph visualization,  withvisualization, with customizablea customizable interface by facet  
++ Graph visualization,  withvisualization, with customizable interface by facet  
 + Logos and layout customization. Adapt the solution for any organization you want  
 + Latest Cognitive Search updates,  includingupdates, including Knowledge store and Complex types for advanced analytics  
 + Modernized Web Frameworks  
@@ -17,7 +17,7 @@ New features/capabilities of KMA v1.0:
 + Facets filtering, for unwanted terms removal. You can choose what to filter per facet  
 + Power BI dashboard
 + Suggestions while you type, for a web-search-like experience.  
-+ Simple deployment, a single PowerShell command  
++ 1-Click Deployment, a single PowerShell command  
 + Architecture Diagram Visio file, free to be shared and customized
 
 ## How to use KMA v1.0
