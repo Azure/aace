@@ -63,8 +63,8 @@ As you can see in the last optional parameter above, we offer 3 sample datasets.
 
 | Dataset    | Size            | Suggested terms for your search |
 | ---------- | --------------  | ------------------------------- |
-| Healthcare | 90 MB, 80 files | diabetes, high blood pressure, heart disease, heart attack, cigarettes, overweight, patient readmission, treatments, risks |
-| Oil & Gas  | 61 MB, 29 files | upstream, downstream, pollution, crude oil, real time leak detection, peipeline control center, transient models  |
+| Healthcare | 86 MB, 78 files | diabetes, high blood pressure, heart disease, heart attack, cigarettes, overweight, patient readmission, treatments, risks |
+| Oil & Gas  | 56 MB, 24 files | upstream, downstream, pollution, crude oil, real time leak detection, peipeline control center, transient models  |
 | Retail     | 39 MB, 31 files | pipeline management, customer profiling, profile, estimation, consumption, predictive analytics, time series analysis, seasonality, retail marketing, logistics |
 
 These 3 datasets include documents types that will leverage Cognitive Search and Cognitive Services AI capabilities. The types are:
@@ -75,6 +75,8 @@ These 3 datasets include documents types that will leverage Cognitive Search and
 + Pdfs
 
 For more information about the datasets, including its sources and licencese, click [here](../UseOfDatasets/readme.md).
+
+When you are running the deployment for one of these datasets, meaning that you are using the ```-sampleCategory``` parameter, the data is not downloaded into your local computer, the deployment reads that data from an Azure Storage Account.
 
 ## Power BI Report
 

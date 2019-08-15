@@ -1,6 +1,6 @@
 # Knowledge Mining Solution Accelerator (KMA v1.0)
 
-We are excited to share with you the Knowledge Mining Solution Accelerator, an open source end-to-end application that enables you to quickly get up to speed and try out the latest features of Azure Cognitive Search!  
+We are excited to share with you the Knowledge Mining Solution Accelerator, an open source end-to-end application that enables you to try the latest features of Azure Cognitive Search!  
 
 [KMA Demos Homepage](http://aka.ms/kma) | [Source Code](https://github.com/Azure/AIPlatform/tree/master/end-to-end-solutions/kma/src) | [1-Click Deployment - Bring your own data](http://aka.ms/kmadeployment)
 
