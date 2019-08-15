@@ -12,4 +12,4 @@ For more information about the solution deployment, click [here](https://github.
 
 For more solution demos homepage, click [here](https://kma.azurewebsites.net/).
 
-For more ACE Team blog posts, click here (http://aka.ms/ACE-Blog).
+For more ACE Team blog posts, click [here](http://aka.ms/ACE-Blog).
