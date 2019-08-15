@@ -18,7 +18,7 @@ New features/capabilities of KMA v1.0:
 + Power BI dashboard
 + Suggestions while you type, for a web-search-like experience.  
 + Simple deployment, a single PowerShell command  
-+ Architecture Diagram Visio file, free to be shared and customize
++ Architecture Diagram Visio file, free to be shared and customized
 
 ## How to use KMA v1.0
 
@@ -27,7 +27,7 @@ Today we are making available three read-only pre-configured versions of KMA ([H
 ![The Verticals](./images/figure-1.PNG)
 Figure 1: The verticals selector and the GitHub link to create your own deployment.  
 
-Once you get familiar with the application and the capabilities of Azure Cognitive Search, you can either deploy your own version of the application and use your own data, [via a one-click deployment](https://github.com/Azure/AIPlatform/blob/master/end-to-end-solutions/kma/Deployment/readme.md), or you can get the code from our public Azure Customer Engineering (ACE) GitHhub [repo](https://github.com/Azure/AIPlatform/tree/master/end-to-end-solutions/kma/src) to further customize and extent the solution to fit your own use cases/scenarios.
+Once you get familiar with the application and the capabilities of Azure Cognitive Search, you can either deploy your own version of the application and use your own data, [via a one-click deployment](https://github.com/Azure/AIPlatform/blob/master/end-to-end-solutions/kma/Deployment/readme.md), or you can get the code from our public Azure Customer Engineering (ACE) [GitHhub repo](https://github.com/Azure/AIPlatform/tree/master/end-to-end-solutions/kma/src) to further customize and extent the solution to fit your own use cases/scenarios.
 
 The below how-to video walks you through the KMA solution and demonstrates how you can use the pre-configured versions as well as how you can deploy your own version.
 
