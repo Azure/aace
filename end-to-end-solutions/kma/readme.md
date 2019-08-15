@@ -29,7 +29,7 @@ Figure 1: The verticals selector and the GitHub link to create your own deployme
 
 Once you get familiar with the application and the capabilities of Azure Cognitive Search, you can either deploy your own version of the application and use your own data, [via a one-click deployment](https://github.com/Azure/AIPlatform/blob/master/end-to-end-solutions/kma/Deployment/readme.md), or you can get the code from our public Azure Customer Engineering (ACE) [GitHub repo](https://github.com/Azure/AIPlatform/tree/master/end-to-end-solutions/kma/src) to further customize and extent the solution to fit your own use cases/scenarios.
 
-This [video](https://www.youtube.com/watch?v=Xp8NiljMUEI) walks you through the KMA solution and demonstrates how you can use the pre-configured versions as well as how you can deploy your own version. 
+This [video](https://www.youtube.com/watch?v=Xp8NiljMUEI) walks you through the KMA solution and demonstrates how you can use the pre-configured versions as well as how you can deploy your own version.
 
 ## Solution Architecture
 
@@ -50,12 +50,12 @@ We really appreciate your feedback! Please create issues on GitHub for any glitc
 
 We hope that this project will be useful for anyone trying to use or demonstrate Knowledge Mining solutions. Stay tuned in this blog channel to be informed about new verticals, new features, and the lessons learned from the project development cycle. Click [here](http://aka.ms/kma) and start to using the solution, or to deploy it in your own subscription.
 
-## Key Links  
+## Key Links
 
-[KMA GitHub - Direct Link](https://github.com/Azure/AIPlatform/tree/master/end-to-end-solutions/kma/src)
-
-[ACE Team Blog](http://aka.ms/ACE-Blog)
-
-[ACE Team - Knowledge Mining on Audio Data](https://techcommunity.microsoft.com/t5/AI-Customer-Engineering-Team/Mine-knowledge-from-audio-files-with-Microsoft-AI/ba-p/781957)  
-
-[Knowledge Mining Bootcamp](http://aka.ms/kmb)
++ [KMA Demos Homepage](http://aka.ms/kma)
++ [KMA Source Code](https://github.com/Azure/AIPlatform/tree/master/end-to-end-solutions/kma/src)
++ [KMA 1-Click Deployment](https://aka.ms/kmadeployment)
++ [KMA Blog Announcement](https://techcommunity.microsoft.com/t5/AI-Customer-Engineering-Team/Announcement-Knowledge-Mining-Solution-Accelerator-KMA-v1-0/ba-p/805889)
++ [ACE Team Blog](http://aka.ms/ACE-Blog)
++ [ACE Team Blog - Cognitive Search on Audio Files](https://techcommunity.microsoft.com/t5/AI-Customer-Engineering-Team/Mine-knowledge-from-audio-files-with-Microsoft-AI/ba-p/781957)
++ [KMB - Knowledge Mining Bootcamp](http://aka.ms/kmb)

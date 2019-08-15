@@ -118,9 +118,12 @@ This solution was not designed to provide SLA, it is an accelerator and a showca
 
 > If you want to eliminate the costs at any moment after the deployment, we recommend you delete the created **resource group**.
 
-## Additional Content - Knowledge Mining
+## Key Links
 
++ [KMA Demos Homepage](http://aka.ms/kma)
++ [KMA Source Code](https://github.com/Azure/AIPlatform/tree/master/end-to-end-solutions/kma/src)
++ [KMA 1-Click Deployment](https://aka.ms/kmadeployment)
++ [KMA Blog Announcement](https://techcommunity.microsoft.com/t5/AI-Customer-Engineering-Team/Announcement-Knowledge-Mining-Solution-Accelerator-KMA-v1-0/ba-p/805889)
 + [ACE Team Blog](http://aka.ms/ACE-Blog)
-+ [ACE Team KMA Demo](http://aka.ms/kma)
-+ [Learn how to use Cognitive Search on Audio Files](https://techcommunity.microsoft.com/t5/AI-Customer-Engineering-Team/Mine-knowledge-from-audio-files-with-Microsoft-AI/ba-p/781957)
-+ [Knowledge Mining Bootcamp](http://aka.ms/kmb)
++ [ACE Team Blog - Cognitive Search on Audio Files](https://techcommunity.microsoft.com/t5/AI-Customer-Engineering-Team/Mine-knowledge-from-audio-files-with-Microsoft-AI/ba-p/781957)
++ [KMB - Knowledge Mining Bootcamp](http://aka.ms/kmb)
