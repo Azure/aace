@@ -2,7 +2,7 @@
 
 We are excited to share with you the Knowledge Mining Solution Accelerator, an open source end-to-end application that enables you to quickly get up to speed and try out the latest features of Azure Cognitive Search!  
 
-[KMA Homepage](http://aka.ms/kma) | [SOURCE CODE](https://github.com/Azure/AIPlatform/tree/master/end-to-end-solutions/kma/src) | [1-CLICK DEPLOYMENT](http://aka.ms/kmadeployment)
+[KMA Homepage](http://aka.ms/kma) | [Source Code](https://github.com/Azure/AIPlatform/tree/master/end-to-end-solutions/kma/src) | [1-Click Deployment - Bring your own data](http://aka.ms/kmadeployment)
 
 The solution includes the most popular features of the previous Microsoft Cognitive Search demos, like [JFK](https://jfk-demo.azurewebsites.net/#/), as well as a set of new important features and capabilities - use it with your own data, customizable UI (graph visualization, colors, logos for white-labeling), facets filtering of unwanted terms, and many more (see below for a full list)!  
 
