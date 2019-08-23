@@ -78,6 +78,14 @@ For more information about the datasets, including its sources and licencese, cl
 
 When you are running the deployment for one of these datasets, meaning that you are using the ```-sampleCategory``` parameter, the data is not downloaded into your local computer, the deployment reads that data from an Azure Storage Account.
 
+## Uploading Files Manually
+
+You can send files directly to the storage account of the solution. That is, without using the Web interface for uploading files. This method is indicated for sending large amounts of files or even heavier files. To do it, follow these steps:
+
+1. Upload the files to the solution storage account, using your preferred method: [Azcopy](https://docs.microsoft.com/en-us/azure/storage/common/storage-use-azcopy-v10), [Azure Portal](https://docs.microsoft.com/en-us/azure/storage/blobs/storage-quickstart-blobs-portal), [Azure Storage Explorer](https://azure.microsoft.com/en-us/features/storage-explorer/), etc. Look for storage account in the resource group created by the deployment. **Place the files within the same container of the other documents**.
+
+1. Run the indexer manually: In the Azure Portal, again navigate to the resource group created by the deployment. Find the Azure Search service, open it, and go the indexers tab. You will see only one indexer, click on it and another tab will be opened. Just click “run” and the new files will be ingested.
+
 ## Power BI Report
 
 You can update the Power BI report to load data from your own knowledge store:

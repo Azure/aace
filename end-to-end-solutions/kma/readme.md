@@ -42,14 +42,6 @@ The metadata is also stored into Azure Tables, leveraging the Cognitive Search [
 ![Diagram](./images/diagram.PNG)
 Figure 2: The solution architecture
 
-## Uploading Files Manually
-
-You can send files directly to the storage account of the solution. That is, without using the Web interface for uploading files. This method is indicated for sending large amounts of files or even heavier files. To do it, follow these steps:
-
-1. Upload the files to the solution storage account, using your preferred method: [Azcopy](https://docs.microsoft.com/en-us/azure/storage/common/storage-use-azcopy-v10), [Azure Portal](https://docs.microsoft.com/en-us/azure/storage/blobs/storage-quickstart-blobs-portal), [Azure Storage Explorer](https://azure.microsoft.com/en-us/features/storage-explorer/), etc. Look for storage account in the resource group created by the deployment. **Place the files within the same container of the other documents**.
-
-1. Run the indexer manually: In the Azure Portal, again navigate to the resource group created by the deployment. Find the Azure Search service, open it, and go the indexers tab. You will see only one indexer, click on it and another tab will be opened. Just click “run” and the new files will be ingested.
-
 ## Feedback
 
 We really appreciate your feedback! Please create issues on GitHub for any glitches that you may experience, as well as any suggestions on missing functionality.
