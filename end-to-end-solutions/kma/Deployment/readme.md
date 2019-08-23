@@ -78,9 +78,11 @@ For more information about the datasets, including its sources and licencese, cl
 
 When you are running the deployment for one of these datasets, meaning that you are using the ```-sampleCategory``` parameter, the data is not downloaded into your local computer, the deployment reads that data from an Azure Storage Account.
 
-## Uploading Files Manually
+## Uploading Files
 
-You can send files directly to the storage account of the solution. That is, without using the Web interface for uploading files. This method is indicated for sending large amounts of files or even heavier files. To do it, follow these steps:
+This solution allows you to upload files through its web interface, with 2 limitations: files up to 30 MB and up to 10 files at a time.
+
+But there is an alternative. You can send files directly to the storage account of the solution and run the indexer manually. To do it, follow these steps:
 
 1. Upload the files to the solution storage account, using your preferred method: [Azcopy](https://docs.microsoft.com/en-us/azure/storage/common/storage-use-azcopy-v10), [Azure Portal](https://docs.microsoft.com/en-us/azure/storage/blobs/storage-quickstart-blobs-portal), [Azure Storage Explorer](https://azure.microsoft.com/en-us/features/storage-explorer/), etc. Look for storage account in the resource group created by the deployment. **Place the files within the same container of the other documents**.
 
