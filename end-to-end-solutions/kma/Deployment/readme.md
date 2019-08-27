@@ -22,7 +22,7 @@ The deployment runs locally in your computer. You have 2 alternative methods to 
 
 1. Download and extract the file **deployment package.zip** located [here](https://github.com/Azure/AIPlatform/tree/master/CognitiveSearch/Deployment)
 
-1. Clone the repo, using [Git for Windows](https://gitforwindows.org/) or any other git app you want. The command is ```git clone https://github.com/Azure/https://github.com/Azure/AIPlatform.git```
+1. Clone the repo, using [Git for Windows](https://gitforwindows.org/) or any other git app you want. The command is ```git clone https://github.com/Azure/AIPlatform.git```
 
 ### Step 2 - Install Azure PowerShell Module
 
