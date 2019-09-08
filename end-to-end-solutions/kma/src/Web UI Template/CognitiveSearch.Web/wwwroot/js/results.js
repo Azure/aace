@@ -145,7 +145,7 @@ function UpdateResults(data, q) {
                                                 <strong>
                                                     <i class="html-icon ms-Icon ${icon}"></i>${name}
                                                 </strong>
-                                                <small><a href="${path}">Dowload</a></small>
+                                                <small><a href="${path}">Download</a></small>
                                             </span>
                                             <div class="card-body">
                                                 <p>${highlightedSummary}</p>
