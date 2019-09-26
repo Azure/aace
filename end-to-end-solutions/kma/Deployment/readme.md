@@ -57,6 +57,17 @@ In the end of deployment, the script will open the demo web UI page in your defa
 + ```-location```: The location of all resources. By default it will be **centralus**
 + ```-sampleCategory```: The sample dataset which you want to initialize your deployment. By default it will be **none**, meaning that your deployment will be created without any data. If used, the value should be one of the followings: **healthcare**, **oilandgas**, or **retail**
 
+### Deployment - Other languages
+
+EN is the default language. To change it, you just need to, before the deployment process above, modify the following files within the deployment folder:
+
++ **base-index.json**: replace the analyzers, from **standard.lucene** to the [supported language analyzer you want](https://docs.microsoft.com/en-us/azure/search/index-add-language-analyzers#language-analyzer-list) 
+
++ **base-skills.json**: replace the default Language codes, from **en** to the supported language you want:
+  + For skill #1, OCR supported languages are [here](https://docs.microsoft.com/en-us/azure/search/cognitive-search-skill-ocr#skill-parameters)
+  + For skill #3, Split Text supported languages are [here](https://docs.microsoft.com/en-us/azure/search/cognitive-search-skill-textsplit#skill-parameters)
+  + For all other skills where "en" is used as a default language, Key Phrases and Entity Recognition supported languages are [here](https://docs.microsoft.com/en-us/azure/cognitive-services/text-analytics/language-support)
+
 ## Datasets
 
 As you can see in the last optional parameter above, we offer 3 sample datasets.
