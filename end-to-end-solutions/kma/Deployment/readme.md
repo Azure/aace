@@ -49,11 +49,17 @@ You need to change PowerShell permissions to run all necessary commands:
 
 1. If you don't want to deploy to the default subscription, get the subscription id from the Azure Portal.
 
-1. Using the information collected in the 2 previous items, run following command: `.\Deploy.ps1 -uniqueName <unique_name> -subscriptionId <subscription_id>` . The parameter **uniqueName** must follow storage accounts naming restrictions: lowercase, alphanumeric, etc. For more information, click [here](https://docs.microsoft.com/en-us/azure/architecture/best-practices/resource-naming#storage). The deployment script also may return an error because the final URL of your search service can be in use. The message is "... a service with the same name is already in use...". In this case, use another uniqueName for your deployment.
+1. Using the information collected in the 2 previous items, run following command: `.\Deploy.ps1 -uniqueName <unique_name> -subscriptionId <subscription_id>` . Please check the **Mandatory Parameters** section below for more details.
 
 1. If you are not logged in, the script will ask you to do it.
 
 In the end of deployment, the script will open the demo web UI page in your default browser. There will be no data. Use the **Upload Files** link to upload your data. You may need to wait for 1 to 4 minutes for the indexing to finish before querying any data. It will also print the storage account name and key for Power BI report.
+
+### Mandatory Parameters
+
++ ```-uniqueName```: The unique name must follow Azure storage accounts naming restrictions: lowercase, alphanumeric, etc. For more information, click [here](https://docs.microsoft.com/en-us/azure/architecture/best-practices/resource-naming#storage). The deployment script also may return an error because the final URL of your search service can be in use. The message is "... a service with the same name is already in use...". In this case, use another uniqueName for your deployment.
+
++ ```-uniqueName```: The id of the subscription that you want to use. The value **default** is also accepted, meaning that your used default subscription will be used.
 
 ### Optional Parameters
 
