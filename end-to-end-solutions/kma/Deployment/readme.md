@@ -46,9 +46,13 @@ You need to change PowerShell permissions to run all necessary commands:
 ## Deployment
 
 1. Choose a unique name with 3 or more non special characters. It will be used as prefix of name of all Azure resources. If the name is already used, the deployment will fail. The name will be converted to lowercase.
+
 1. If you don't want to deploy to the default subscription, get the subscription id from the Azure Portal.
-1. Using the information collected in the 2 previous items, run following command: `.\Deploy.ps1 -uniqueName <unique_name> -subscriptionId <subscription_id>`
+
+1. Using the information collected in the 2 previous items, run following command: `.\Deploy.ps1 -uniqueName <unique_name> -subscriptionId <subscription_id>` . Note that the **uniqueName** should follow storage accounts naming restrictions: lowercase, alphanumeric, etc. For more information, click [here](https://docs.microsoft.com/en-us/azure/architecture/best-practices/resource-naming#storage).
+
 1. If you are not logged in, the script will ask you to do it.
+
 In the end of deployment, the script will open the demo web UI page in your default browser. There will be no data. Use the **Upload Files** link to upload your data. You may need to wait for 1 to 4 minutes for the indexing to finish before querying any data. It will also print the storage account name and key for Power BI report.
 
 ### Optional Parameters
