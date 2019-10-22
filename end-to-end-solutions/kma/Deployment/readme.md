@@ -45,7 +45,7 @@ You need to change PowerShell permissions to run all necessary commands:
 
 ## Deployment
 
-1. Choose a unique name with 3 or more non special characters. It will be used as prefix of name of all Azure resources. If the name is already used, the deployment will fail since the URLs must be unique. The name will be converted to lowercase. Please check the **Mandatory Parameters** section below for more details.
+1. Choose a name that is between 3 and 16 characters in length. This string will be used as a prefix for all service names and URLs. Special characters will be removed and only the first 16 positions will be considered. Please check the **Mandatory Parameters** section below for more details.
 
 1. If you don't want to deploy to the default subscription, get the subscription id from the Azure Portal. Please check the **Mandatory Parameters** section below for more details
 
@@ -57,9 +57,9 @@ In the end of deployment, the script will open the demo web UI page in your defa
 
 ### Mandatory Parameters
 
-+ ```-uniqueName```: The unique name must follow Azure storage accounts naming restrictions: lowercase, alphanumeric, etc. For more information, click [here](https://docs.microsoft.com/en-us/azure/architecture/best-practices/resource-naming#storage). The deployment script also may return an error because the final URL of your search service can be in use. The message is "... a service with the same name is already in use...". In this case, use another uniqueName for your deployment.
++ ```-uniqueName```: The unique name must follow Azure storage accounts naming restrictions: lowercase, alphanumeric, etc. For more information, click [here](https://docs.microsoft.com/en-us/azure/architecture/best-practices/resource-naming#storage). The deployment script also may fail since the final URLs of the services must be unique. The message is "... a service with the same name is already in use...". In this case, use another uniqueName for your deployment.
 
-+ ```-uniqueName```: The id of the subscription that you want to use. The value **default** is also accepted, meaning that your used default subscription will be used.
++ ```-subscriptionId```: The id of the subscription that you want to use. The value **default** is also accepted, meaning that your used default subscription will be used.
 
 ### Optional Parameters
 
