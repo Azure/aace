@@ -19,13 +19,8 @@ if($uniqueName -eq "default")
     Write-Error "Please specify a unique name."
     break;
 }
-
-if($uniqueName.Length > 17)
-{
-    Write-Error "The unique name is too long. Please specify a name with less than 17 characters."
-}
-
-$uniqueName = $uniqueName.ToLower();
+ 
+$uniqueName = $uniqueName.Substring(0,$uniqueName.Length-($uniqueName.Length-16)).Replace('[^a-z0-9]',"").ToLower();
 
 $prefix = $uniqueName
 if($resourceGroup -eq "default"){
