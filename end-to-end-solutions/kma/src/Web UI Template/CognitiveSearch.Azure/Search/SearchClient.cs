@@ -141,7 +141,7 @@ namespace CognitiveSearch.Azure.Search
             SearchParameters sp = new SearchParameters()
             {
                 SearchMode = SearchMode.All,
-                Top = 1000,
+                Top = 10,
                 Skip = (currentPage - 1) * 10,
                 IncludeTotalResultCount = true,
                 QueryType = QueryType.Full,
