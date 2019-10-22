@@ -54,8 +54,12 @@ In the end of deployment, the script will open the demo web UI page in your defa
 ### Optional Parameters
 
 + ```-resourceGroup```: The resource group name. By default it will use the informed **-uniqueName**
-+ ```-location```: The location of all resources. By default it will be **centralus**
++ ```-location```: The location of the resource group. By default it will be **centralus**
 + ```-sampleCategory```: The sample dataset which you want to initialize your deployment. By default it will be **none**, meaning that your deployment will be created without any data. If used, the value should be one of the followings: **healthcare**, **oilandgas**, or **retail**
+
+### Location of the Resources
+
+While the resource group location can be set with the ```-location``` parameter, all other resources will be created in **Central US** region. If you want to change it, edit the **main.json** file located in the **Deployment** folder, using an Azure Region code that is valid for all resources. Just search for **centralus** and replace it with the code of the Azure Region you want to use. You can verify [here](https://azure.microsoft.com/en-us/global-infrastructure/services/) the services per region availability. The required services are App Service, Azure Cognitive Search, and Storage account.
 
 ### Deployment - Other languages
 
