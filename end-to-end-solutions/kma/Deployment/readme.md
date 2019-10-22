@@ -49,7 +49,7 @@ You need to change PowerShell permissions to run all necessary commands:
 
 1. If you don't want to deploy to the default subscription, get the subscription id from the Azure Portal.
 
-1. Using the information collected in the 2 previous items, run following command: `.\Deploy.ps1 -uniqueName <unique_name> -subscriptionId <subscription_id>` . Note that the **uniqueName** should follow storage accounts naming restrictions: lowercase, alphanumeric, etc. For more information, click [here](https://docs.microsoft.com/en-us/azure/architecture/best-practices/resource-naming#storage).
+1. Using the information collected in the 2 previous items, run following command: `.\Deploy.ps1 -uniqueName <unique_name> -subscriptionId <subscription_id>` . The parameter **uniqueName** must follow storage accounts naming restrictions: lowercase, alphanumeric, etc. For more information, click [here](https://docs.microsoft.com/en-us/azure/architecture/best-practices/resource-naming#storage).
 
 1. If you are not logged in, the script will ask you to do it.
 
