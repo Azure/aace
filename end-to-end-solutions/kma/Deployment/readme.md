@@ -20,9 +20,9 @@ Follow these steps to prepare the deployment:
 
 The deployment runs locally in your computer. You have 2 alternative methods to do it:
 
-1. Download and extract the file **deployment package.zip** located [here](https://github.com/Azure/AIPlatform/tree/master/CognitiveSearch/Deployment)
+1. Download and extract the file **deployment package.zip** located in the [clone or download button](https://github.com/Azure/AIPlatform)
 
-1. Clone the repo, using [Git for Windows](https://gitforwindows.org/) or any other git app you want. The command is ```git clone https://github.com/Azure/https://github.com/Azure/AIPlatform.git```
+1. Clone the repo, using [Git for Windows](https://gitforwindows.org/) or any other git app you want. The command is ```git clone https://github.com/Azure/AIPlatform.git```
 
 ### Step 2 - Install Azure PowerShell Module
 
@@ -45,17 +45,36 @@ You need to change PowerShell permissions to run all necessary commands:
 
 ## Deployment
 
-1. Choose a unique name. It will be used as prefix of name of all Azure resources. If the name is already used, the deployment will fail.
+1. Choose a unique name with 3 or more non special characters. It will be used as prefix of name of all Azure resources. If the name is already used, the deployment will fail. The name will be converted to lowercase.
+
 1. If you don't want to deploy to the default subscription, get the subscription id from the Azure Portal.
-1. Using the information collected in the 2 previous items, run following command: `.\Deploy.ps1 -uniqueName <unique_name> -subscriptionId <subscription_id>`
+
+1. Using the information collected in the 2 previous items, run following command: `.\Deploy.ps1 -uniqueName <unique_name> -subscriptionId <subscription_id>` . The parameter **uniqueName** must follow storage accounts naming restrictions: lowercase, alphanumeric, etc. For more information, click [here](https://docs.microsoft.com/en-us/azure/architecture/best-practices/resource-naming#storage).
+
 1. If you are not logged in, the script will ask you to do it.
+
 In the end of deployment, the script will open the demo web UI page in your default browser. There will be no data. Use the **Upload Files** link to upload your data. You may need to wait for 1 to 4 minutes for the indexing to finish before querying any data. It will also print the storage account name and key for Power BI report.
 
 ### Optional Parameters
 
 + ```-resourceGroup```: The resource group name. By default it will use the informed **-uniqueName**
-+ ```-location```: The location of all resources. By default it will be **centralus**
-+ ```-sampleCategory```: The sample dataset which you want to initialize your deployment. By defaul it will be **none**, meaning that your deployment will be created without any data. If used, the value should be one of the followings: **healthcare**, **oilandgas**, or **retail**
++ ```-location```: The location of the resource group. By default it will be **centralus**
++ ```-sampleCategory```: The sample dataset which you want to initialize your deployment. By default it will be **none**, meaning that your deployment will be created without any data. If used, the value should be one of the followings: **healthcare**, **oilandgas**, or **retail**
+
+### Location of the Resources
+
+While the resource group location can be set with the ```-location``` parameter, all other resources will be created in **Central US** region. If you want to change it, edit the **main.json** file located in the **Deployment** folder, using an Azure Region code that is valid for all resources. Just search for **centralus** and replace it with the code of the Azure Region you want to use. You can verify [here](https://azure.microsoft.com/en-us/global-infrastructure/services/) the services per region availability. The required services are App Service, Azure Cognitive Search, and Storage account.
+
+### Deployment - Other languages
+
+EN is the default language. To change it, you just need to, before the deployment process above, modify the following files within the deployment folder:
+
++ **base-index.json**: replace the analyzers, from **standard.lucene** to the [supported language analyzer you want](https://docs.microsoft.com/en-us/azure/search/index-add-language-analyzers#language-analyzer-list) 
+
++ **base-skills.json**: replace the default Language codes, from **en** to the supported language you want:
+  + For skill #1, OCR supported languages are [here](https://docs.microsoft.com/en-us/azure/search/cognitive-search-skill-ocr#skill-parameters)
+  + For skill #3, Split Text supported languages are [here](https://docs.microsoft.com/en-us/azure/search/cognitive-search-skill-textsplit#skill-parameters)
+  + For all other skills where "en" is used as a default language, Key Phrases and Entity Recognition supported languages are [here](https://docs.microsoft.com/en-us/azure/cognitive-services/text-analytics/language-support)
 
 ## Datasets
 
@@ -63,8 +82,8 @@ As you can see in the last optional parameter above, we offer 3 sample datasets.
 
 | Dataset    | Size            | Suggested terms for your search |
 | ---------- | --------------  | ------------------------------- |
-| Healthcare | 90 MB, 80 files | diabetes, high blood pressure, heart disease, heart attack, cigarettes, overweight, patient readmission, treatments, risks |
-| Oil & Gas  | 61 MB, 29 files | upstream, downstream, pollution, crude oil, real time leak detection, peipeline control center, transient models  |
+| Healthcare | 86 MB, 78 files | diabetes, high blood pressure, heart disease, heart attack, cigarettes, overweight, patient readmission, treatments, risks |
+| Oil & Gas  | 56 MB, 24 files | upstream, downstream, pollution, crude oil, real time leak detection, peipeline control center, transient models  |
 | Retail     | 39 MB, 31 files | pipeline management, customer profiling, profile, estimation, consumption, predictive analytics, time series analysis, seasonality, retail marketing, logistics |
 
 These 3 datasets include documents types that will leverage Cognitive Search and Cognitive Services AI capabilities. The types are:
@@ -75,6 +94,18 @@ These 3 datasets include documents types that will leverage Cognitive Search and
 + Pdfs
 
 For more information about the datasets, including its sources and licencese, click [here](../UseOfDatasets/readme.md).
+
+When you are running the deployment for one of these datasets, meaning that you are using the ```-sampleCategory``` parameter, the data is not downloaded into your local computer, the deployment reads that data from an Azure Storage Account.
+
+## Uploading Files
+
+This solution allows you to upload files through its web interface, with 2 limitations: files up to 30 MB and up to 10 files at a time.
+
+But there is an alternative. You can send files directly to the storage account of the solution and run the indexer manually. To do it, follow these steps:
+
+1. Upload the files to the solution storage account, using your preferred method: [Azcopy](https://docs.microsoft.com/en-us/azure/storage/common/storage-use-azcopy-v10), [Azure Portal](https://docs.microsoft.com/en-us/azure/storage/blobs/storage-quickstart-blobs-portal), [Azure Storage Explorer](https://azure.microsoft.com/en-us/features/storage-explorer/), etc. Look for storage account in the resource group created by the deployment. **Place the files within the same container of the other documents**.
+
+1. Run the indexer manually: In the Azure Portal, again navigate to the resource group created by the deployment. Find the Azure Search service, open it, and go the indexers tab. You will see only one indexer, click on it and another tab will be opened. Just click “run” and the new files will be ingested.
 
 ## Power BI Report
 
@@ -116,9 +147,12 @@ This solution was not designed to provide SLA, it is an accelerator and a showca
 
 > If you want to eliminate the costs at any moment after the deployment, we recommend you delete the created **resource group**.
 
-## Additional Content - Knowledge Mining
+## Key Links
 
-+ [ACE Team Blog](http://aka.ms/ACE-Blog)
-+ [ACE Team KMA Demo](http://aka.ms/kma)
-+ [Learn how to use Cognitive Search on Audio Files](https://techcommunity.microsoft.com/t5/AI-Customer-Engineering-Team/Mine-knowledge-from-audio-files-with-Microsoft-AI/ba-p/781957)
-+ [Knowledge Mining Bootcamp](http://aka.ms/kmb)
++ [KMA Demos Homepage](http://aka.ms/kma)
++ [KMA Source Code](https://github.com/Azure/AIPlatform/tree/master/end-to-end-solutions/kma/src)
++ [KMA 1-Click Deployment](https://aka.ms/kmadeployment)
++ [KMA Blog Announcement](https://techcommunity.microsoft.com/t5/AI-Customer-Engineering-Team/Announcement-Knowledge-Mining-Solution-Accelerator-KMA-v1-0/ba-p/805889)
++ [ACE Team Blog Homepage](http://aka.ms/ACE-Blog)
++ [ACE Team Blog - Cognitive Search on Audio Files](https://techcommunity.microsoft.com/t5/AI-Customer-Engineering-Team/Mine-knowledge-from-audio-files-with-Microsoft-AI/ba-p/781957)
++ [KMB - Knowledge Mining Bootcamp](http://aka.ms/kmb)
