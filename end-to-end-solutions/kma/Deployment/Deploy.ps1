@@ -20,9 +20,11 @@ if($uniqueName -eq "default")
     break;
 }
  
+$uniqueName = $uniqueName.Replace('[^a-z0-9]',"").ToLower()
 $lenght = $uniqueName.Length
-$uniqueName = $uniqueName.Substring(0,17-$lenght)
-$uniqueName = $uniqueName.Replace('[^a-z0-9]',"").ToLower();
+if ($lenght -ge 16){
+    $uniqueName = $uniqueName.Substring(0,16)
+} 
 
 $prefix = $uniqueName
 if($resourceGroup -eq "default"){
