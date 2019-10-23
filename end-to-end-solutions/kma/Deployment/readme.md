@@ -45,31 +45,24 @@ You need to change PowerShell permissions to run all necessary commands:
 
 ## Deployment
 
-1. Choose a name that is between 3 and 16 characters in length. This string will be used as a prefix for all service names and URLs. Special characters will be removed and only the first 16 positions will be considered. Please check the **Mandatory Parameters** section below for more details.
+1. **Choose a unique name**, with a size between 3 and 16 characters. The unique name must follow Azure storage accounts naming [restrictions](https://docs.microsoft.com/en-us/azure/architecture/best-practices/resource-naming#storage). It will be used as a prefix for all service names and URLs, and must be unique in Azure as a whole. Special characters will be removed and only the first 16 positions will be considered. Simple strings like "test", or any previously used name, will cause error in the middle of the deployment execution. In this case, we suggest you to delete de resource group created and re-run the deployment script with another unique name.
 
-1. If you don't want to deploy to the default subscription, get the subscription id from the Azure Portal. Please check the **Mandatory Parameters** section below for more details
+1. Using the unique name of the previous items, **run** following command: `.\Deploy.ps1 -uniqueName <unique_name>` .
 
-1. Using the information collected in the 2 previous items, run following command: `.\Deploy.ps1 -uniqueName <unique_name> -subscriptionId <subscription_id>` .
-
-1. If you are not logged in, the script will ask you to do it.
+1. If you are not logged in, the script will ask you to do it. Depending on the Azure region, and how much busy it is, your deployment can take up to 20 minutes. Wait until the end of the script execution and be aware of any errors.
 
 In the end of deployment, the script will open the demo web UI page in your default browser. There will be no data. Use the **Upload Files** link to upload your data. You may need to wait for 1 to 4 minutes for the indexing to finish before querying any data. It will also print the storage account name and key for Power BI report.
 
-### Mandatory Parameters
-
-+ ```-uniqueName```: The unique name must follow Azure storage accounts naming restrictions: lowercase, alphanumeric, etc. For more information, click [here](https://docs.microsoft.com/en-us/azure/architecture/best-practices/resource-naming#storage). The deployment script also may fail since the final URLs of the services must be unique. The message is "... a service with the same name is already in use...". In this case, use another uniqueName for your deployment.
-
-+ ```-subscriptionId```: The id of the subscription that you want to use. The value **default** is also accepted, meaning that your used default subscription will be used.
-
 ### Optional Parameters
 
-+ ```-resourceGroup```: The resource group name. By default it will use the informed **-uniqueName**
-+ ```-location```: The location of the resource group. By default it will be **centralus**
-+ ```-sampleCategory```: The sample dataset which you want to initialize your deployment. By default it will be **none**, meaning that your deployment will be created without any data. If used, the value should be one of the followings: **healthcare**, **oilandgas**, or **retail**
++ ```-subscriptionId```: The id of the subscription that you want to use, that can be found in the Azure Portal. If not informed, your account default subscription will be used.
++ ```-resourceGroup```: The resource group name. If not informed, a new one will be created, using the informed **-uniqueName**.
++ ```-location```: The Azure region for all of the services and the resource group, in case that the above parameter if not informed. By default it will be **centralus**. You need to use the region code, not the display name. Choose a [valid region](https://azure.microsoft.com/en-us/global-infrastructure/services/) for Azure Cognitive Search and Azure Cognitive Services.
++ ```-sampleCategory```: The sample dataset which you want to initialize your deployment. By default it will be **none**, meaning that your deployment will be created without any data. If used, the value should be one of the followings: **healthcare**, **oilandgas**, or **retail**. If you access the web user interface before the end of the deployment, you will see healthcare data.
 
-### Location of the Resources
+A sample hypothetical **retail** deployment for **France Central** region, with all optional parameters would be:
 
-While the resource group location can be set with the ```-location``` parameter, all other resources will be created in **Central US** region. If you want to change it, edit the **main.json** file located in the **Deployment** folder, using an Azure Region code that is valid for all resources. Just search for **centralus** and replace it with the code of the Azure Region you want to use. You can verify [here](https://azure.microsoft.com/en-us/global-infrastructure/services/) the services per region availability. The required services are App Service, Azure Cognitive Search, and Storage account.
+`.\Deploy.ps1 -uniqueName <unique_name> -subscriptionId <your _subscriptionId> -resourceGroup <your_existent_resource_group> -location <francecentral> -sampleCategory retail`
 
 ### Deployment - Other languages
 
@@ -111,7 +104,7 @@ But there is an alternative. You can send files directly to the storage account 
 
 1. Upload the files to the solution storage account, using your preferred method: [Azcopy](https://docs.microsoft.com/en-us/azure/storage/common/storage-use-azcopy-v10), [Azure Portal](https://docs.microsoft.com/en-us/azure/storage/blobs/storage-quickstart-blobs-portal), [Azure Storage Explorer](https://azure.microsoft.com/en-us/features/storage-explorer/), etc. Look for storage account in the resource group created by the deployment. **Place the files within the same container of the other documents**.
 
-1. Run the indexer manually: In the Azure Portal, again navigate to the resource group created by the deployment. Find the Azure Search service, open it, and go the indexers tab. You will see only one indexer, click on it and another tab will be opened. Just click “run” and the new files will be ingested.
+2. Run the indexer manually: In the Azure Portal, again navigate to the resource group created by the deployment. Find the Azure Search service, open it, and go the indexers tab. You will see only one indexer, click on it and another tab will be opened. Just click “run” and the new files will be ingested.
 
 ## Power BI Report
 
