@@ -55,6 +55,11 @@ function UpdateResults(data, q) {
         var highlightedSummary = highlight(summary, q);
         var tags = GetTagsHTML(result);
 
+        var buttonIcon = "expand.png";
+        if (result.tagDisplay === "block") {
+            buttonIcon = "collapse.png"
+        }
+
         if (path !== null) {
             var classList = "results-div ";
             if (i === 0) classList += "results-sizer";
@@ -66,6 +71,7 @@ function UpdateResults(data, q) {
                                     <div class="search-result">
                                         <img class="img-result" style='max-width:100%;' src="${path}"  onclick="ShowDocument('${id}');"/>
                                         <div class="results-header">
+
                                             <h4>${name}
                                                 <img src="/images/${buttonIcon}" height="30px" onclick="ShowHideTags(${i});">
                                             </h4>
@@ -133,10 +139,6 @@ function UpdateResults(data, q) {
                     icon = "ms-Icon--ExcelDocument";
                 }
 
-                var buttonIcon = "expand.png";
-                if (result.tagDisplay === "block") {
-                    buttonIcon = "collapse.png"
-                }
 
                 resultsHtml += `<div id="resultdiv${i}" class="${classList}">
                                     <div class="search-result">

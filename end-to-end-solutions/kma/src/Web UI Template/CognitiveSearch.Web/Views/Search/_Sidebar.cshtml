@@ -41,7 +41,18 @@
                     type: "GET",
                     url: `${apiUrl}/suggestions?search=${q}`,
                     success: function (data) {
-                        response(data);
+                        // TODO: created a bug. This should be done in the server side. The $top is not working
+                        var lookup = {};
+                        var items = data;
+                        var result = [];
+
+                        for (var item, i = 0; item = items[i++];) {
+                            if (!(item in lookup)) {
+                                lookup[item] = 1;
+                                result.push(item);
+                            }
+                        }
+                        response(result);
                     }
                 });
             },
