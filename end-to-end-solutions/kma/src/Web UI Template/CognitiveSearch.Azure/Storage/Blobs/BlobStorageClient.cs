@@ -52,6 +52,13 @@ namespace CognitiveSearch.Azure.Storage.Blobs
             }
         }
 
+        public static async Task<bool> BlobExistsAsync(BlobStorageConfig storageConfig, string blobName)
+        {
+            var container = await GetContainerAsync(storageConfig);
+            var blob = container.GetBlockBlobReference(blobName);
+            return await blob.ExistsAsync();
+        }
+
         /// <summary>
         /// Retrieves a list of the names of blobs in a container.
         /// </summary>

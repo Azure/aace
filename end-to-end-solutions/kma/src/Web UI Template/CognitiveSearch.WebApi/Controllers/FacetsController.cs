@@ -41,8 +41,18 @@ namespace CognitiveSearch.WebApi.Controllers
             List<object> result = new List<object>();
             foreach (string name in _searchClient.Model.Facets.Select(f => f.Name))
             {
-                string text = await BlobStorageClient.ReadBlobAsync(config, string.Format("{0}.txt", name.Replace(" ", "").ToLower()));
-                result.Add(new { name = name, restrictionList = text });
+                var fileName = string.Format("{0}.txt", name.Replace(" ", "").ToLower());
+                if (await BlobStorageClient.BlobExistsAsync(config, fileName))
+                {
+                    string text = await BlobStorageClient.ReadBlobAsync(config, fileName);
+                    result.Add(new { name = name, restrictionList = text });
+                }
+                else
+                {
+                    await BlobStorageClient.UploadBlobAsync(config, fileName, "");
+
+                    result.Add(new { name = name, restrictionList = "" });
+                }
             }
             return await Task.FromResult(new JsonResult(result));
         }
