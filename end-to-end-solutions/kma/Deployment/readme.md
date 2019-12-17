@@ -87,7 +87,7 @@ EN is the default language. To change it, you just need to, before the deploymen
       "filterable": true,
       "retrievable": true,
       "searchable": true
-    }
+}
 ```
 
 ## Datasets
