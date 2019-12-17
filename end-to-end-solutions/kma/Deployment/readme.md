@@ -64,7 +64,7 @@ A sample hypothetical **retail** deployment for **France Central** region, with 
 
 `.\Deploy.ps1 -uniqueName <unique_name> -subscriptionId <your _subscriptionId> -resourceGroup <your_existent_resource_group> -location <francecentral> -sampleCategory retail`
 
-### Deployment - Other languages
+### Customized Deployment - Other languages
 
 EN is the default language. To change it, you just need to, before the deployment process above, modify the following files within the deployment folder:
 
@@ -74,6 +74,21 @@ EN is the default language. To change it, you just need to, before the deploymen
   + For skill #1, OCR supported languages are [here](https://docs.microsoft.com/en-us/azure/search/cognitive-search-skill-ocr#skill-parameters)
   + For skill #3, Split Text supported languages are [here](https://docs.microsoft.com/en-us/azure/search/cognitive-search-skill-textsplit#skill-parameters)
   + For all other skills where "en" is used as a default language, Key Phrases and Entity Recognition supported languages are [here](https://docs.microsoft.com/en-us/azure/cognitive-services/text-analytics/language-support)
+   
+ ### Customized Deployment - Other Facets
+ 
+ The interface will recognize all facets in your index and show them as drill down (or filtering) options on the left. The **required ** properties for new facetable fields are:
+
+```json
+{
+      "name": "<your-new-facetable-field-name>",
+      "type": "<your-new-facetable-field-type",
+      "facetable": true,
+      "filterable": true,
+      "retrievable": true,
+      "searchable": true
+    }
+```
 
 ## Datasets
 
