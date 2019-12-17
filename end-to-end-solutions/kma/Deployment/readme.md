@@ -77,7 +77,7 @@ EN is the default language. To change it, you just need to, before the deploymen
    
  ### Customized Deployment - Other Facets
  
- The interface will recognize all facets in your index and show them as drill down (or filtering) options on the left. The **required ** properties for new facetable fields are:
+ The interface will recognize all facets in your index and show them as drill down (or filtering) options on the left. The **required** properties for new facetable fields are:
 
 ```json
 {
