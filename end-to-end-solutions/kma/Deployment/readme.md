@@ -75,20 +75,21 @@ EN is the default language. To change it, you just need to, before the deploymen
   + For skill #3, Split Text supported languages are [here](https://docs.microsoft.com/en-us/azure/search/cognitive-search-skill-textsplit#skill-parameters)
   + For all other skills where "en" is used as a default language, Key Phrases and Entity Recognition supported languages are [here](https://docs.microsoft.com/en-us/azure/cognitive-services/text-analytics/language-support)
    
- ### Customized Deployment - Other Facets
+### Customized Deployment - Other Facets
  
- The interface will recognize all facets in your index and show them as drill down (or filtering) options on the left. The **required** properties for new facetable fields are:
+The interface will recognize all facets in your index and show them as drill down (or filtering) options on the left. The **required** properties for new facetable fields are:
 
 ```json
 {
       "name": "<your-new-facetable-field-name>",
-      "type": "<your-new-facetable-field-type",
+      "type": "Collection(Edm.String)",
       "facetable": true,
       "filterable": true,
       "retrievable": true,
       "searchable": true
 }
 ```
+If your new facet is a simple string, instead of a collection, use the [Azure Cognitive Search Split Skill](https://docs.microsoft.com/en-us/azure/search/cognitive-search-skill-textsplit) with a maximumPageLength bigger than your string length. This will create and array of one position, what will allow you to load the data into a collection.
 
 ## Datasets
 
