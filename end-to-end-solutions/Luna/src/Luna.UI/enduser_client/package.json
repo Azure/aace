@@ -1,0 +1,57 @@
+{
+  "name": "isv_client",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@loadable/component": "^5.10.3",
+    "@types/node": "12.12.5",
+    "@types/react": "^16.9.16",
+    "@types/react-dom": "16.9.3",
+    "@uifabric/fluent-theme": "^0.16.7",
+    "aws-amplify": "^1.2.4",
+    "axios": "^0.19.0",
+    "formik": "^2.0.3",
+    "json-to-url": "^1.0.5",
+    "office-ui-fabric-react": "^6.174.0",
+    "react": "^16.12.0",
+    "react-adal": "^0.5.0",
+    "react-aad-msal": "^1.1.2",
+    "react-dom": "^16.11.0",
+    "react-router-dom": "^5.0.1",
+    "react-scripts": "^3.3.0",
+    "react-storage-hooks": "^3.0.3",
+    "react-toastify": "^5.4.1",
+    "typescript": "3.6.4",
+    "uuid": "^3.3.3",
+    "yup": "^0.27.0",
+    "query-string": "^6.9.0"
+  },
+  "devDependencies": {
+    "@types/react-router-dom": "^4.3.5",
+    "@types/uuid": "^3.4.6",
+    "@types/yup": "^0.26.23",
+    "@types/react-adal": "^0.4.2"
+  },
+  "scripts": {
+    "start": "PORT=44321 HTTPS=true react-scripts start",
+    "winstart": "set HTTPS=true&&set port=44321&&react-scripts start",    
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": "react-app"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}

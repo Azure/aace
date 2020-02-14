@@ -1,0 +1,898 @@
+.App {
+  text-align: center;
+  height: 100%;
+  margin: 0 auto;
+}
+
+.App-logo {
+  height: 40vmin;
+}
+
+.App-header {
+  background-color: #282c34;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+
+.header-logo-separator {
+  width: 0;
+  height: 33px;
+  border: solid 1px rgba(255, 255, 255, 0.5);
+}
+
+.App-link {
+  color: #09d3ac;
+}
+.innercontainer {
+  width: 96%;
+  margin: 0 auto;
+}
+
+.innercontainer .ms-Stack:first-child {
+  margin: 0;
+}
+
+.txtfieldlabel {
+  width: 10%;
+  float: left;
+  text-align: left;
+}
+.txtfield {
+  width: 100px;
+  text-align: left;
+}
+.txtFormField {
+  width: 200px;
+}
+
+div.ms-TextField > span {
+  position: absolute;
+  left: 0;
+  z-index: 1000;
+  width: 100%;
+  top: 30px !important;
+}
+div.ms-TextField > span div {
+  background-color: #a80000;
+}
+
+div.ms-TextField > span div span {
+  color: white;
+  margin-left: 5px;
+  margin-right: 5px;
+  margin-bottom: 5px;
+}
+.ms-Dropdown + div,
+.ms-Dropdown + .ms-layer + div {
+  background-color: #a80000;
+  color: #fff;
+  width: 98%;
+  padding-left: 5px;
+  padding-right: 3px;
+  padding-bottom: 5px;
+}
+.txtfield .ms-TextField-errorMessage,
+.txtFormField .ms-TextField-errorMessage {
+  margin-left: 20px;
+}
+
+.ms-TextField.txtfield span {
+  float: left;
+  width: 100%;
+}
+.noborder.offer {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.noborder.offer .tdborder {
+  border: 1px solid #eaeaea;
+}
+
+.noborder input[type="text"] {
+  font-size: 13px;
+}
+
+.noborder input[type="text"],
+.noborder .ms-TextField-fieldGroup {
+  border: none !important;
+}
+
+.noborder input[type="text"]:focus {
+  /*border: 1px solid #66afe9 !important;*/
+  outline: 0;
+}
+.noborder.offer th {
+  text-align: left;
+  font-weight: normal;
+  font-size: 12px;
+}
+.noborder.offer td {
+  /* height: 100px; */
+  text-align: left;
+}
+.ms-TextField .ms-TextField-field,
+.ms-TextField .ms-TextField-fieldGroup {
+  height: 40px;
+}
+.ms-DetailsList-headerWrapper {
+  float: left;
+}
+
+/*ipaddress*/
+.ipaddresstable {
+  width: 100%;
+}
+.ipaddresstable,
+.ipaddresstd {
+  border-collapse: collapse;
+}
+.ipaddressmodal .ms-Modal-scrollableContent {
+  width: 230px;
+}
+.ipaddressmodal .ms-Dialog-main {
+  min-width: 0px;
+}
+.ipaddressmodal .ipinput {
+  margin-bottom: 5px;
+  margin-right: 10px;
+  float: left;
+}
+.ipaddressmodal .ipdelete {
+  font-size: 20px;
+  line-height: 40px;
+  display: flex;
+  width: 10%;
+}
+.errormessage {
+  animation-name: css-1, css-14;
+  animation-duration: 0.367s;
+  animation-timing-function: cubic-bezier(0.1, 0.9, 0.2, 1);
+  animation-fill-mode: both;
+  font-family: "Segoe UI", "Segoe UI Web (West European)", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue",
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  font-size: 12px;
+  font-weight: 400;
+  color: rgb(164, 38, 44);
+  margin-top: 0px;
+  margin-right: 0px;
+  margin-bottom: 0px;
+  margin-left: 0px;
+  padding-top: 5px;
+  display: flex;
+  align-items: center;
+}
+
+/*Plan*/
+.frmplan .txtfieldlabel {
+  width: 7%;
+}
+.w10per {
+  width: 10%;
+}
+.w100px {
+  width: 100px;
+}
+.w200px {
+  width: 200px;
+}
+.w150px {
+  width: 150px;
+}
+.w220px {
+  width: 230px;
+}
+.m1per {
+  margin-left: 1% !important;
+}
+.planmodal .ms-Dialog-main {
+  width: 840px;
+  max-width: 840px;
+}
+
+.planmodal .ms-Dialog-actions {
+  height: 60px;
+}
+/*Plan ends*/
+
+/*Error Message */
+
+div.is-selected > button::after {
+  border-left: solid 5px #0078d4;
+}
+
+.offer-details-separator {
+  width: 0;
+  height: 30px;
+  margin-right: 45px;
+  border: solid 1px rgba(102, 102, 102, 0.5);
+}
+
+/* zeplin styles for site */
+:root {
+  --drkblue: #004578;
+  --stroke: #f4f4f4;
+  --text: #333333;
+  --lightgraybg: #eaeaea;
+  --button_blue: #0078d7;
+  --button-hover: #005a9e;
+  --hint_text: #777777;
+  --white: #ffffff;
+  --gray: #a6a6a6;
+}
+
+.review-header {
+  font-family: "Segoe UI", "Segoe UI Web (West European)", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue",
+    sans-serif;
+  background-color: white;
+  font-size: 14px;
+  font-weight: normal;
+  font-stretch: normal;
+  font-style: normal;
+  line-height: 5.56;
+  letter-spacing: normal;
+  text-align: left;
+  color: var(--text);
+  border-bottom: solid 1px var(--lightgraybg);
+}
+
+.review-section-label {
+  width: 100%;
+  font-size: 15px;
+  font-weight: 600;
+  font-stretch: normal;
+  font-style: normal;
+  line-height: 1.33;
+  letter-spacing: normal;
+  text-align: left;
+  color: var(--drkblue);
+  border-bottom: solid 1px var(--lightgraybg);
+  margin-bottom: 10px;
+  padding-bottom: 10px;
+}
+
+.nav-header {
+  height: 40px;
+  border-top: solid 1px var(--lightgraybg);
+  border-bottom: solid 1px var(--lightgraybg);
+  font-family: "Segoe UI", "Segoe UI Web (West European)", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue",
+    sans-serif;
+  background-color: white;
+  font-size: 14px;
+  font-weight: normal;
+  font-stretch: normal;
+  font-style: normal;
+  line-height: 5.56;
+  letter-spacing: normal;
+  text-align: center;
+  color: var(--text);
+}
+
+.offer-details-header {
+  font-family: "Segoe UI", "Segoe UI Web (West European)", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue",
+    sans-serif;
+  background-color: white;
+  font-size: 14px;
+  font-weight: normal;
+  font-stretch: normal;
+  font-style: normal;
+  line-height: 5.56;
+  letter-spacing: normal;
+  text-align: left;
+  color: var(--text);
+}
+
+.offer-details-page-info-header {
+  font-size: 15px;
+  text-align: left;
+  color: var(--text);
+}
+
+/* form styling */
+
+.form_label {
+  font-size: 14px;
+  text-align: left;
+  margin-bottom: 7px;
+  color: var(--text);
+}
+
+.form_textbox {
+  width: 370px;
+  height: 32px;
+  font-size: 14px;
+  text-align: left;
+  color: var(--text);
+}
+
+.form_textboxmodal {
+  width: 252px;
+  height: 32px;
+  font-size: 14px;
+  text-align: left;
+  color: var(--text);
+}
+
+.form_row {
+  margin-bottom: 16px !important;
+}
+/* end form styling */
+
+.isv_title {
+  font-family: "Segoe UI", "Segoe UI Web (West European)", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue",
+    sans-serif;
+  font-size: 24px;
+  font-weight: 300;
+  font-stretch: normal;
+  font-style: normal;
+  line-height: 1.33;
+  letter-spacing: normal;
+  text-align: left;
+  color: var(--white);
+}
+
+.header_text {
+  font-family: "Segoe UI", "Segoe UI Web (West European)", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue",
+    sans-serif;
+  font-size: 21px;
+  font-weight: 300;
+  font-stretch: normal;
+  font-style: normal;
+  line-height: normal;
+  letter-spacing: normal;
+  color: var(--text);
+}
+
+.Review-Labels {
+  font-family: "Segoe UI", "Segoe UI Web (West European)", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue",
+    sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  font-stretch: normal;
+  font-style: normal;
+  line-height: 1.33;
+  letter-spacing: normal;
+  text-align: left;
+  color: var(--drkblue);
+}
+
+.hyperlink {
+  font-family: "Segoe UI", "Segoe UI Web (West European)", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue",
+    sans-serif;
+  font-size: 15px;
+  font-weight: normal;
+  font-stretch: normal;
+  font-style: normal;
+  line-height: 1.33;
+  letter-spacing: normal;
+  text-align: center;
+  color: var(--button_blue);
+}
+
+.description_text {
+  font-family: "Segoe UI", "Segoe UI Web (West European)", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue",
+    sans-serif;
+  font-size: 15px;
+  font-weight: normal;
+  font-stretch: normal;
+  font-style: normal;
+  line-height: normal;
+  letter-spacing: normal;
+  color: var(--text);
+}
+
+.button_text {
+  font-family: "Segoe UI", "Segoe UI Web (West European)", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue",
+    sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  font-stretch: normal;
+  font-style: normal;
+  line-height: normal;
+  letter-spacing: normal;
+  color: var(--white);
+}
+
+.body_text {
+  font-family: "Segoe UI", "Segoe UI Web (West European)", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue",
+    sans-serif;
+  font-size: 14px;
+  font-weight: normal;
+  font-stretch: normal;
+  font-style: normal;
+  line-height: 1.36;
+  letter-spacing: normal;
+  text-align: left;
+  color: var(--text);
+}
+
+.table_text {
+  font-family: "Segoe UI", "Segoe UI Web (West European)", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue",
+    sans-serif;
+  font-size: 14px;
+  font-weight: normal;
+  font-stretch: normal;
+  font-style: normal;
+  line-height: normal;
+  letter-spacing: normal;
+  color: var(--text);
+}
+
+.alert_banner_text {
+  font-family: "Segoe UI", "Segoe UI Web (West European)", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue",
+    sans-serif;
+  font-size: 12px;
+  font-weight: normal;
+  font-stretch: normal;
+  font-style: normal;
+  line-height: 1.33;
+  letter-spacing: normal;
+  text-align: left;
+  color: var(--text);
+}
+
+.col_label {
+  font-family: "Segoe UI", "Segoe UI Web (West European)", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue",
+    sans-serif;
+  font-size: 12px;
+  font-weight: normal;
+  font-stretch: normal;
+  font-style: normal;
+  line-height: normal;
+  letter-spacing: normal;
+  color: var(--text);
+}
+
+.button_text_alt {
+  font-family: "Segoe UI", "Segoe UI Web (West European)", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue",
+    sans-serif;
+  font-size: 12px;
+  font-weight: normal;
+  font-stretch: normal;
+  font-style: normal;
+  line-height: 1.33;
+  letter-spacing: normal;
+  color: #106ebe;
+}
+
+/* end zeplin styles for site */
+
+.deleteicon {
+  font-size: 25px;
+  color: rgb(0, 120, 212);
+  cursor: pointer;
+}
+.ipaddresstable th {
+  border-collapse: collapse;
+}
+#tblOffers th,
+.fontweight-normal,
+.ipaddresstable th,
+.armparamtable th,
+.planstable th {
+  font-weight: normal;
+  font-size: 12px;
+}
+.armparamtable tbody td {
+  text-align: left;
+}
+
+.addbutton {
+  background: #fff !important;
+  border: 1px solid rgb(0, 120, 212) !important;
+  color: rgb(0, 120, 212) !important;
+  padding-left: 1px !important;
+}
+.addbutton i {
+  /* margin-right: 16px; */
+  font-size: 15px;
+  padding: 8px;
+}
+.border,
+.noborder tbody tr {
+  border: 1px solid rgb(232, 232, 232);
+}
+.borderright,
+.noborder tbody td {
+  border-right: 1px solid #efefef;
+}
+.noborder tbody td:last-child {
+  border: none;
+}
+
+.borderbottom,
+.noborder thead tr {
+  border-bottom: 1px solid rgb(232, 232, 232);
+}
+.armtemplatefile {
+  position: absolute;
+}
+
+.armtemplatefile input {
+  opacity: 0;
+  float: left;
+}
+.armtemplatefile .filetittle {
+  width: 300px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  /* display: block; */
+  display: list-item;
+  float: left;
+}
+.armtemplatefile .browsebutton {
+  /* background-color: #0078d7;
+  color: #fff;
+  padding: 3px;
+  vertical-align: middle; */
+
+  background-color: #0078d7;
+  color: #fff;
+  padding: 14px;
+  vertical-align: middle;
+  padding-bottom: 11px;
+}
+.disabled {
+  background-color: rgb(243, 242, 241) !important;
+  color: rgb(161, 159, 157) !important;
+}
+.armfileupload .errormessage {
+  /* width: 100%;
+  animation-name: css-1, css-14;
+  animation-duration: 0.367s;
+  animation-timing-function: cubic-bezier(0.1, 0.9, 0.2, 1);
+  animation-fill-mode: both;
+  font-family: "Segoe UI", "Segoe UI Web (West European)", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue",
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  font-size: 12px;
+  font-weight: 400;
+  background-color: rgb(164, 38, 44);
+  color: #fff;
+  margin-top: 0px;
+  margin-right: 0px;
+  margin-bottom: 0px;
+  margin-left: 0px;
+  padding-top: 5px;
+  display: flex;
+  align-items: center; */
+  width: 285px;
+  animation-name: css-1, css-14;
+  animation-duration: 0.367s;
+  animation-timing-function: cubic-bezier(0.1, 0.9, 0.2, 1);
+  animation-fill-mode: both;
+  font-family: "Segoe UI", "Segoe UI Web (West European)", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue",
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  font-size: 12px;
+  font-weight: 400;
+  background-color: rgb(164, 38, 44);
+  color: #fff;
+  margin-top: 0px;
+  padding: 5px;
+  display: flex;
+  align-items: center;
+  padding-right: 2px;
+}
+
+/*Subscription*/
+
+#tblSubscription {
+  text-align: left;
+}
+#tblSubscription tr:nth-child(even) {
+  background: #edebe9;
+}
+#tblSubscription tr:nth-child(odd) {
+  background: white;
+}
+
+#tblSubscription th,
+.fontweight-normal {
+  font-weight: normal;
+  font-size: 12px;
+}
+
+table.offer thead tr th {
+  padding-bottom: 14px;
+  font-size: 12px;
+}
+.subscriptionlist {
+  margin-top: 1% !important;
+}
+
+.filterheader .statusdrp {
+  float: left;
+}
+.filterheader .statusdrp {
+  width: 160px;
+  height: 40px;
+}
+.filterheader .statusdrp span {
+  height: 40px;
+  line-height: 40px;
+}
+
+/* Enduser*/
+
+.landingpagecontainner .headertitle {
+  padding: 0 20px 0px 20px;
+}
+.button {
+  background-color: #004578 !important;
+}
+.mainlanding {
+  padding: 0 20px 20px 20px;
+}
+.mainlanding td {
+  text-align: left;
+  line-height: 30px;
+}
+
+.mainlanding {
+  width: 570px;
+}
+.mainlanding td:first-child {
+  text-align: left;
+}
+.mainlanding td:first-child span {
+  font-weight: 600;
+  color: #333333;
+}
+.mainlanding tr:last-child td:last-child span {
+  color: #787878;
+  font-weight: normal;
+}
+.mainlanding .greentextbox {
+  border: 1px solid #00af66;
+}
+.mainlanding .ms-TextField .ms-TextField-fieldGroup {
+  border-color: transparent;
+}
+.mainlanding .graydropdown {
+  color: #2288d8;
+}
+.graydropdown span {
+  background-color: #dedede;
+  color: #2288d8;
+}
+.graydropdown .ms-Dropdown-caretDownWrapper {
+  height: 30px;
+}
+.graydropdown .ms-Dropdown-caretDownWrapper i {
+  color: #2288d8;
+}
+.landing .ms-Layer.root-131 .ms-Callout-main {
+  background-color: #dedede;
+  border: 1px solid #2288d8;
+}
+.landing .ms-Layer.root-131 .ms-Callout-main .ms-Button-flexContainer {
+  color: #2288d8;
+}
+.updateplanmodal .ms-Dialog-main {
+  max-width: 440px;
+}
+.updateplanmodal .ms-Dialog-inner .ms-Dialog-header {
+  display: none;
+}
+.noborder.offergrid thead th {
+  font-weight: normal;
+}
+.noborder.offergrid tbody td {
+  border: none !important;
+  text-align: left;
+}
+.disablecheckbox {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  height: 20px;
+  width: 20px;
+  box-sizing: border-box;
+  transition-property: background, border, border-color;
+  transition-duration: 200ms;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.23, 1);
+  margin-right: 4px;
+  border-width: 1px;
+  border-style: solid;
+  border-color: rgb(200, 198, 196);
+  overflow: hidden;
+  border-radius: 2px;
+}
+.disablecheckbox .checkmark {
+  display: inline-block;
+  -webkit-font-smoothing: antialiased;
+  font-style: normal;
+  font-weight: normal;
+  /* speak: none; */
+  font-family: FabricMDL2Icons;
+  opacity: 0;
+  color: rgb(255, 255, 255);
+}
+.reviewoffer table {
+  line-height: 50px;
+}
+.reviewoffer .noborder tbody td {
+  border: 1px solid #a6a6a6;
+  border-left: 1px solid #a6a6a6;
+  border-right: 1px solid #a6a6a6;
+}
+.reviewoffer .noborder tbody td:first-child {
+  border-left: 1px solid #a6a6a6;
+}
+.reviewoffer .noborder tbody td:last-child {
+  border-right: 1px solid #a6a6a6;
+}
+.reviewoffer table tbody tr {
+  background-color: #eaeaea;
+  color: #000;
+}
+.reviewoffer table.offer thead tr th {
+  border-right: 1px solid #efefef;
+  padding: 5px;
+  line-height: 30px;
+}
+.reviewoffer table.offer thead tr th:last-child {
+  border-right: none;
+}
+.subbutton
+{
+  /* position: absolute;
+  top: 10%;
+  right: 5%; */
+  top: 0;
+  position: absolute;
+  right: 0;
+  margin-right: 5%;
+}
+.subscription-details-separator{
+  position: relative;
+  padding-left: 20px;
+  box-sizing: border-box;
+  float: left;
+  width: 70%;
+}
+.subscription-details-separator:after {
+  content: '';
+  border: solid 1px rgba(102, 102, 102, 0.5);
+  left: 0;
+  top: 0;
+  bottom: 0;
+  position: absolute;
+  margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+/*Loading css*/
+.loadingspinner .ms-Spinner-circle.ms-Spinner--large
+{
+  width: 100px;
+  height: 100px;
+}
+.spanner {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 100%;
+  display: block;
+  text-align: center;
+  height: 300px;
+  color: #fff;
+  transform: translateY(-50%);
+  z-index: 1000;
+  visibility: hidden;
+}
+
+.overlay {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  visibility: hidden;
+  top: 0;
+}
+
+.loader,
+.loader:before,
+.loader:after {
+  border-radius: 50%;
+  width: 2.5em;
+  height: 2.5em;
+  -webkit-animation-fill-mode: both;
+  animation-fill-mode: both;
+  -webkit-animation: load7 1.8s infinite ease-in-out;
+  animation: load7 1.8s infinite ease-in-out;
+}
+.loader {
+  color: #ffffff;
+  font-size: 5px;
+  margin: 0px auto;
+  position: relative;
+  text-indent: -9999em;
+  transform: translateZ(0);
+  animation-delay: -0.16s;
+  -webkit-transform: translateZ(0);
+  -ms-transform: translateZ(0);
+  -webkit-animation-delay: -0.16s;
+}
+.loader:before,
+.loader:after {
+  content: "";
+  position: absolute;
+  top: 0;
+}
+.loader:before {
+  left: -3.5em;
+  -webkit-animation-delay: -0.32s;
+  animation-delay: -0.32s;
+}
+.loader:after {
+  left: 3.5em;
+}
+@-webkit-keyframes load7 {
+  0%,
+  80%,
+  100% {
+    box-shadow: 0 2.5em 0 -1.3em;
+  }
+  40% {
+    box-shadow: 0 2.5em 0 0;
+  }
+}
+@keyframes load7 {
+  0%,
+  80%,
+  100% {
+    box-shadow: 0 2.5em 0 -1.3em;
+  }
+  40% {
+    box-shadow: 0 2.5em 0 0;
+  }
+}
+
+.show {
+  visibility: visible;
+}
+
+.spanner,
+.overlay {
+  opacity: 0;
+  -webkit-transition: all 0.3s;
+  -moz-transition: all 0.3s;
+  transition: all 0.3s;
+}
+
+.spanner.show,
+.overlay.show {
+  opacity: 0.7;
+  z-index: 9999;
+}
+
+/*Loading css*/
+.ms-Layer
+{
+  z-index: 999 !important;
+}
+
+.react-confirm-alert-overlay
+{
+  z-index: 9999 !important;;
+}
+.react-confirm-alert-button-group > button:first-child
+{
+  background: rgb(0, 120, 212) !important;
+  color:rgb(255, 255, 255) !important;
+}
+.react-confirm-alert-button-group > button:last-child
+{
+  background: rgb(234, 234, 234) !important;
+  color:rgb(51, 51, 51) !important;
+}
