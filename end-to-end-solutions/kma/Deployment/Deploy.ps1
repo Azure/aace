@@ -35,7 +35,7 @@ if($resourceGroup -eq "default"){
 
 if($subscriptionId -ne "default"){
     $context = Get-AzSubscription -SubscriptionId $subscriptionId
-    Set-AzContext @context
+    Set-AzContext $context
 }
 
 New-AzResourceGroup -Name $resourceGroupName -Location $location
