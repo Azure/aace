@@ -6,6 +6,8 @@
     [string]$location = "centralus",
 
     [string]$tenantId = "default",
+
+    [string]$accountId = "default",
       
     [string]$lunaServiceSubscriptionId = "default",
     
@@ -53,7 +55,7 @@
 
     [string]$firewallEndIpAddress = "clientIp",
 
-    [string]$buildLocation = "https://xiwutestai.blob.core.windows.net/toolsgroup",
+    [string]$buildLocation = "https://github.com/Azure/AIPlatform/raw/master/end-to-end-solutions/Luna/Resources/Builds/latest",
 
     [string]$companyName = "Microsoft",
 
@@ -238,8 +240,13 @@ $sqlServerAdminPasswordRaw = [System.Web.Security.Membership]::GeneratePassword(
 $sqlServerAdminPassword = ConvertTo-SecureString $sqlServerAdminPasswordRaw.ToString() -AsPlainText -Force
 
 $currentContext = Get-AzContext
-$accountId = $currentContext.Account.Id
-$tenantId = $currentContext.Tenant.Id
+if ($accountId -eq "default"){
+    $accountId = $currentContext.Account.Id
+}
+
+if ($tenantId -eq "default"){
+    $tenantId = $currentContext.Tenant.Id
+}
 
 if ($userApplicationSubscriptionId -eq "default"){
     $userApplicationSubscriptionId = $currentContext.Subscription.Id
@@ -247,9 +254,6 @@ if ($userApplicationSubscriptionId -eq "default"){
 
 $currentUser = Get-AzADUser -Mail $accountId
 
-if ($currentUser -eq $null){
-    $currentUser = Get-AzADUser -Mail "xiwu@corp.microsoft.com"
-}
 
 if ($adminAccounts -eq "default"){
     $adminAccounts = $accountId
@@ -279,6 +283,11 @@ New-AzResourceGroupDeployment -ResourceGroupName $resourceGroupName `
                               -objectId $objectId `
                               -buildLocation $buildLocation
 
+
+$filter = "AppId eq '"+$webAppAADApplicationId+"'"
+$azureadapp = Get-AzureADApplication -Filter $filter
+$isNewApp = $azureadapp.Count -eq 0
+
 Write-Host "Create AAD application for webapp authentication."
 $replyUrls = New-Object System.Collections.Generic.List[System.String]
 #create AAD application for ISV App
@@ -298,22 +307,25 @@ $appId = Create-AzureADApplication -appName $webAppAADApplicationName -appId $we
 $webAppAADApplicationId = $appId
 Write-Host "AAD application created with id" $webAppAADApplicationId
 
-Start-Sleep 15
+if ($isNewApp){
 
-Write-Host "Creating Service Principal for webapp AAD application."
-New-AzureADServicePrincipal -AppId $webAppAADApplicationId
+    Start-Sleep 15
 
-$principalId = (Get-AzADServicePrincipal -ApplicationId $webAppAADApplicationId).id
-Write-Host "Service Principal created with id " $principalId
+    Write-Host "Creating Service Principal for webapp AAD application."
+    New-AzureADServicePrincipal -AppId $webAppAADApplicationId
 
-$filter = "AppId eq '"+$webAppAADApplicationId+"'"
-$azureadapp = Get-AzureADApplication -Filter $filter
-
-$identifierUri = 'api://'+$webAppAADApplicationId
-
-Set-AzureADApplication -ObjectId $azureadapp.ObjectId `
--Oauth2AllowImplicitFlow $True `
--IdentifierUris $identifierUri
+    $principalId = (Get-AzADServicePrincipal -ApplicationId $webAppAADApplicationId).id
+    Write-Host "Service Principal created with id " $principalId
+    
+    $filter = "AppId eq '"+$webAppAADApplicationId+"'"
+    $azureadapp = Get-AzureADApplication -Filter $filter
+    
+    $identifierUri = 'api://'+$webAppAADApplicationId
+    
+    Set-AzureADApplication -ObjectId $azureadapp.ObjectId `
+    -Oauth2AllowImplicitFlow $True `
+    -IdentifierUris $identifierUri
+}
 
 #create AAD application for Azure Marketplace auth
 Write-Host "Create AAD Application for Azure Marketplace authentication."
@@ -322,25 +334,31 @@ $azureMarketplaceAADApplicationId = $appId
 Write-Host "AAD application created with id " $azureMarketplaceAADApplicationId
 
 #create AAD application for ARM auth
+
+$filter = "AppId eq '"+$azureResourceManagerAADApplicationId+"'"
+$azureadapp = Get-AzureADApplication -Filter $filter
+$isNewApp = $azureadapp.Count -eq 0
+
 Write-Host "Creating AAD Application for Azure Resource Manager authentication."
 $appId = Create-AzureADApplication -appName $azureResourceManagerAADApplicationName -appId $azureResourceManagerAADApplicationId -keyVaultName $keyVaultName -secretName "arm-app-key" -multiTenant $False
 $azureResourceManagerAADApplicationId = $appId
 Write-Host "AAD application created with id" $azureResourceManagerAADApplicationId
 
+if ($isNewApp){
+    Start-Sleep 15
+    
+    Write-Host "Creating Service Principal for Azure Resource Manager AAD application."
+    New-AzureADServicePrincipal -AppId $azureResourceManagerAADApplicationId
+    
+    $principalId = (Get-AzADServicePrincipal -ApplicationId $azureResourceManagerAADApplicationId).id
+    Write-Host "Service principal is created with id " $principalId
+    
+    Write-Host "Assign subscription contribution role to the service principal."
+    $scope = '/subscriptions/'+$userApplicationSubscriptionId
+    NewAzureRoleAssignment -objectId $principalId -scope $scope -retryCount 10
+}
 
-Start-Sleep 15
-
-Write-Host "Creating Service Principal for Azure Resource Manager AAD application."
-New-AzureADServicePrincipal -AppId $azureResourceManagerAADApplicationId
-
-$principalId = (Get-AzADServicePrincipal -ApplicationId $azureResourceManagerAADApplicationId).id
-Write-Host "Service principal is created with id " $principalId
-
-Write-Host "Assign subscription contribution role to the service principal."
-$scope = '/subscriptions/'+$userApplicationSubscriptionId
-NewAzureRoleAssignment -objectId $principalId -scope $scope -retryCount 10
-
-#grant key vault access to AAD applications (ISV, user and API)
+#grant key vault access to API app
 Write-Host "Grant key vault access to API app"
 GrantKeyVaultAccessToWebApp -resourceGroupName $resourceGroupName -keyVaultName $keyVaultName -webAppName $apiWebAppName
 

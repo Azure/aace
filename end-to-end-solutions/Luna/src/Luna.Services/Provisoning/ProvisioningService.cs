@@ -71,12 +71,13 @@ namespace Luna.Services.Provisoning
             ProvisioningState.WebhookFailed,
             ProvisioningState.NotificationFailed,
             ProvisioningState.ManualActivationPending)]
-        [OutputStates(ProvisioningState.Succeeded, ProvisioningState.NotificationFailed)]
+        [OutputStates(ProvisioningState.Succeeded, 
+            ProvisioningState.NotificationFailed, 
+            ProvisioningState.ManualActivationPending)]
         public async Task<Subscription> ActivateSubscriptionAsync(Guid subscriptionId, string activatedBy = "system")
         {
             Subscription subscription = await _context.Subscriptions.FindAsync(subscriptionId);
             ValidateSubscriptionAndInputState(subscription);
-
 
             try 
             {
@@ -709,7 +710,7 @@ namespace Luna.Services.Provisoning
             if (!attribute.InputStates.Contains(targetState.ToString()))
             {
                 throw new LunaProvisioningException(
-                    $"Cannot transit to ${targetState.ToString()} state from method {callerName}.",
+                    $"Cannot transit to {targetState.ToString()} state from method {callerName}.",
                     false);
             }
 

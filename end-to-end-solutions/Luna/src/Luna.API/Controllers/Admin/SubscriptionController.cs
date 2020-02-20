@@ -241,25 +241,21 @@ namespace Luna.API.Controllers.Admin
             AADAuthHelper.VerifyUserAccess(this.HttpContext, _logger, true);
             _logger.LogInformation($"Activate subscription {subscriptionId}. Activated by {activatedBy}.");
 
-            if (await _subscriptionService.ExistsAsync(subscriptionId))
+            if (!await _subscriptionService.ExistsAsync(subscriptionId))
             {
-                _logger.LogInformation($"The specified subscription {subscriptionId} doesn't exist.");
-                // TODO: review the error message
-                throw new ArgumentException("The specified subscription doesn't exist.");
+                throw new LunaNotFoundUserException($"The specified subscription {subscriptionId} doesn't exist or you don't have permission to access it.");
             }
 
             Subscription sub = await _subscriptionService.GetAsync(subscriptionId);
 
             if (!sub.Status.Equals(nameof(FulfillmentState.PendingFulfillmentStart), StringComparison.InvariantCultureIgnoreCase))
             {
-                _logger.LogError($"The specified subscription is in {sub.Status} state. It can not be activated.");
-                throw new ArgumentException($"The specified subscription is in {sub.Status} state. It can not be activated.");
+                throw new LunaConflictUserException($"The specified subscription is in {sub.Status} state. It can not be activated.");
             }
 
             if (string.IsNullOrEmpty(activatedBy))
             {
-                _logger.LogError("The operator is not specified");
-                throw new ArgumentException("Need to specify the operation who is activating this subscription.");
+                throw new LunaBadRequestUserException("Need to specify the operation who is activating this subscription.", UserErrorCode.InvalidParameter);
             }
 
             return Ok(await _provisioningService.ActivateSubscriptionAsync(subscriptionId, activatedBy));
@@ -295,22 +291,19 @@ namespace Luna.API.Controllers.Admin
 
             if (!await _subscriptionService.ExistsAsync(subscriptionId))
             {
-                _logger.LogInformation($"The specified subscription {subscriptionId} doesn't exist.");
-                throw new ArgumentException("The specified subscription doesn't exist.");
+                throw new LunaNotFoundUserException($"The specified subscription {subscriptionId} doesn't exist or you don't have permission to access it.");
             }
 
             Subscription sub = await _subscriptionService.GetAsync(subscriptionId);
 
             if (!ProvisioningHelper.IsErrorOrWarningProvisioningState(sub.ProvisioningStatus))
             {
-                _logger.LogError($"Can not complete operation manually when provisioning in {sub.ProvisioningStatus} state.");
-                throw new ArgumentException($"Can not complete operation manually when provisioning in {sub.ProvisioningStatus} state.");
+                throw new LunaConflictUserException($"Can not complete operation manually when provisioning in {sub.ProvisioningStatus} state.");
             }
 
             if (string.IsNullOrEmpty(activatedBy))
             {
-                _logger.LogError("The operator is not specified");
-                throw new ArgumentException("Need to specify the operation who is activating this subscription.");
+                throw new LunaBadRequestUserException("Need to specify the operation who is activating this subscription.", UserErrorCode.InvalidParameter);
             }
 
             return Ok(await _provisioningService.UpdateOperationCompletedAsync(subscriptionId, activatedBy));

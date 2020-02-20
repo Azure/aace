@@ -58,7 +58,7 @@
     },
     "buildLocation": {
       "type": "string",
-      "defaultValue": "https://cognitivesearchcontent.blob.core.windows.net/packages",
+      "defaultValue": "https://github.com/Azure/AIPlatform/raw/master/end-to-end-solutions/Luna/Resources/Builds/latest",
       "metadata": {
         "description": "The build location for deployment files."
       }
