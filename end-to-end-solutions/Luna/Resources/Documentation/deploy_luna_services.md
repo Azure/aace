@@ -46,8 +46,10 @@ You will run the **./deploy.ps1** script file in the deployment folder. The foll
 The optional parameters are:
 | Name | Type | Default Value | Description | Notes |
 |:-----|:-----|:--------------|:------------|:------|
-| -lunaServiceSubscriptionId | Guid | The default subscription for AAD account you used to sign in. | The subscription where all Azure resources for Luna services will be deployed to. | |
-| -userApplicationSubscriptionId | Guid | The value of lunaServiceSubscriptionId | The subscription where all Azure resources for user applications will be deployed to after your offer is published. This setup will grant “contributor” role to the Luna service so we can deploy ARM templates to this subscription. | |
+| tenantId | string | The default tenant | The tenant id for Azure subscriptions and Azure Active Directory | |
+| accountId | string | The current user name | The account id of current user. | |
+| lunaServiceSubscriptionId | Guid | The default subscription for AAD account you used to sign in. | The subscription where all Azure resources for Luna services will be deployed to. | |
+| userApplicationSubscriptionId | Guid | The value of lunaServiceSubscriptionId | The subscription where all Azure resources for user applications will be deployed to after your offer is published. This setup will grant “contributor” role to the Luna service so we can deploy ARM templates to this subscription. | |
 | resourceGroupName | string | $uniqueName + “-rg” | The name of the resource group where all Azure resources for Luna services will be deployed to. | |
 | keyVaultName | string | $uniqueName + “-keyvault” | The name of Azure Key Vault | |
 | sqlServerName | string | $uniqueName + “-sqlserver” | The name of the Azure SQL Server | |
@@ -59,16 +61,12 @@ The optional parameters are:
 | apiWebAppName | string | $uniqueName + “-apiapp” | The name of the Web App service for the backend APIs.  | |
 | apiWebJobName | string | $uniqueName + “-apiwebjob” | The name of the WebJob. It will be deployed as a part of the backend API web app. | |
 | apiWebAppInsightsName | string | $uniqueName + “-apiappinsights” | The name of the Application Insights for the API web app. | |
-| isvWebAppApplicationName | string | $uniqueName+”-isvapp-aad” | The name of the AAD application for ISV website authentication. If  isvWebAppApplicationId is provided and the application already exists, the name will be ignored.  | |
-| isvWebAppApplicationId | guid | Empty guid | The id of the AAD application for ISV website authentication. If not specified, a new AAD application will be created | |
-| endUserWebAppApplicationName | string | $uniqueName+”-userapp-aad” | The name of the AAD application for end user website authentication. If  endUserWebAppApplicationId is provided and the application already exists, the name will be ignored.  | |
-| endUserWebAppApplicationId | guid | Empty guid | The id of the AAD application for end user website authentication. If not specified, a new AAD application will be created | |
-| azureMarketplaceApplicationName | string | $uniqueName+”-azuremarketplace-aad” | The name of the AAD application for Azure Marketplace authentication. If  azureMarketplaceApplicationId is provided and the application already exists, the name will be ignored.  | |
-| azureMarketplaceApplicationId | guid | Empty guid | The id of the AAD application for Azure Marketplace authentication. If not specified, a new AAD application will be created | |
-| azureResourceManagerApplicationName | string | $uniqueName+”-azureresourcemanager-aad” | The name of the AAD application for Azure Resource Manager authentication. If  azureResourceManagerApplicationId is provided and the application already exists, the name will be ignored.  | |
-| azureResourceManagerApplicationId | guid | Empty guid | The id of the AAD application for Azure Resource Manager authentication. If not specified, a new AAD application will be created | |
-| apiWebAppApplicationName | string | $uniqueName+”-apiapp-aad” | The name of the AAD application for backend API authentication. If  azureResourceManagerApplicationId is provided and the application already exists, the name will be ignored.  | |
-| apiWebAppApplicationId | guid | Empty guid | The id of the AAD application for backend API authentication. If not specified, a new AAD application will be created | |
+| azureMarketplaceAADApplicationName | string | $uniqueName+”-azuremarketplace-aad” | The name of the AAD application for Azure Marketplace authentication. If  azureMarketplaceApplicationId is provided and the application already exists, the name will be ignored.  | |
+| azureMarketplaceAADApplicationId | guid | Empty guid | The id of the AAD application for Azure Marketplace authentication. If not specified, a new AAD application will be created | |
+| azureResourceManagerAADApplicationName | string | $uniqueName+”-azureresourcemanager-aad” | The name of the AAD application for Azure Resource Manager authentication. If  azureResourceManagerApplicationId is provided and the application already exists, the name will be ignored.  | |
+| azureResourceManagerAADApplicationId | guid | Empty guid | The id of the AAD application for Azure Resource Manager authentication. If not specified, a new AAD application will be created | |
+| webAppAADApplicationName | string | $uniqueName+”-apiapp-aad” | The name of the AAD application for backend API authentication. If  azureResourceManagerApplicationId is provided and the application already exists, the name will be ignored.  | |
+| webAppAADApplicationId | guid | Empty guid | The id of the AAD application for backend API authentication. If not specified, a new AAD application will be created | |
 | sqlServerAdminUsername | string | cloudsa | The admin username for the Azure SQL Server.  | |
 | keyExpirationByMonth | int | 12 | The length of the expiration for AAD client secret. | |
 | firewallStartIpAddress | string | the client ip | The start ip address for Azure SQL Server. You only need to specify this if you are connecting using any kind of VPN or proxy.  | |
@@ -104,7 +102,7 @@ Please use the examples below as a reference.
 ### Deploy Luna service with a specific AAD application
 
 ```bash
-.\Deploy.ps1 -uniqueName lunasample -location westus2 -azureMarketplaceApplicationId 2dca86fb-befb-412f-9177-4702cce3db73
+.\Deploy.ps1 -uniqueName lunasample -location westus2 -azureMarketplaceAADApplicationId 2dca86fb-befb-412f-9177-4702cce3db73
 ```
 
 ## Sign into you Azure account
