@@ -32,6 +32,8 @@ Azure Resource Provider for the following Azure services need to be registered i
 Install-Module -Name Az -AllowClobber
 
 Install-Module -Name AzureAD -AllowClobber
+
+Install-Module -Name sqlserver -AllowClobber
 ```
 
 ## Deployment
