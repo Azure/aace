@@ -37,7 +37,11 @@ Install-Module -Name AzureAD -AllowClobber
 
 Install-Module -Name sqlserver -AllowClobber
 ```
+4. Set the priorities running ```Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass```. Choose  ```"A"```, to change the policy to **Yes to All**. If you get a permission error, you can try:
 
+     1. Run the PowerShell terminal as an Administrator
+     1. Set the priorities running ```Set-ExecutionPolicy -ExecutionPolicy unrestricted```.
+     
 ## Deployment
 
 You will run the **./deploy.ps1** script file in the deployment folder. The following parameters are required:
