@@ -28,7 +28,7 @@ Azure Resource Provider for the following Azure services need to be registered i
 
 1. Clone the GitHub repo
 1. Install Windows PowerShell following this [instructions](https://docs.microsoft.com/en-us/powershell/scripting/install/installing-windows-powershell?view=powershell-6).
-1. Start a PowerShell window as administrator and run the following commands to install Azure and Azure AD modules:
+1. Start a Windows PowerShell window as administrator and run the following commands to install Azure and Azure AD modules:
 
 ```bash
 Install-Module -Name Az -AllowClobber
