@@ -137,7 +137,7 @@ namespace Luna.Services.Provisoning
         /// <param name="subscriptionId">The subscription id</param>
         /// <returns>The subscription</returns>
         [InputStates(ProvisioningState.ArmTemplateRunning)]
-        [OutputStates(ProvisioningState.WebhookPending, ProvisioningState.ArmTemplateFailed)]
+        [OutputStates(ProvisioningState.WebhookPending, ProvisioningState.ArmTemplateRunning, ProvisioningState.ArmTemplateFailed)]
         public async Task<Subscription> CheckArmDeploymentStatusAsync(Guid subscriptionId)
         {
             Subscription subscription = await _context.Subscriptions.FindAsync(subscriptionId);
@@ -163,19 +163,22 @@ namespace Luna.Services.Provisoning
 
                 if (result.Properties.ProvisioningState.Equals(nameof(ArmProvisioningState.Succeeded)))
                 {
-                    _logger.LogInformation("ARM deployment {subscription.DeploymentName} succeeded.");
+                    _logger.LogInformation($"ARM deployment {subscription.DeploymentName} succeeded.");
                     return await TransitToNextState(subscription, ProvisioningState.WebhookPending);
                 }
-                if (result.Properties.ProvisioningState.Equals(nameof(ArmProvisioningState.Updating)))
+
+                if (result.Properties.ProvisioningState.Equals(nameof(ArmProvisioningState.Failed)) ||
+                    result.Properties.ProvisioningState.Equals(nameof(ArmProvisioningState.Canceled)))
                 {
-                    _logger.LogInformation("ARM deployment {subscription.DeploymentName} in progress.");
-                    return await TransitToNextState(subscription, ProvisioningState.ArmTemplateRunning);
+                    throw new LunaProvisioningException(
+                        $"ARM deployment {subscription.DeploymentName} failed or canceled with ProvisioningState {result.Properties.ProvisioningState}.",
+                        ExceptionUtils.IsHttpErrorCodeRetryable(result.StatusCode),
+                        ProvisioningState.ArmTemplatePending);
                 }
 
-                throw new LunaProvisioningException(
-                    "ARM deployment failed.",
-                    ExceptionUtils.IsHttpErrorCodeRetryable(result.StatusCode),
-                    ProvisioningState.ArmTemplatePending);
+                _logger.LogInformation($"ARM deployment {subscription.DeploymentName} in progress. The current provisioning state is {result.Properties.ProvisioningState}.");
+                return await TransitToNextState(subscription, ProvisioningState.ArmTemplateRunning);
+
             }
             catch (Exception e)
             {
