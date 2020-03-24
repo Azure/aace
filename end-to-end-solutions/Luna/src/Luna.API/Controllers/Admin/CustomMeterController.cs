@@ -1,5 +1,7 @@
 using System;
 using System.Threading.Tasks;
+using Luna.Clients.Exceptions;
+using Luna.Clients.Logging;
 using Luna.Data.Entities;
 using Luna.Services.Data;
 using Microsoft.AspNetCore.Authorization;
@@ -38,56 +40,64 @@ namespace Luna.API.Controllers.Admin
         /// Gets all customMeters.
         /// </summary>
         /// <returns>HTTP 200 OK with customMeter JSON objects in body.</returns>
-        [HttpGet("customMeters")]
+        [HttpGet("offers/{offerName}/customMeters")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult> GetAllAsync()
+        public async Task<ActionResult> GetAllAsync(string offerName)
         {
-            _logger.LogInformation($"Get all custom meters");
-            return Ok(await _customMeterService.GetAllAsync());
+            _logger.LogInformation($"Get all custom meters in offer {offerName}.");
+            return Ok(await _customMeterService.GetAllAsync(offerName));
         }
 
         /// <summary>
         /// Gets a customMeter.
         /// </summary>
+        /// <param name="offerName">The offer name of the customMeter to get.</param>
         /// <param name="meterName">The name of the customMeter to get.</param>
         /// <returns>HTTP 200 OK with customMeter JSON object in body.</returns>
-        [HttpGet("customMeters/{meterName}")]
+        [HttpGet("offers/{offerName}/customMeters/{meterName}", Name = nameof(GetAsync) + nameof(CustomMeter))]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult> GetAsync(string meterName)
+        public async Task<ActionResult> GetAsync(string offerName, string meterName)
         {
-            return Ok(await _customMeterService.GetAsync(meterName));
+            _logger.LogInformation($"Get custom meter {meterName} in offer {offerName}.");
+            return Ok(await _customMeterService.GetAsync(offerName, meterName));
         }
 
         /// <summary>
         /// Create or update a customMeter.
         /// </summary>
+        /// <param name="offerName">The offer name of the customMeter to update.</param>
         /// <param name="meterName">The name of the customMeter to update.</param>
         /// <param name="customMeter">The updated customMeter object.</param>
         /// <returns>HTTP 204 NO CONTENT.</returns>
-        [HttpPut("customMeters/{meterName}")]
+        [HttpPut("offers/{offerName}/customMeters/{meterName}")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult> CreateOrUpdateAsync(string meterName, [FromBody] CustomMeter customMeter)
+        public async Task<ActionResult> CreateOrUpdateAsync(string offerName, string meterName, [FromBody] CustomMeter customMeter)
         {
             if (customMeter == null)
             {
-                throw new ArgumentNullException(nameof(customMeter));
+                throw new LunaBadRequestUserException(LoggingUtils.ComposePayloadNotProvidedErrorMessage(nameof(customMeter)), UserErrorCode.PayloadNotProvided);
+            }
+
+            if (!offerName.Equals(customMeter.OfferName))
+            {
+                throw new LunaBadRequestUserException(LoggingUtils.ComposeNameMismatchErrorMessage(nameof(offerName)), UserErrorCode.NameMismatch);
             }
 
             if (!meterName.Equals(customMeter.MeterName))
             {
-                throw new ArgumentException("The meter name in url doesn't match meter name in request body.");
+                throw new LunaBadRequestUserException(LoggingUtils.ComposeNameMismatchErrorMessage(nameof(meterName)), UserErrorCode.NameMismatch);
             }
 
-            if(await _customMeterService.ExistsAsync(meterName))
+            if(await _customMeterService.ExistsAsync(offerName, meterName))
             {
-                await _customMeterService.UpdateAsync(meterName, customMeter);
+                await _customMeterService.UpdateAsync(offerName, meterName, customMeter);
                 return Ok(customMeter);
             }
             else
             {
-                await _customMeterService.CreateAsync(customMeter);
-                return CreatedAtAction(nameof(GetAsync), new { meterName = customMeter.MeterName }, customMeter);
+                await _customMeterService.CreateAsync(offerName, meterName, customMeter);
+                return CreatedAtRoute(nameof(GetAsync) + nameof(CustomMeter), new { offerName, meterName }, customMeter);
             }
 
         }
@@ -95,13 +105,15 @@ namespace Luna.API.Controllers.Admin
         /// <summary>
         /// Deletes a customMeter.
         /// </summary>
+        /// <param name="offerName">The offer name of the customMeter to delete.</param>
         /// <param name="meterName">The name of the customMeter to delete.</param>
         /// <returns>HTTP 204 NO CONTENT.</returns>
-        [HttpDelete("customMeters/{meterName}")]
+        [HttpDelete("offers/{offerName}/customMeters/{meterName}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public async Task<ActionResult> DeleteAsync(string meterName)
+        public async Task<ActionResult> DeleteAsync(string offerName, string meterName)
         {
-            await _customMeterService.DeleteAsync(meterName);
+            _logger.LogInformation($"Delete custom meter {meterName} from offer {offerName}.");
+            await _customMeterService.DeleteAsync(offerName, meterName);
             return NoContent();
         }
     }

@@ -14,12 +14,15 @@ namespace Luna.Data.Entities
         /// <param name="customMeterDimension">The object to be copied.</param>
         public void Copy(CustomMeterDimension customMeterDimension)
         {
+            this.MeterName = customMeterDimension.MeterName;
+            this.PlanName = customMeterDimension.PlanName;
             this.MonthlyUnlimited = customMeterDimension.MonthlyUnlimited;
             this.AnnualUnlimited = customMeterDimension.AnnualUnlimited;
             this.MonthlyQuantityIncludedInBase = customMeterDimension.MonthlyQuantityIncludedInBase;
             this.AnnualQuantityIncludedInBase = customMeterDimension.AnnualQuantityIncludedInBase;
         }
-        
+
+        [JsonIgnore]
         public long Id { get; set; }
         [JsonIgnore]
         public long MeterId { get; set; }
@@ -28,13 +31,14 @@ namespace Luna.Data.Entities
         public string MeterName { get; set; }
         [JsonIgnore]
         public long PlanId { get; set; }
+
+        [NotMapped]
+        public string PlanName { get; set; }
         public bool? MonthlyUnlimited { get; set; }
         public bool? AnnualUnlimited { get; set; }
         public int? MonthlyQuantityIncludedInBase { get; set; }
         public int? AnnualQuantityIncludedInBase { get; set; }
     
-        [JsonIgnore]
-        public virtual CustomMeter CustomMeter { get; set; }
         [JsonIgnore]
         public virtual Plan Plan { get; set; }
     }

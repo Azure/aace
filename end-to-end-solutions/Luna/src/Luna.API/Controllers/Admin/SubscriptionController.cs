@@ -6,6 +6,7 @@ using Luna.Clients.Exceptions;
 using Luna.Clients.Logging;
 using Luna.Data.Entities;
 using Luna.Data.Enums;
+using Luna.Services.CustomMeterEvent;
 using Luna.Services.Data;
 using Luna.Services.Marketplace;
 using Luna.Services.Provisoning;
@@ -30,6 +31,7 @@ namespace Luna.API.Controllers.Admin
         private readonly ISubscriptionService _subscriptionService;
         private readonly IFulfillmentManager _fulfillmentManager;
         private readonly IProvisioningService _provisioningService;
+        private readonly ICustomMeterEventService _customMeterEventService;
         private readonly ILogger<SubscriptionController> _logger;
 
         /// <summary>
@@ -40,11 +42,12 @@ namespace Luna.API.Controllers.Admin
         /// <param name="provisioningService">The provisioning service instance</param>
         /// <param name="logger">The logger.</param>
         public SubscriptionController(ISubscriptionService subscriptionService, IFulfillmentManager fulfillmentManager,
-            IProvisioningService provisioningService, ILogger<SubscriptionController> logger)
+            IProvisioningService provisioningService, ICustomMeterEventService customMeterEventService, ILogger<SubscriptionController> logger)
         {
             _subscriptionService = subscriptionService ?? throw new ArgumentNullException(nameof(subscriptionService));
             _fulfillmentManager = fulfillmentManager ?? throw new ArgumentNullException(nameof(fulfillmentManager));
             _provisioningService = provisioningService ?? throw new ArgumentNullException(nameof(provisioningService));
+            _customMeterEventService = customMeterEventService ?? throw new ArgumentNullException(nameof(customMeterEventService));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
@@ -350,6 +353,14 @@ namespace Luna.API.Controllers.Admin
             AADAuthHelper.VerifyUserAccess(this.HttpContext, _logger, true);
             _logger.LogInformation($"Get warnings for subscription {subscriptionId}.");
             return Ok(await _subscriptionService.GetWarnings(subscriptionId));
+        }
+
+        [HttpPost("subscriptions/processCustomMeterEvents")]
+        [ProducesResponseType(StatusCodes.Status202Accepted)]
+        public async Task<ActionResult> ProcessCustomMeterEvents()
+        {
+            await _customMeterEventService.ReportBatchMeterEvents();
+            return Accepted();
         }
     }
 }

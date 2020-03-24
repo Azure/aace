@@ -36,6 +36,7 @@ namespace Luna.Services.Provisoning
         private readonly ISubscriptionParameterService _subscriptionParameterService;
         private readonly IArmTemplateParameterService _armTemplateParameterService;
         private readonly IWebhookParameterService _webhookParameterService;
+        private readonly ISubscriptionCustomMeterUsageService _subscriptionCustomMeterUsageService;
         private readonly IStorageUtility _storageUtility;
         private readonly int _maxRetry;
         private readonly ILogger<ProvisioningService> _logger;
@@ -44,7 +45,8 @@ namespace Luna.Services.Provisoning
         public ProvisioningService(ISqlDbContext sqlDbContext, IProvisioningClient provisioningClient, 
             IFulfillmentClient fulfillmentclient, IIpAddressService ipAddressService,
             ISubscriptionParameterService subscriptionParameterService, IArmTemplateParameterService armTemplateParameterService,
-            IWebhookParameterService webhookParameterService, IStorageUtility storageUtility, ILogger<ProvisioningService> logger)
+            IWebhookParameterService webhookParameterService, ISubscriptionCustomMeterUsageService subscriptionCustomMeterUsageService,
+            IStorageUtility storageUtility, ILogger<ProvisioningService> logger)
         {
             _context = sqlDbContext ?? throw new ArgumentNullException(nameof(sqlDbContext));
             _provisioningClient = provisioningClient ?? throw new ArgumentNullException(nameof(provisioningClient));
@@ -53,6 +55,7 @@ namespace Luna.Services.Provisoning
             _subscriptionParameterService = subscriptionParameterService ?? throw new ArgumentNullException(nameof(subscriptionParameterService));
             _armTemplateParameterService = armTemplateParameterService ?? throw new ArgumentNullException(nameof(armTemplateParameterService));
             _webhookParameterService = webhookParameterService ?? throw new ArgumentNullException(nameof(webhookParameterService));
+            _subscriptionCustomMeterUsageService = subscriptionCustomMeterUsageService ?? throw new ArgumentNullException(nameof(subscriptionCustomMeterUsageService));
             _storageUtility = storageUtility ?? throw new ArgumentNullException(nameof(storageUtility));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
@@ -118,6 +121,8 @@ namespace Luna.Services.Provisoning
                         activatedResult.PlanId,
                         activatedResult.Quantity,
                         activatedBy));
+
+                await _subscriptionCustomMeterUsageService.EnableSubscriptionCustomMeterUsageBySubscriptionId(subscriptionId);
 
                 subscription.Status = nameof(FulfillmentState.Subscribed);
                 subscription.ActivatedTime = DateTime.UtcNow;

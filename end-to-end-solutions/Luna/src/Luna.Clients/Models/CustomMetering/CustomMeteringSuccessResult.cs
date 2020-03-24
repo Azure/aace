@@ -17,5 +17,7 @@
         public string Status { get; set; }
 
         public string UsageEventId { get; set; }
+
+        public CustomMeteringError Error { get; set; }
     }
 }

@@ -33,6 +33,8 @@ namespace Luna.Data.Repository
         public DbSet<SubscriptionParameter> SubscriptionParameters { get; set; }
         public DbSet<ArmTemplateArmTemplateParameter> ArmTemplateArmTemplateParameters { get; set; }
         public DbSet<WebhookWebhookParameter> WebhookWebhookParameters { get; set; }
+        public DbSet<SubscriptionCustomMeterUsage> SubscriptionCustomMeterUsages { get; set; }
+        public DbSet<TelemetryDataConnector> TelemetryDataConnectors { get; set; }
 
         // Wrappers for DbContext methods that are used
         public async Task<int> _SaveChangesAsync()

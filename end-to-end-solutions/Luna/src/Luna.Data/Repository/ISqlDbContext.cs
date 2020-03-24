@@ -26,6 +26,10 @@ namespace Luna.Data.Repository
         DbSet<ArmTemplateArmTemplateParameter> ArmTemplateArmTemplateParameters { get; set; }
         DbSet<WebhookWebhookParameter> WebhookWebhookParameters { get; set; }
 
+        DbSet<SubscriptionCustomMeterUsage> SubscriptionCustomMeterUsages { get; set; }
+
+        DbSet<TelemetryDataConnector> TelemetryDataConnectors { get; set; }
+
         // Wrappers for DbContext methods that are used
         Task<int> _SaveChangesAsync();
         Task<IDbContextTransaction> BeginTransactionAsync();
