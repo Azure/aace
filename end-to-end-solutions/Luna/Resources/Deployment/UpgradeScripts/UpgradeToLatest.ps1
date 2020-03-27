@@ -137,7 +137,7 @@ function UpdateScriptConfigFile($resourceGroupName, $webAppName, $tempFilePath){
     }
 
 
-    $apiUrl = "https://" + $webAppName + ".scm.azurewebsites.net/api/vfs/site/wwwroot/"+$tempFileName
+    $apiUrl = "https://" + $webAppName + ".scm.azurewebsites.net/api/vfs/site/wwwroot/Config.js"
 
     Invoke-RestMethod -Uri $apiUrl `
                         -Headers $Header `
@@ -155,7 +155,7 @@ function DownloadScriptConfigFile($resourceGroupName, $webAppName, $tempFilePath
         "If-Match"="*"
     }
 
-    $apiUrl = "https://" + $webAppName + ".scm.azurewebsites.net/api/vfs/site/wwwroot/"+$tempFileName
+    $apiUrl = "https://" + $webAppName + ".scm.azurewebsites.net/api/vfs/site/wwwroot/Config.js"
 
     Invoke-RestMethod -Uri $apiUrl `
                         -Headers $Header `
@@ -165,6 +165,42 @@ function DownloadScriptConfigFile($resourceGroupName, $webAppName, $tempFilePath
 
 }
 
+function DownloadZipFile($webLocation, $tempLocalLocation){
+    
+    Invoke-WebRequest -Uri $webLocation -OutFile $tempLocalLocation
+}
+
+function ExecuteUpgradeSqlScript($connectionString){
+##$connectionString = "Server=tcp:lunauitest-sqlserver.database.windows.net,1433;Initial Catalog=lunauitest-sqldb;Persist Security Info=False;User ID=lunauserlunauitest;Password='|d-z$"+"("+"4T/>X!CQCNjNkop^jd';MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"
+    $vars = $connectionString.Split(";")
+
+    foreach ($var in $vars){
+        $pair = $var.Split("=")
+    
+        if ($pair[0] -eq 'Server'){
+            $serverInstance = $pair[1].Substring(4).Replace(",1433", "")
+        }
+        elseif ($pair[0] -eq 'Initial Catalog'){
+            $database = $pair[1]
+        }
+        elseif ($pair[0] -eq 'User ID'){
+            $userName = $pair[1]
+        }
+        elseif ($pair[0] -eq 'Password'){
+            $password = $pair[1].Substring(1, $pair[1].Length - 2)
+        }
+    }
+    
+$serverInstance
+$userName
+$password
+$database
+    
+    $variables = "targetVersion="+$sqlVersionTable[$targetVersion]
+    $variables
+
+    Invoke-Sqlcmd -ServerInstance $serverInstance -Username $userName -Password $password -Database $database -Variable $variables -InputFile .\SqlScripts\db_upgrade.sql
+}
 
 if($lunaServiceSubscriptionId -ne "default"){
     if($tenantId -ne "default"){
@@ -219,8 +255,13 @@ $objectId = $currentUser.Id
 
 $sqlConnectionString = Get-AzKeyVaultSecret -VaultName $keyVaultName -Name 'connection-string'
 
-$filePath = $buildLocation + $targetVersion + "\apiApp.zip"
-Publish-AzWebApp -ResourceGroupName $resourceGroupName -Name $apiWebAppName -ArchivePath $filePath
+$filePath = $buildLocation + $targetVersion + "/apiApp.zip"
+
+$tempFileName = "apiApp"+(Get-Date).ToString("yyyyMMdd-hhmmss")+".zip"
+$tempFilePath = "$env:temp\"+$tempFileName
+DownloadZipFile $filePath $tempFilePath
+
+Publish-AzWebApp -ResourceGroupName $resourceGroupName -Name $apiWebAppName -ArchivePath $tempFilePath -Force
 
 $app = Get-AzWebApp -ResourceGroupName $resourceGroupName -Name $apiWebAppName
 
@@ -233,33 +274,55 @@ ForEach ($item in $currentAppSettings) {
 
 ## Add new enter in AppSettings here. 
 ## For backward compatibility, you should never remove an existing entry from AppSettings
-Set-AzWebApp -ResourceGroupName $resourceGroupName -Name $apiWebAppName -AppSettings $appsettings
+Set-AzWebApp -ResourceGroupName $resourceGroupName -Name $apiWebAppName -AppSettings $newAppsettings
 
+
+$tempConfigFileName = "Config.js"
+$tempConfigFilePath = "$env:temp\"+$tempConfigFileName
+
+DownloadScriptConfigFile $resourceGroupName $isvWebAppName $tempConfigFilePath
+
+$filePath = $buildLocation + $targetVersion + "/isvApp.zip"
+Write-Host $filePath
+
+$tempFileName = "isvApp"+(Get-Date).ToString("yyyyMMdd-hhmmss")+".zip"
 
 $tempFilePath = "$env:temp\"+$tempFileName
-DownloadScriptConfigFile($resourceGroupName, $isvWebAppName, $tempFilePath)
+Write-Host $tempFilePath
 
-$filePath = $buildLocation + $targetVersion + "\isvApp.zip"
-Publish-AzWebApp -ResourceGroupName $resourceGroupName -Name $isvWebAppName -ArchivePath $filePath
+DownloadZipFile $filePath $tempFilePath
 
-## Update the config.js for ISV app if needed
+Publish-AzWebApp -ResourceGroupName $resourceGroupName -Name $isvWebAppName -ArchivePath $tempFilePath -Force
 
-UpdateScriptConfigFile($resourceGroupName, $isvWebAppName, $tempFilePath)
+## Update the config.js here for ISV app if needed
+
+UpdateScriptConfigFile $resourceGroupName $isvWebAppName $tempConfigFilePath
 
 
-DownloadScriptConfigFile($resourceGroupName, $enduserWebAppName, $tempFilePath)
+DownloadScriptConfigFile $resourceGroupName $enduserWebAppName $tempConfigFilePath
 
-$filePath = $buildLocation + $targetVersion + "\userApp.zip"
-Publish-AzWebApp -ResourceGroupName $resourceGroupName -Name $enduserWebAppName -ArchivePath $filePath
+$filePath = $buildLocation + $targetVersion + "/userApp.zip"
+Write-Host $filePath
 
-## Update the config.js for user app if needed
+$tempFileName = "userApp"+(Get-Date).ToString("yyyyMMdd-hhmmss")+".zip"
+$tempFilePath = "$env:temp\"+$tempFileName
+Write-Host $tempFilePath
+DownloadZipFile $filePath $tempFilePath
 
-UpdateScriptConfigFile($resourceGroupName, $enduserWebAppName, $tempFilePath)
+Publish-AzWebApp -ResourceGroupName $resourceGroupName -Name $enduserWebAppName -ArchivePath $tempFilePath -Force
 
-$filePath = $buildLocation + $targetVersion + "\webjob.zip"
+## Update the config.js here for user app if needed
+
+UpdateScriptConfigFile $resourceGroupName $enduserWebAppName $tempConfigFilePath
+
+$filePath = $buildLocation + $targetVersion + "/webjob.zip"
 Deploy-WebJob -resourceGroupName $resourceGroupName -webAppName $apiWebAppName -webJobName $apiWebJobName -webJobZipPath $filePath
 
-$variables = $sqlVersionTable[$targetVersion]
-Invoke-Sqlcmd -ConnectionString $sqlConnectionString -Variable $variables -InputFile .\SqlScripts\db_upgrade.sql
+$sqlConnectionString = (Get-AzKeyVaultSecret -VaultName $keyVaultName -Name 'connection-string').SecretValueText
+
+Write-Host $sqlConnectionString
+
+
+ExecuteUpgradeSqlScript $sqlConnectionString
 
 

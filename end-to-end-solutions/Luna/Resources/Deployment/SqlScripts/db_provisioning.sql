@@ -404,7 +404,7 @@ CREATE TABLE [dbo].[SubscriptionCustomMeterUsages](
     REFERENCES CustomMeters(Id),
 	CONSTRAINT FK_subscription_id_subscription_custom_meter_usage FOREIGN KEY (SubscriptionId)
 	REFERENCES Subscriptions(SubscriptionId)
-)
+) ON [PRIMARY]
 GO
 
 CREATE TABLE [dbo].[AadSecretTmps](

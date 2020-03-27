@@ -9,6 +9,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Auth;
 using Microsoft.WindowsAzure.Storage.Blob;
+using Microsoft.WindowsAzure.Storage.Table;
 
 namespace Luna.Clients.Azure.Storage
 {
@@ -18,6 +19,7 @@ namespace Luna.Clients.Azure.Storage
     public class StorageUtility : IStorageUtility
     {
         private readonly CloudBlobClient _cloudBlobClient;
+        private readonly CloudTableClient _cloudTableClient;
         private readonly ILogger<StorageUtility> _logger;
 
         private enum NameType { 
@@ -45,6 +47,7 @@ namespace Luna.Clients.Azure.Storage
             StorageCredentials storageCredentials = new StorageCredentials(options.CurrentValue.Config.AccountName, key);
             CloudStorageAccount cloudStorageAccount = new CloudStorageAccount(storageCredentials, true);
             _cloudBlobClient = cloudStorageAccount.CreateCloudBlobClient();
+            _cloudTableClient = cloudStorageAccount.CreateCloudTableClient();
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
@@ -287,6 +290,35 @@ namespace Luna.Clients.Azure.Storage
             {
                 // TODO
                 throw new LunaServerException($"The provided NameType {nameType} is not supported", false);
+            }
+        }
+
+        /// <summary>
+        /// Insert a table entity, if the table doesn't exist, will create a new table
+        /// </summary>
+        /// <param name="tableName">The table name</param>
+        /// <param name="entity">The entity</param>
+        /// <returns></returns>
+        public async Task InsertTableEntity(string tableName, TableEntity entity)
+        {
+            try
+            {
+                CloudTable table = _cloudTableClient.GetTableReference(tableName);
+                if (await table.CreateIfNotExistsAsync())
+                {
+                    _logger.LogInformation($"Created Azure storage table {tableName}.");
+                }
+
+                // Create the Insert or replace table operation
+                TableOperation operation = TableOperation.InsertOrReplace(entity);
+
+                // Execute the operation.
+                TableResult result = await table.ExecuteAsync(operation);
+
+            }
+            catch (StorageException e)
+            {
+                throw new LunaServerException(e.Message, false, e);
             }
         }
     }

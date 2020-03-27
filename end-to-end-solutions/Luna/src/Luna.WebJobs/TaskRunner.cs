@@ -31,6 +31,7 @@ namespace LunaWebJobsApp
         public async Task Run()
         {
             await _lunaClient.ProcessActiveProvisions();
+            await _lunaClient.ProcessCustomMeterEvents();
         }
     }
 }

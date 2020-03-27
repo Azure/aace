@@ -1,5 +1,6 @@
 ﻿using Luna.Clients;
 using Luna.Clients.Azure.Auth;
+using Luna.Clients.Azure.Storage;
 using Luna.Clients.CustomMetering;
 using Luna.Clients.Models.CustomMetering;
 using Luna.Clients.TelemetryDataConnectors;
@@ -29,6 +30,10 @@ namespace Luna.Services.CustomMeterEvent
         private readonly IOfferService _offerService;
         private readonly ITelemetryDataConnectorService _telemetryDataConnectorService;
         private readonly ICustomMeterDimensionService _customMeterDimensionService;
+        private readonly IStorageUtility _storageUtility;
+
+        private const string REPORTED_METER_EVENT_TABLE_NAME = "ReportedMeterEvents";
+        private const string EXPIRED_METER_EVENT_TABLE_NAME = "ExpiredMeterEvents";
 
         public CustomMeterEventService(
             IOptionsMonitor<SecuredProvisioningClientConfiguration> optionsMonitor,
@@ -40,7 +45,8 @@ namespace Luna.Services.CustomMeterEvent
             ISubscriptionCustomMeterUsageService subscriptionCustomMeterUsageService,
             ICustomMeterDimensionService customMeterDimensionService,
             ITelemetryDataConnectorService telemetryDataConnectorService,
-            IOfferService offerService)
+            IOfferService offerService,
+            IStorageUtility storageUtility)
         {
             _logger = logger;
             _customMeterService = customMeterService;
@@ -50,6 +56,7 @@ namespace Luna.Services.CustomMeterEvent
             _customMeterDimensionService = customMeterDimensionService;
             _offerService = offerService;
             _telemetryDataConnectorService = telemetryDataConnectorService;
+            _storageUtility = storageUtility;
             _telemetryConnectionManager = new TelemetryDataConnectorManager(new HttpClient(), logger, keyVaultHelper);
         }
         public async Task ReportBatchMeterEvents()
@@ -75,7 +82,7 @@ namespace Luna.Services.CustomMeterEvent
                         {
                             _logger.LogInformation($"The events of meter {meter.MeterName} was lastly processed at {effectiveStartTime}. The current time is {DateTime.UtcNow}.");
                         }
-
+                        
                         continue;
                     }
 
@@ -158,6 +165,13 @@ namespace Luna.Services.CustomMeterEvent
                                 _logger.LogWarning($"Meter event {result.Dimension} for subscription {result.ResourceId} at {result.EffectiveStartTime} reported at {DateTime.Now}, with status {result.Status}.");
                                 subscriptionMeterUsage.LastUpdatedTime = effectiveEndTime;
 
+                                // Always record the reported meter event to Azure table if it is duplicate.
+                                var tableEntity = new CustomMeteringAzureTableEntity(
+                                    result.Status.Equals(nameof(CustomMeterEventStatus.Accepted), StringComparison.InvariantCultureIgnoreCase) ?
+                                    result : result.Error.AdditionalInfo.AcceptedMessage);
+
+                                await _storageUtility.InsertTableEntity(REPORTED_METER_EVENT_TABLE_NAME, tableEntity);
+
                                 if (effectiveEndTime > subscriptionMeterUsage.UnsubscribedTime)
                                 {
                                     subscriptionMeterUsage.IsEnabled = false;
@@ -169,6 +183,9 @@ namespace Luna.Services.CustomMeterEvent
                                 // If the meter event is expired, record a warning and move on
                                 _logger.LogWarning($"Meter event {result.Dimension} for subscription {result.ResourceId} at {result.EffectiveStartTime} expired at {DateTime.Now}.");
                                 subscriptionMeterUsage.LastUpdatedTime = effectiveEndTime;
+
+                                await _storageUtility.InsertTableEntity(EXPIRED_METER_EVENT_TABLE_NAME,
+                                    new CustomMeteringAzureTableEntity(result));
 
                                 if (effectiveEndTime > subscriptionMeterUsage.UnsubscribedTime)
                                 {
@@ -193,7 +210,6 @@ namespace Luna.Services.CustomMeterEvent
                     {
                         _logger.LogWarning($"Failed to send the batch meter event. Response code: {requestResult.Code}");
                     }
-
                 }
             }
         }

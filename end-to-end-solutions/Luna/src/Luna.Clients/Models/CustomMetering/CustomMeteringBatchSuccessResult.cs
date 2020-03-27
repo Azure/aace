@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Microsoft.WindowsAzure.Storage.Table;
 
 namespace Luna.Clients.Models.CustomMetering
 {
