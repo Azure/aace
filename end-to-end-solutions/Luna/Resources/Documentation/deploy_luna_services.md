@@ -27,8 +27,9 @@ Azure Resource Provider for the following Azure services need to be registered i
 ## Environment Setup
 
 1. Clone the GitHub repo
-1. Install Windows PowerShell following this [instructions](https://docs.microsoft.com/en-us/powershell/scripting/install/installing-windows-powershell?view=powershell-6).
-1. Start a Windows PowerShell window as administrator and run the following commands to install Azure and Azure AD modules:
+2. Install latest .net framework from [here](https://dotnet.microsoft.com/download/dotnet-framework)
+3. Install Windows PowerShell following this [instructions](https://docs.microsoft.com/en-us/powershell/scripting/install/installing-windows-powershell?view=powershell-6).
+4. Start a Windows PowerShell window as administrator and run the following commands to install Azure and Azure AD modules:
 
 ```bash
 Install-Module -Name Az -AllowClobber
@@ -37,7 +38,7 @@ Install-Module -Name AzureAD -AllowClobber
 
 Install-Module -Name sqlserver -AllowClobber
 ```
-4. Set the priorities running ```Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass```. Choose  ```"A"```, to change the policy to **Yes to All**. If you get a permission error, you can try:
+5. Set the priorities running ```Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass```. Choose  ```"A"```, to change the policy to **Yes to All**. If you get a permission error, you can try:
 
      1. Run the PowerShell terminal as an Administrator
      1. Set the priorities running ```Set-ExecutionPolicy -ExecutionPolicy unrestricted```.
