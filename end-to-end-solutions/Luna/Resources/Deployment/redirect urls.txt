@@ -1,5 +1,0 @@
-https://lunaamperity-userapp.azurewebsites.net/Subscriptions
-https://lunaamperity-userapp.azurewebsites.net/LandingPage
-https://lunaamperity-isvapp.azurewebsites.net/Subscriptions
-https://lunaamperity-isvapp.azurewebsites.net/Offers
-https://lunaamperity-isvapp.azurewebsites.net
