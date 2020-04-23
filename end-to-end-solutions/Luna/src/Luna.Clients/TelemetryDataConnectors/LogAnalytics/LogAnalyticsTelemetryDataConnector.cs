@@ -7,6 +7,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Luna.Clients.Azure.Auth;
+using Luna.Clients.Exceptions;
 using Luna.Clients.Models.CustomMetering;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.Extensions.Logging;
@@ -47,6 +48,12 @@ namespace Luna.Clients.TelemetryDataConnectors
             return token.AccessToken;
         }
 
+        /// <summary>
+        /// Get meter event by hour
+        /// </summary>
+        /// <param name="startTime">The start time</param>
+        /// <param name="query">The query</param>
+        /// <returns></returns>
         public async Task<IEnumerable<Usage>> GetMeterEventsByHour(DateTime startTime, string query)
         {
             List<Usage> eventList = new List<Usage>();
@@ -56,6 +63,7 @@ namespace Luna.Clients.TelemetryDataConnectors
             
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
+            // Run telemetry query in an one hour time span starting startTime
             string timespan = string.Format(TIMESPAN_FORMAT, startTime.ToString(DATETIME_FORMAT), startTime.AddHours(1).ToString(DATETIME_FORMAT));
             
             string body = string.Format(REQUEST_BODY_FORMAT, query, timespan);
@@ -71,12 +79,12 @@ namespace Luna.Clients.TelemetryDataConnectors
                 QueryResponse queryResult = (QueryResponse)JsonSerializer.Deserialize(responseContent, typeof(QueryResponse));
                 if (queryResult == null)
                 {
-                    throw new Exception("query result in bad format");
+                    throw new LunaServerException($"Query result in bad format. The response is {responseContent}.");
                 }
 
                 if (queryResult.tables == null || queryResult.tables.Count == 0)
                 {
-                    throw new Exception("can't find any result");
+                    throw new LunaServerException($"Can't find any result. The response is {responseContent}.");
                 }
 
                 foreach (var table in queryResult.tables)
@@ -84,51 +92,61 @@ namespace Luna.Clients.TelemetryDataConnectors
                     if (table.name.Equals("PrimaryResult", StringComparison.InvariantCultureIgnoreCase))
                     {
                         // Check columns
-                        if (!CheckTableColumnNameAndType(table, 0, "resourceId", "string"))
+                        if (CheckTableColumnNameAndType(table, 0, "resourceId", "string") &&
+                         CheckTableColumnNameAndType(table, 1, "quantity", "real", "long") &&
+                         CheckTableColumnNameAndType(table, 2, "EffectiveStartTime", "datetime"))
                         {
-                            throw new Exception("the first column is not resourceid or type is not string");
-                        }
-
-                        if (!CheckTableColumnNameAndType(table, 1, "quantity", "real", "long"))
-                        {
-                            throw new Exception("the second column is not quantity or type is not string");
-                        }
-
-                        if (!CheckTableColumnNameAndType(table, 2, "EffectiveStartTime", "datetime"))
-                        {
-                            throw new Exception("the third column is not EffectiveStartTime or type is not string");
-                        }
-
-                        foreach (var row in table.rows)
-                        {
-                            eventList.Add(new Usage
+                            foreach (var row in table.rows)
                             {
-                                Dimension = "",
-                                PlanId = "",
-                                ResourceId = row[0].ToString(),
-                                Quantity = Double.Parse(row[1].ToString()),
-                                EffectiveStartTime = row[2].ToString()
-                            });
-                        }
+                                eventList.Add(new Usage
+                                {
+                                    Dimension = "",
+                                    PlanId = "",
+                                    ResourceId = row[0].ToString(),
+                                    Quantity = Double.Parse(row[1].ToString()),
+                                    EffectiveStartTime = row[2].ToString()
+                                });
+                            }
 
-                        return eventList;
+                            return eventList;
+                        }
                     }
                 }
 
-                throw new Exception("can't find any result");
+                throw new LunaServerException($"Can't find any result. The response code is {response.StatusCode} and content is {responseContent}.");
             }
             else
             {
                 // TODO: error handling
-                throw new Exception("query failed");
+                throw new LunaServerException($"Query failed with response {responseContent}");
             }
 
         }
 
         private bool CheckTableColumnNameAndType(ResultTable table, int index, string expectedName, params string[] expectedTypes)
         {
-            return table.columns[index].name.Equals(expectedName, StringComparison.InvariantCultureIgnoreCase) &&
-                expectedTypes.Contains(table.columns[index].type);
+            if (!table.columns[index].name.Equals(expectedName, StringComparison.InvariantCultureIgnoreCase))
+            {
+                throw new LunaServerException($"The name of column {index} {table.columns[index].name} is not {expectedName}.");
+            }
+
+            if (!expectedTypes.Contains(table.columns[index].type))
+            {
+                StringBuilder expectedTypeStr = new StringBuilder();
+                foreach (var expectedType in expectedTypes)
+                {
+                    expectedTypeStr.Append(expectedType + ",");
+                }
+
+                string expectedTypeString = expectedTypeStr.ToString();
+
+                //trim the last comma
+                expectedTypeString = expectedTypeString.Length > 0 ? expectedTypeString.Substring(0, expectedTypeString.Length - 1) : expectedTypeString;
+
+                throw new LunaServerException($"The type of column {index} {table.columns[index].type} is not in the expected types list {expectedTypeString}.");
+            }
+
+            return true;
         }
 
         public async Task<Usage> GetMeterEventByHourBySubscription(Guid subscriptionId, DateTime startTime, string query)

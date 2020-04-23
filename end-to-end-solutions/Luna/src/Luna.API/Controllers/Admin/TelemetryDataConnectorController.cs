@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Luna.Clients.Exceptions;
 using Luna.Clients.Logging;
@@ -108,5 +109,20 @@ namespace Luna.API.Controllers.Admin
             await _telemetryDataConnectorService.DeleteAsync(name);
             return NoContent();
         }
+
+        /// <summary>
+        /// Get the valid types of connectors
+        /// </summary>
+        /// <returns>The connector types</returns>
+        [HttpGet("telemetryDataConnectors/connectorTypes")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<List<string>> GetConnectorTypesAsync()
+        {
+            // TODO: get from enum
+            List<string> connectorTypes = new List<string>();
+            connectorTypes.Add("LogAnalytics");
+            return connectorTypes;
+        }
+
     }
 }

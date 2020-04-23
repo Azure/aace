@@ -26,6 +26,7 @@ namespace Luna.Data.Entities
             this.MeterName = customMeter.MeterName;
             this.OfferName = customMeter.OfferName;
             this.TelemetryDataConnectorName = customMeter.TelemetryDataConnectorName;
+            this.TelemetryQuery = customMeter.TelemetryQuery;
         }
     
         [JsonIgnore]
