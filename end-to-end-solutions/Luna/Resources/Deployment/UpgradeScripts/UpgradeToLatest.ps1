@@ -57,6 +57,12 @@
 
     [string]$firewallEndIpAddress = "clientIp",
 
+    [string]$headerBackgroundColor = "#004578",
+
+    [string]$enableV1 = "true",
+
+    [string]$enableV2 = "false",
+
     [string]$buildLocation = "https://github.com/Azure/AIPlatform/raw/master/end-to-end-solutions/Luna/Resources/Builds/",
 
     [string]$companyName = "Microsoft",
@@ -191,15 +197,45 @@ function ExecuteUpgradeSqlScript($connectionString){
         }
     }
     
-$serverInstance
-$userName
-$password
-$database
-    
     $variables = "targetVersion="+$sqlVersionTable[$targetVersion]
     $variables
 
     Invoke-Sqlcmd -ServerInstance $serverInstance -Username $userName -Password $password -Database $database -Variable $variables -InputFile .\SqlScripts\db_upgrade.sql
+}
+
+function AddOrUpdateEntryInScriptConfigFile($tempFilePath, $entryName, $entryValue){
+    $newContent = "var Configs = {";
+    $isUpdate = $false
+    foreach($line in Get-Content $tempFilePath) {
+
+        $line = $line.Trim();
+        if($line -eq "var Configs = {" -or $line -eq "}"){
+            continue;
+        }
+
+        $name = $line.Substring(0, $line.IndexOf(":"));
+
+        if ($name -eq $entryName){
+            $newContent = $newContent + "`r`n    " + $entryName + ": """ + $entryValue + """";
+            if ($line.EndsWith(",")){
+                $newContent = $newContent + ",";
+            }
+            $isUpdate = $true
+        }
+        else{
+            $newContent = $newContent + "`r`n    " + $line;
+        }
+    }
+
+    if (-not $isUpdate){
+        $newContent = $newContent + ",`r`n    " + $entryName + ": """ + $entryValue + """";
+    }
+
+    $newContent = $newContent + "`r`n}";
+
+    Write-Host $newContent;
+
+    Set-Content -Path $tempFilePath -Value $newContent
 }
 
 if($lunaServiceSubscriptionId -ne "default"){
@@ -295,6 +331,9 @@ DownloadZipFile $filePath $tempFilePath
 Publish-AzWebApp -ResourceGroupName $resourceGroupName -Name $isvWebAppName -ArchivePath $tempFilePath -Force
 
 ## Update the config.js here for ISV app if needed
+AddOrUpdateEntryInScriptConfigFile $tempConfigFilePath "HEADER_BACKGROUND_COLOR" $headerBackgroundColor
+AddOrUpdateEntryInScriptConfigFile $tempConfigFilePath "ENABLE_V1" $enableV1
+AddOrUpdateEntryInScriptConfigFile $tempConfigFilePath "ENABLE_V2" $enableV2
 
 UpdateScriptConfigFile $resourceGroupName $isvWebAppName $tempConfigFilePath
 
@@ -312,6 +351,9 @@ DownloadZipFile $filePath $tempFilePath
 Publish-AzWebApp -ResourceGroupName $resourceGroupName -Name $enduserWebAppName -ArchivePath $tempFilePath -Force
 
 ## Update the config.js here for user app if needed
+AddOrUpdateEntryInScriptConfigFile $tempConfigFilePath "HEADER_BACKGROUND_COLOR" $headerBackgroundColor
+AddOrUpdateEntryInScriptConfigFile $tempConfigFilePath "ENABLE_V1" $enableV1
+AddOrUpdateEntryInScriptConfigFile $tempConfigFilePath "ENABLE_V2" $enableV2
 
 UpdateScriptConfigFile $resourceGroupName $enduserWebAppName $tempConfigFilePath
 

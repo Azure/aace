@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Luna.Clients.Azure.Auth;
 using Luna.Clients.Exceptions;
 using Luna.Clients.Logging;
 using Luna.Clients.TelemetryDataConnectors;
@@ -46,6 +47,7 @@ namespace Luna.API.Controllers.Admin
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> GetAllAsync()
         {
+            AADAuthHelper.VerifyUserAccess(this.HttpContext, _logger, true);
             _logger.LogInformation($"Get all telemetry connectors.");
             return Ok(await _telemetryDataConnectorService.GetAllAsync());
         }
@@ -59,6 +61,7 @@ namespace Luna.API.Controllers.Admin
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> GetAsync(string name)
         {
+            AADAuthHelper.VerifyUserAccess(this.HttpContext, _logger, true);
             _logger.LogInformation($"Get telemetry connector {name}.");
             return Ok(await _telemetryDataConnectorService.GetAsync(name));
         }
@@ -74,6 +77,8 @@ namespace Luna.API.Controllers.Admin
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> CreateOrUpdateAsync(string name, [FromBody] TelemetryDataConnector connector)
         {
+            AADAuthHelper.VerifyUserAccess(this.HttpContext, _logger, true);
+
             if (connector == null)
             {
                 throw new LunaBadRequestUserException(LoggingUtils.ComposePayloadNotProvidedErrorMessage(nameof(connector)), UserErrorCode.PayloadNotProvided);
@@ -106,6 +111,8 @@ namespace Luna.API.Controllers.Admin
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<ActionResult> DeleteAsync(string name)
         {
+            AADAuthHelper.VerifyUserAccess(this.HttpContext, _logger, true);
+
             await _telemetryDataConnectorService.DeleteAsync(name);
             return NoContent();
         }
@@ -118,9 +125,14 @@ namespace Luna.API.Controllers.Admin
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<List<string>> GetConnectorTypesAsync()
         {
-            // TODO: get from enum
+            AADAuthHelper.VerifyUserAccess(this.HttpContext, _logger, true);
+
             List<string> connectorTypes = new List<string>();
-            connectorTypes.Add("LogAnalytics");
+            foreach (TelemetryDataConnectorTypes val in Enum.GetValues(typeof(TelemetryDataConnectorTypes)))
+            {
+                connectorTypes.Add(val.ToString());
+            }
+
             return connectorTypes;
         }
 

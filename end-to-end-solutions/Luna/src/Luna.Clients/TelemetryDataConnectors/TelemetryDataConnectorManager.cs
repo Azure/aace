@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Text;
 using Luna.Clients.Azure.Auth;
+using Luna.Clients.Exceptions;
 using Microsoft.Extensions.Logging;
 
 namespace Luna.Clients.TelemetryDataConnectors
@@ -23,15 +24,14 @@ namespace Luna.Clients.TelemetryDataConnectors
 
         public ITelemetryDataConnector CreateTelemetryDataConnector(string type, string configuration)
         {
-            if (type.Equals("LogAnalytics", StringComparison.InvariantCultureIgnoreCase))
+            if (type.Equals(TelemetryDataConnectorTypes.LogAnalytics.ToString(), StringComparison.InvariantCultureIgnoreCase))
             {
                 ITelemetryDataConnector connector = new LogAnalyticsTelemetryDataConnector(_httpClient, _logger, _keyVaultHelper, configuration);
                 return connector;
             }
             else
             {
-                //TODO: error handling
-                throw new Exception("Type doesnt exist");
+                throw new LunaServerException($"The specified telemetry data connector type {type} doesn't exist");
             }
         }
     }

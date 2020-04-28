@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Luna.Clients.Azure.Auth;
 using Luna.Data.DataContracts;
 using Luna.Data.Enums;
+using Luna.Services.CustomMeterEvent;
 using Luna.Services.Data;
 using Luna.Services.Provisoning;
 using Microsoft.AspNetCore.Authorization;
@@ -26,16 +27,21 @@ namespace Luna.API.Controllers.Provisioning
 
         private readonly ISubscriptionService _subscriptionService;
 
+        private readonly ICustomMeterEventService _customMeterEventService;
+
         /// <summary>
         /// Constructor that uses dependency injection.
         /// </summary>
         /// <param name="provisioningService">The provisioning service.</param>
         /// <param name="subscriptionService">The subscriptionService.</param>
         /// <param name="logger">The logger.</param>
-        public ProvisioningController(IProvisioningService provisioningService, ISubscriptionService subscriptionService, ILogger<ProvisioningController> logger)
+        public ProvisioningController(IProvisioningService provisioningService, 
+            ISubscriptionService subscriptionService, ICustomMeterEventService customMeterEventService, 
+            ILogger<ProvisioningController> logger)
         {
             _provisioningService = provisioningService ?? throw new ArgumentNullException(nameof(provisioningService));
             _subscriptionService = subscriptionService ?? throw new ArgumentNullException(nameof(subscriptionService));
+            _customMeterEventService = customMeterEventService ?? throw new ArgumentNullException(nameof(customMeterEventService));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
@@ -148,6 +154,18 @@ namespace Luna.API.Controllers.Provisioning
             AADAuthHelper.VerifyUserAccess(this.HttpContext, _logger, true);
             _logger.LogInformation($"Get active provisions.");
             return Ok(await _provisioningService.GetInProgressProvisionsAsync());
+        }
+
+        /// <summary>
+        /// Process custom meter events
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost("subscriptions/processCustomMeterEvents")]
+        [ProducesResponseType(StatusCodes.Status202Accepted)]
+        public async Task<ActionResult> ProcessCustomMeterEvents()
+        {
+            await _customMeterEventService.ReportBatchMeterEvents();
+            return Accepted();
         }
 
         /// <summary>

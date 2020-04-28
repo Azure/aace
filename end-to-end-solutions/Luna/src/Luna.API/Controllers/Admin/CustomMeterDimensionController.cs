@@ -1,6 +1,7 @@
 using System;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Luna.Clients.Azure.Auth;
 using Luna.Clients.Exceptions;
 using Luna.Clients.Logging;
 using Luna.Data.Entities;
@@ -47,6 +48,8 @@ namespace Luna.API.Controllers.Admin
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> GetAllAsync(string offerName, string planName)
         {
+            AADAuthHelper.VerifyUserAccess(this.HttpContext, _logger, true);
+
             _logger.LogInformation($"Get all custom meters dimensions from offer {offerName} and plan {planName}.");
             return Ok(await _customMeterDimensionService.GetAllAsync(offerName, planName));
         }
@@ -62,6 +65,8 @@ namespace Luna.API.Controllers.Admin
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> GetAsync(string offerName, string planName, string meterName)
         {
+            AADAuthHelper.VerifyUserAccess(this.HttpContext, _logger, true);
+
             _logger.LogInformation($"Get custom meter {meterName} dimensions from offer {offerName} and plan {planName}.");
             return Ok(await _customMeterDimensionService.GetAsync(offerName, planName, meterName));
         }
@@ -79,6 +84,8 @@ namespace Luna.API.Controllers.Admin
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> CreateOrUpdateAsync(string offerName, string planName, string meterName, [FromBody] CustomMeterDimension customMeterDimension)
         {
+            AADAuthHelper.VerifyUserAccess(this.HttpContext, _logger, true);
+
             if (customMeterDimension == null)
             {
                 throw new LunaBadRequestUserException(LoggingUtils.ComposePayloadNotProvidedErrorMessage(nameof(customMeterDimension)), UserErrorCode.PayloadNotProvided);
@@ -119,6 +126,8 @@ namespace Luna.API.Controllers.Admin
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<ActionResult> DeleteAsync(string offerName, string planName, string meterName)
         {
+            AADAuthHelper.VerifyUserAccess(this.HttpContext, _logger, true);
+
             _logger.LogInformation($"Delete custom meter dimenstion {meterName} in offer {offerName} and plan {planName}.");
             await _customMeterDimensionService.DeleteAsync(offerName, planName, meterName);
             return NoContent();

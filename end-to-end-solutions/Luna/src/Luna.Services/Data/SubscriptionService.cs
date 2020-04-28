@@ -348,6 +348,8 @@ namespace Luna.Services.Data
 
                 _context.Subscriptions.Update(subscription);
                 await _context._SaveChangesAsync();
+
+                transaction.Commit();
             }
             _logger.LogInformation($"Operation {operationId}: Subscription {subscriptionId} with offer {subscription.OfferName} and plan {subscription.PlanName} is unsubscribed.");
 

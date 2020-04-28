@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using Luna.Clients.Azure.Auth;
 using Luna.Clients.Exceptions;
 using Luna.Clients.Logging;
 using Luna.Data.Entities;
@@ -44,6 +45,8 @@ namespace Luna.API.Controllers.Admin
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> GetAllAsync(string offerName)
         {
+            AADAuthHelper.VerifyUserAccess(this.HttpContext, _logger, true);
+
             _logger.LogInformation($"Get all custom meters in offer {offerName}.");
             return Ok(await _customMeterService.GetAllAsync(offerName));
         }
@@ -58,6 +61,8 @@ namespace Luna.API.Controllers.Admin
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> GetAsync(string offerName, string meterName)
         {
+            AADAuthHelper.VerifyUserAccess(this.HttpContext, _logger, true);
+
             _logger.LogInformation($"Get custom meter {meterName} in offer {offerName}.");
             return Ok(await _customMeterService.GetAsync(offerName, meterName));
         }
@@ -74,6 +79,8 @@ namespace Luna.API.Controllers.Admin
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> CreateOrUpdateAsync(string offerName, string meterName, [FromBody] CustomMeter customMeter)
         {
+            AADAuthHelper.VerifyUserAccess(this.HttpContext, _logger, true);
+
             if (customMeter == null)
             {
                 throw new LunaBadRequestUserException(LoggingUtils.ComposePayloadNotProvidedErrorMessage(nameof(customMeter)), UserErrorCode.PayloadNotProvided);
@@ -112,6 +119,8 @@ namespace Luna.API.Controllers.Admin
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<ActionResult> DeleteAsync(string offerName, string meterName)
         {
+            AADAuthHelper.VerifyUserAccess(this.HttpContext, _logger, true);
+
             _logger.LogInformation($"Delete custom meter {meterName} from offer {offerName}.");
             await _customMeterService.DeleteAsync(offerName, meterName);
             return NoContent();

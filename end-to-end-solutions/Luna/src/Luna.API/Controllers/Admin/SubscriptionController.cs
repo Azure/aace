@@ -355,12 +355,5 @@ namespace Luna.API.Controllers.Admin
             return Ok(await _subscriptionService.GetWarnings(subscriptionId));
         }
 
-        [HttpPost("subscriptions/processCustomMeterEvents")]
-        [ProducesResponseType(StatusCodes.Status202Accepted)]
-        public async Task<ActionResult> ProcessCustomMeterEvents()
-        {
-            await _customMeterEventService.ReportBatchMeterEvents();
-            return Accepted();
-        }
     }
 }

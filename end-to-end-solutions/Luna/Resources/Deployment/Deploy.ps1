@@ -59,6 +59,12 @@
 
     [string]$companyName = "Microsoft",
 
+    [string]$headerBackgroundColor = "#004578",
+
+    [string]$enableV1 = "true",
+
+    [string]$enableV2 = "false",
+
     [string]$adminTenantId = "common",
 
     [string]$adminAccounts = "default"
@@ -429,7 +435,10 @@ $config = 'var Configs = {
     API_ENDPOINT: "https://'+ $apiWebAppName +'.azurewebsites.net/api/",
     ISV_NAME: "'+$companyName+'",
     AAD_APPID: "'+$webAppAADApplicationId+'",
-    AAD_ENDPOINT: "https://'+$isvWebAppName+'.azurewebsites.net"
+    AAD_ENDPOINT: "https://'+$isvWebAppName+'.azurewebsites.net",
+    HEADER_BACKGROUND_COLOR: "'+$headerBackgroundColor+'",
+    ENABLE_V1: "'+$enableV1+'",
+    ENABLE_V2: "'+$enableV2+'"
 }'
 
 UpdateScriptConfigFile -resourceGroupName $resourceGroupName -webAppName $isvWebAppName -configuration $config
@@ -438,7 +447,10 @@ $config = 'var Configs = {
     API_ENDPOINT: "https://'+ $apiWebAppName +'.azurewebsites.net/api/",
     ISV_NAME: "'+$companyName+'",
     AAD_APPID: "'+$webAppAADApplicationId+'",
-    AAD_ENDPOINT: "https://'+$enduserWebAppName+'.azurewebsites.net"
+    AAD_ENDPOINT: "https://'+$enduserWebAppName+'.azurewebsites.net",
+    HEADER_BACKGROUND_COLOR: "'+$headerBackgroundColor+'",
+    ENABLE_V1: "'+$enableV1+'",
+    ENABLE_V2: "'+$enableV2+'"
 }'
 
 UpdateScriptConfigFile -resourceGroupName $resourceGroupName -webAppName $enduserWebAppName -configuration $config
