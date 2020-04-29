@@ -8,6 +8,8 @@ The most convenient way to deploy Luna service is to run the deployment PowerShe
 
 ## Prerequisites
 
+Since Azure Active Directory PowerShell is not supported in the dotnet core version of PowerShell yet. You will need a Windows machine to deploy Luna services. If you don't have a windows machine, you can create a Windows VM in Azure.
+
 You will need to be owner or contributor to the subscriptions. There will be two subscriptions being used: one for all Azure resources running Luna service, another one to deploy user application after your offer is created. They can be same or different subscriptions.
 
 You will need access to your organization’s Azure Active Directory and register AAD application.
@@ -25,15 +27,21 @@ Azure Resource Provider for the following Azure services need to be registered i
 ## Environment Setup
 
 1. Clone the GitHub repo
-1. Install PowerShell following this [instructions](https://docs.microsoft.com/en-us/powershell/scripting/install/installing-powershell?view=powershell-6).
-1. Start a PowerShell window as administrator and run the following commands to install Azure and Azure AD modules:
+1. Install Windows PowerShell following this [instructions](https://docs.microsoft.com/en-us/powershell/scripting/install/installing-windows-powershell?view=powershell-6).
+1. Start a Windows PowerShell window as administrator and run the following commands to install Azure and Azure AD modules:
 
 ```bash
 Install-Module -Name Az -AllowClobber
 
 Install-Module -Name AzureAD -AllowClobber
-```
 
+Install-Module -Name sqlserver -AllowClobber
+```
+4. Set the priorities running ```Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass```. Choose  ```"A"```, to change the policy to **Yes to All**. If you get a permission error, you can try:
+
+     1. Run the PowerShell terminal as an Administrator
+     1. Set the priorities running ```Set-ExecutionPolicy -ExecutionPolicy unrestricted```.
+     
 ## Deployment
 
 You will run the **./deploy.ps1** script file in the deployment folder. The following parameters are required:

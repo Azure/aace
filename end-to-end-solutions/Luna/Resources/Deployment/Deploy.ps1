@@ -73,6 +73,8 @@
 
 )
 
+Clear-AzContext -Force
+
 if($tenantId -ne "default"){
     Connect-AzureAD -TenantId $tenantId
     
@@ -242,6 +244,8 @@ $apiWebAppInsightsName = GetNameForAzureResources -defaultName $apiWebAppInsight
 $azureMarketplaceAADApplicationName = GetNameForAzureResources -defaultName $azureMarketplaceAADApplicationName -resourceTypeSuffix "-azuremarketplace-aad" -uniqueName $uniqueName
 $azureResourceManagerAADApplicationName = GetNameForAzureResources -defaultName $azureResourceManagerAADApplicationName -resourceTypeSuffix "-azureresourcemanager-aad" -uniqueName $uniqueName
 $webAppAADApplicationName = GetNameForAzureResources -defaultName $webAppAADApplicationName -resourceTypeSuffix "-apiapp-aad" -uniqueName $uniqueName
+
+add-type -AssemblyName System.Web
 
 $sqlServerAdminPasswordRaw = [System.Web.Security.Membership]::GeneratePassword(24,5)
 $sqlServerAdminPassword = ConvertTo-SecureString $sqlServerAdminPasswordRaw.ToString() -AsPlainText -Force
