@@ -22,7 +22,6 @@ END
 EXEC sp_addrolemember N'db_owner', @username
 GO
 
-
 IF EXISTS (select * from sys.tables tb join sys.schemas sch on tb.schema_id = sch.schema_id where tb.name = 'WebhookWebhookParameters' AND sch.name = 'dbo')
 BEGIN
 DROP TABLE [dbo].[WebhookWebhookParameters]
@@ -62,12 +61,6 @@ GO
 IF EXISTS (select * from sys.tables tb join sys.schemas sch on tb.schema_id = sch.schema_id where tb.name = 'CustomMeters' AND sch.name = 'dbo')
 BEGIN
 DROP TABLE [dbo].[CustomMeters]
-END
-GO
-
-IF EXISTS (select * from sys.tables tb join sys.schemas sch on tb.schema_id = sch.schema_id where tb.name = 'TelemetryDataConnectors' AND sch.name = 'dbo')
-BEGIN
-DROP TABLE [dbo].[TelemetryDataConnectors]
 END
 GO
 
@@ -350,24 +343,13 @@ CREATE TABLE [dbo].[RestrictedUsers](
 ) ON [PRIMARY]
 GO
 
-CREATE TABLE [dbo].[TelemetryDataConnectors](
-	[Id] [bigint] IDENTITY(1,1) NOT NULL,
-	[Name] [nvarchar](64) NOT NULL,
-	[Type] [nvarchar](512) NOT NULL,
-	[Configuration] [nvarchar](max) NOT NULL,
-	PRIMARY KEY (Id)
-) ON [PRIMARY]
-GO
-
 CREATE TABLE [dbo].[CustomMeters](
 	[Id] [bigint] IDENTITY(1,1) NOT NULL,
-	[OfferId] [bigint] NOT NULL,
 	[MeterName] [nvarchar](50) NOT NULL,
-	[TelemetryDataConnectorId] [bigint] NOT NULL,
-	[TelemetryQuery] [nvarchar](max) NOT NULL,
-	PRIMARY KEY (id),
-    CONSTRAINT FK_telemetry_data_connector_id_custom_meters FOREIGN KEY (TelemetryDataConnectorId)
-    REFERENCES TelemetryDataConnectors(Id)
+	[DisplayName] [nvarchar](128) NOT NULL,
+	[UnitOfMeasure] [nvarchar](128) NOT NULL,
+	[PricePerUnit] [float] NOT NULL,
+	PRIMARY KEY (id)
 ) ON [PRIMARY]
 GO
 
@@ -387,26 +369,6 @@ CREATE TABLE [dbo].[CustomMeterDimensions](
 ) ON [PRIMARY]
 GO
 
-CREATE TABLE [dbo].[SubscriptionCustomMeterUsages](
-	[Id] [bigint] IDENTITY(1,1) NOT NULL,
-	[MeterId] bigint NOT NULL,
-	[SubscriptionId] uniqueidentifier NOT NULL,
-	[CreatedTime] [datetime2] NOT NULL,
-	[LastUpdatedTime] [datetime2],
-	[LastErrorReportedTime] [datetime2],
-	[LastError] [nvarchar](max),
-	[IsEnabled] [bit],
-	[UnsubscribedTime] [datetime2],
-	[EnabledTime] [datetime2],
-	[DisabledTime] [datetime2],
-	PRIMARY KEY (Id),
-    CONSTRAINT FK_meter_id_subscription_custom_meter_usage FOREIGN KEY (MeterId)
-    REFERENCES CustomMeters(Id),
-	CONSTRAINT FK_subscription_id_subscription_custom_meter_usage FOREIGN KEY (SubscriptionId)
-	REFERENCES Subscriptions(SubscriptionId)
-) ON [PRIMARY]
-GO
-
 CREATE TABLE [dbo].[AadSecretTmps](
 	[Id] [bigint] IDENTITY(1,1) NOT NULL,
 	[OfferId] bigint NOT NULL,
@@ -419,6 +381,7 @@ CREATE TABLE [dbo].[AadSecretTmps](
     REFERENCES Offers(Id) 
 ) ON [PRIMARY]
 GO
+
 
 CREATE TABLE [dbo].[AadSecrets](
 	[Id] [bigint] IDENTITY(1,1) NOT NULL PRIMARY KEY,

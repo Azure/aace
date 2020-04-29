@@ -55,7 +55,9 @@
 
     [string]$firewallEndIpAddress = "clientIp",
 
-    [string]$buildLocation = "https://github.com/Azure/AIPlatform/raw/master/end-to-end-solutions/Luna/Resources/Builds/latest",
+    [string]$buildLocation = "default",
+
+    [string]$sqlScriptFileLocation = "default",
 
     [string]$companyName = "Microsoft",
 
@@ -244,6 +246,14 @@ $webAppAADApplicationName = GetNameForAzureResources -defaultName $webAppAADAppl
 $sqlServerAdminPasswordRaw = [System.Web.Security.Membership]::GeneratePassword(24,5)
 $sqlServerAdminPassword = ConvertTo-SecureString $sqlServerAdminPasswordRaw.ToString() -AsPlainText -Force
 
+if ($buildLocation -eq "default"){
+    $buildLocation = "https://github.com/Azure/AIPlatform/raw/master/end-to-end-solutions/Luna/Resources/Builds/latest"
+}
+
+if ($sqlScriptFileLocation -eq "default"){
+    $sqlScriptFileLocation = ".\SqlScripts\latest\db_provisioning.sql"
+}
+
 $currentContext = Get-AzContext
 if ($accountId -eq "default"){
     $accountId = $currentContext.Account.Id
@@ -393,7 +403,7 @@ $variables = $sqlDatabaseUsernameVar, $sqlDatabasePasswordVar
 
 $sqlServerInstanceName = $sqlServerName + ".database.windows.net"
 $sqlServerInstanceName
-Invoke-Sqlcmd -ServerInstance $sqlServerInstanceName -Username $sqlServerAdminUsername -Password $sqlServerAdminPasswordRaw -Database $sqlDatabaseName -Variable $variables -InputFile .\SqlScripts\db_provisioning.sql
+Invoke-Sqlcmd -ServerInstance $sqlServerInstanceName -Username $sqlServerAdminUsername -Password $sqlServerAdminPasswordRaw -Database $sqlDatabaseName -Variable $variables -InputFile $sqlScriptFileLocation
 
 Write-Host "Store storage account key to Azure Key Vault."
 $key = (Get-AzStorageAccountKey -ResourceGroupName $resourceGroupName -Name $StorageName)| Where-Object {$_.KeyName -eq "key1"}
