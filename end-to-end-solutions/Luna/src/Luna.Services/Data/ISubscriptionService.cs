@@ -18,7 +18,14 @@ namespace Luna.Services.Data
         /// <param name="owner">The owner of the subscription.</param>
         /// <returns>A list of all subsrciptions.</returns>
         Task<List<Subscription>> GetAllAsync(string[] status = null, string owner = "");
-        
+
+        /// <summary>
+        /// Get all active subscription by offer name
+        /// </summary>
+        /// <param name="offerName">The offer name</param>
+        /// <returns>The list of subscriptions</returns>
+        Task<List<Subscription>> GetAllActiveByOfferName(string offerName);
+
         /// <summary>
         /// Gets a subscription by id.
         /// </summary>

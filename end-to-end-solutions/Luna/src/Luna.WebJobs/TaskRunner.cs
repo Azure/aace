@@ -31,6 +31,11 @@ namespace LunaWebJobsApp
         public async Task Run()
         {
             await _lunaClient.ProcessActiveProvisions();
+            // instead of retrying processing meter events every 1 minute, we will retry every 10 minutes
+            if (DateTime.UtcNow.Minute % 10 == 0)
+            {
+                await _lunaClient.ProcessCustomMeterEvents();
+            }
         }
     }
 }

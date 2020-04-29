@@ -49,7 +49,7 @@ namespace Luna.Clients.Logging
             StringBuilder message = new StringBuilder();
             message.Append($"{resourceType} {resourceName}");
             message.Append(AppendParentResourceNames(planName, offerName, subscriptionId));
-            message.Append($"returned with value {value}.");
+            message.Append($" returned with value {value}.");
 
             return message.ToString();
         }
@@ -315,7 +315,7 @@ namespace Luna.Clients.Logging
             StringBuilder message = new StringBuilder();
             message.Append($"{resourceType} with name {resourceName}");
             message.Append(AppendParentResourceNames(planName, offerName, subscriptionId));
-            message.Append($" is created.");
+            message.Append($" is updated.");
 
             return message.ToString();
         }

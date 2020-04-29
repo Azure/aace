@@ -25,6 +25,8 @@ namespace Luna.Services.Data
         private readonly IOfferService _offerService;
         private readonly IPlanService _planService;
         private readonly IOfferParameterService _offerParameterService;
+        private readonly ICustomMeterService _customMeterService;
+        private readonly ICustomMeterDimensionService _customMeterDimensionService;
         private readonly ILogger<SubscriptionService> _logger;
 
         /// <summary>
@@ -33,17 +35,23 @@ namespace Luna.Services.Data
         /// <param name="sqlDbContext">The context to inject.</param>
         /// <param name="offerService">A service to inject.</param>
         /// <param name="planService">A service to inject.</param>
+        /// <param name="customMeterDimensionService">A service to inject.</param>
+        /// <param name="customMeterService">A service to inject.</param>
         /// <param name="offerParameterService">A service to inject.</param>
         /// <param name="logger">The logger.</param>
         public SubscriptionService(ISqlDbContext sqlDbContext,
             IOfferService offerService,
             IPlanService planService,
             IOfferParameterService offerParameterService,
+            ICustomMeterDimensionService customMeterDimensionService,
+            ICustomMeterService customMeterService,
             ILogger<SubscriptionService> logger)
         {
             _context = sqlDbContext ?? throw new ArgumentNullException(nameof(sqlDbContext));
             _offerService = offerService ?? throw new ArgumentNullException(nameof(offerService));
             _planService = planService ?? throw new ArgumentNullException(nameof(planService));
+            _customMeterDimensionService = customMeterDimensionService ?? throw new ArgumentNullException(nameof(customMeterDimensionService));
+            _customMeterService = customMeterService ?? throw new ArgumentNullException(nameof(customMeterService));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _offerParameterService = offerParameterService ?? throw new ArgumentNullException(nameof(offerParameterService));
         }
@@ -72,6 +80,32 @@ namespace Luna.Services.Data
             _logger.LogInformation(LoggingUtils.ComposeReturnCountMessage(typeof(Subscription).Name, subscriptionList.Count()));
 
             return subscriptionList;
+        }
+
+
+        /// <summary>
+        /// Get all active subscription by offer name
+        /// </summary>
+        /// <param name="offerName">The offer name</param>
+        /// <returns>The list of subscriptions</returns>
+        public async Task<List<Subscription>> GetAllActiveByOfferName(string offerName)
+        {
+            var offer = await _offerService.GetAsync(offerName);
+            //TODO: error handling
+
+            List<Subscription> allSub = await _context.Subscriptions.ToListAsync();
+
+            List<Subscription> subscriptionList = allSub.Where(s => s.OfferId == offer.Id).ToList();
+            foreach (var sub in subscriptionList)
+            {
+                sub.PlanName = (await _context.Plans.FindAsync(sub.PlanId)).PlanName;
+                sub.OfferName = offerName;
+            }
+
+            _logger.LogInformation(LoggingUtils.ComposeReturnCountMessage(typeof(Subscription).Name, subscriptionList.Count()));
+
+            return subscriptionList;
+
         }
 
         /// <summary>
@@ -160,6 +194,8 @@ namespace Luna.Services.Data
 
             subscription.RetryCount = 0;
 
+            List<CustomMeter> customMeterList = await _customMeterService.GetAllAsync(offer.OfferName);
+
             using (var transaction = await _context.BeginTransactionAsync())
             {
                 // Add subscription to db
@@ -172,6 +208,13 @@ namespace Luna.Services.Data
                     param.SubscriptionId = subscription.SubscriptionId;
                     _context.SubscriptionParameters.Add(param);
                 }
+                await _context._SaveChangesAsync();
+
+                foreach (var meter in customMeterList)
+                {
+                    _context.SubscriptionCustomMeterUsages.Add(new SubscriptionCustomMeterUsage(meter.Id, subscription.SubscriptionId));
+                }
+
                 await _context._SaveChangesAsync();
 
                 transaction.Commit();
@@ -291,8 +334,23 @@ namespace Luna.Services.Data
             subscription.ProvisioningType = nameof(ProvisioningType.Unsubscribe);
             subscription.LastUpdatedTime = DateTime.UtcNow;
 
-            _context.Subscriptions.Update(subscription);
-            await _context._SaveChangesAsync();
+            using (var transaction = await _context.BeginTransactionAsync())
+            {
+                var subscriptionMeterUsages = await _context.SubscriptionCustomMeterUsages.Where(s => s.IsEnabled && s.SubscriptionId == subscriptionId).ToListAsync();
+
+                foreach(var usage in subscriptionMeterUsages)
+                {
+                    usage.UnsubscribedTime = subscription.LastUpdatedTime.Value;
+                    _context.SubscriptionCustomMeterUsages.Update(usage);
+                }
+
+                await _context._SaveChangesAsync();
+
+                _context.Subscriptions.Update(subscription);
+                await _context._SaveChangesAsync();
+
+                transaction.Commit();
+            }
             _logger.LogInformation($"Operation {operationId}: Subscription {subscriptionId} with offer {subscription.OfferName} and plan {subscription.PlanName} is unsubscribed.");
 
             return subscription;

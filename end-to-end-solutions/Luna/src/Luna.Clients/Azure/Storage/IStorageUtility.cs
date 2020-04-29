@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Microsoft.WindowsAzure.Storage.Table;
 
 namespace Luna.Clients.Azure.Storage
 {
@@ -79,5 +80,13 @@ namespace Luna.Clients.Azure.Storage
         /// <param name="uri">The uri</param>
         /// <returns></returns>
         Task DeleteFileAsync(Uri uri);
+
+        /// <summary>
+        /// Insert a table entity, if the table doesn't exist, will create a new table
+        /// </summary>
+        /// <param name="tableName">The table name</param>
+        /// <param name="entity">The entity</param>
+        /// <returns></returns>
+        Task InsertTableEntity(string tableName, TableEntity entity);
     }
 }

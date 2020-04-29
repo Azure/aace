@@ -6,12 +6,14 @@ using Luna.API.Controllers.Admin;
 using Luna.Clients;
 using Luna.Clients.Azure.Auth;
 using Luna.Clients.Azure.Storage;
+using Luna.Clients.CustomMetering;
 using Luna.Clients.Exceptions;
 using Luna.Clients.Fulfillment;
 using Luna.Clients.Models;
 using Luna.Clients.Provisioning;
 using Luna.Data.Repository;
 using Luna.Services;
+using Luna.Services.CustomMeterEvent;
 using Luna.Services.Data;
 using Luna.Services.Marketplace;
 using Luna.Services.Provisoning;
@@ -253,6 +255,9 @@ namespace Luna.API
             services.AddHttpClient<IProvisioningClient, ProvisioningClient>()
                 .SetHandlerLifetime(TimeSpan.FromMinutes(5));
 
+
+            services.AddHttpClient<ICustomMeteringClient, CustomMeteringClient>();
+
             // Get the connection string from appsettings.json 
             string connectionString = this.configuration.GetValue<string>(this.configuration["SecuredCredentials:Database:ConnectionString"]);
 
@@ -295,10 +300,14 @@ namespace Luna.API
             services.TryAddScoped<ISubscriptionParameterService, SubscriptionParameterService>();
             services.TryAddScoped<IWebhookWebhookParameterService, WebhookWebhookParameterService>();
             services.TryAddScoped<IArmTemplateArmTemplateParameterService, ArmTemplateArmTemplateParameterService>();
+            services.TryAddScoped<ITelemetryDataConnectorService, TelemetryDataConnectorService>();
+            services.TryAddScoped<ISubscriptionCustomMeterUsageService, SubscriptionCustomMeterUsageService>();
 
+            services.TryAddScoped<ICustomMeterEventService, CustomMeterEventService>();
             // Register luna db client
             services.AddHttpClient("Luna", x => { x.BaseAddress = new Uri(configuration.GetValue<string>("LunaClient:BaseUri")); });
             services.TryAddScoped<LunaClient>();
+
             
             services.AddCors();
 

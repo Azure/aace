@@ -32,7 +32,7 @@ namespace Luna.Clients.CustomMetering
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        public CustomMeteringClient(
+        private CustomMeteringClient(
             SecuredFulfillmentClientConfiguration options,
             ILogger<CustomMeteringClient> logger,
             IKeyVaultHelper keyVaultHelper,
@@ -45,7 +45,7 @@ namespace Luna.Clients.CustomMetering
         public async Task<CustomMeteringRequestResult> RecordBatchUsageAsync(Guid requestId, Guid correlationId, IEnumerable<Usage> usage, CancellationToken cancellationToken)
         {
             var requestUrl = FluentUriBuilder
-                .Start(_baseUri)
+                .Start("https://marketplaceapi.microsoft.com/api")
                 .AddPath("batchUsageEvent")
                 .AddQuery(DefaultApiVersionParameterName, _apiVersion)
                 .Uri;
@@ -62,7 +62,7 @@ namespace Luna.Clients.CustomMetering
                                correlationId,
                                bearerToken,
                                null,
-                               JsonConvert.SerializeObject(usage),
+                               JsonConvert.SerializeObject(new BatchUsageEvent(usage)),
                                cancellationToken);
 
             _logger.LogInformation($"RecordBatchUsageAsync response: {response}");

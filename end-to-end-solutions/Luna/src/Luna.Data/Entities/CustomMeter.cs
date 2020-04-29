@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
 
 namespace Luna.Data.Entities
@@ -13,7 +15,6 @@ namespace Luna.Data.Entities
         /// </summary>
         public CustomMeter()
         {
-            this.CustomMeterDimensions = new HashSet<CustomMeterDimension>();
         }
 
         /// <summary>
@@ -23,23 +24,31 @@ namespace Luna.Data.Entities
         public void Copy(CustomMeter customMeter)
         {
             this.MeterName = customMeter.MeterName;
-            this.DisplayName = customMeter.DisplayName;
-            this.UnitOfMeasure = customMeter.UnitOfMeasure;
-            this.PricePerUnit = customMeter.PricePerUnit;
+            this.OfferName = customMeter.OfferName;
+            this.TelemetryDataConnectorName = customMeter.TelemetryDataConnectorName;
+            this.TelemetryQuery = customMeter.TelemetryQuery;
         }
     
         [JsonIgnore]
         public long Id { get; set; }
+
+        [NotMapped]
+        public string OfferName { get; set; }
+
+        [JsonIgnore]
+        public long OfferId { get; set; }
         
         public string MeterName { get; set; }
-        
-        public string DisplayName { get; set; }
-        
-        public string UnitOfMeasure { get; set; }
-        
-        public double PricePerUnit { get; set; }
-    
+
         [JsonIgnore]
-        public virtual ICollection<CustomMeterDimension> CustomMeterDimensions { get; set; }
+        public long TelemetryDataConnectorId { get; set; }
+
+        [NotMapped]
+        public string TelemetryDataConnectorName { get; set; }
+
+        public string TelemetryQuery { get; set; }
+
+        [JsonIgnore]
+        public virtual TelemetryDataConnector TelemetryDataConnector { get; set; }
     }
 }

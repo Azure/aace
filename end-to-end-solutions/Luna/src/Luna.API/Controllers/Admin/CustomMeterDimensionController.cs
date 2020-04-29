@@ -1,5 +1,9 @@
 using System;
+using System.Text.Json;
 using System.Threading.Tasks;
+using Luna.Clients.Azure.Auth;
+using Luna.Clients.Exceptions;
+using Luna.Clients.Logging;
 using Luna.Data.Entities;
 using Luna.Services.Data;
 using Microsoft.AspNetCore.Authorization;
@@ -40,23 +44,31 @@ namespace Luna.API.Controllers.Admin
         /// <param name="offerName">The name of the offer.</param>
         /// <param name="planName">The name of the plan.</param>
         /// <returns>HTTP 200 OK with customMeterDimension JSON objects in body.</returns>
-        [HttpGet("offers/{offerName}/plans/{planName}/customMeterDimensions")]
+        [HttpGet("offers/{offerName}/plans/{planName}/customMeterDimensions", Name = nameof(GetAsync) + nameof(CustomMeterDimension))]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> GetAllAsync(string offerName, string planName)
         {
+            AADAuthHelper.VerifyUserAccess(this.HttpContext, _logger, true);
+
+            _logger.LogInformation($"Get all custom meters dimensions from offer {offerName} and plan {planName}.");
             return Ok(await _customMeterDimensionService.GetAllAsync(offerName, planName));
         }
 
         /// <summary>
         /// Gets a customMeterDimension.
         /// </summary>
-        /// <param name="id">The id of the customMeterDimension.</param>
+        /// <param name="offerName">The name of the offer.</param>
+        /// <param name="planName">The name of the plan.</param>
+        /// <param name="meterName">The meterName of the customMeterDimension.</param>
         /// <returns>HTTP 200 OK with customMeterDimension JSON object in body.</returns>
-        [HttpGet("customMeterDimensions/{id}")]
+        [HttpGet("offers/{offerName}/plans/{planName}/customMeterDimensions/{meterName}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult> GetAsync(long id)
+        public async Task<ActionResult> GetAsync(string offerName, string planName, string meterName)
         {
-            return Ok(await _customMeterDimensionService.GetAsync(id));
+            AADAuthHelper.VerifyUserAccess(this.HttpContext, _logger, true);
+
+            _logger.LogInformation($"Get custom meter {meterName} dimensions from offer {offerName} and plan {planName}.");
+            return Ok(await _customMeterDimensionService.GetAsync(offerName, planName, meterName));
         }
 
         /// <summary>
@@ -64,40 +76,60 @@ namespace Luna.API.Controllers.Admin
         /// </summary>
         /// <param name="offerName">The name of the offer.</param>
         /// <param name="planName">The name of the plan.</param>
+        /// <param name="meterName">The name of the meter.</param>
         /// <param name="customMeterDimension">The customMeterDimension object to create.</param>
         /// <returns>HTTP 201 CREATED with URI to created object in response header.</returns>
-        [HttpPut("offers/{offerName}/plans/{planName}/customMeterDimensions")]
+        [HttpPut("offers/{offerName}/plans/{planName}/customMeterDimensions/{metername}")]
         [ProducesResponseType(StatusCodes.Status201Created)]
-        public async Task<ActionResult> CreateAsync(string offerName, string planName, [FromBody] CustomMeterDimension customMeterDimension)
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<ActionResult> CreateOrUpdateAsync(string offerName, string planName, string meterName, [FromBody] CustomMeterDimension customMeterDimension)
         {
-            await _customMeterDimensionService.CreateAsync(offerName, planName, customMeterDimension);
-            return CreatedAtAction(nameof(GetAsync), new { id = customMeterDimension.Id }, customMeterDimension);
-        }
+            AADAuthHelper.VerifyUserAccess(this.HttpContext, _logger, true);
 
-        /// <summary>
-        /// Updates a customMeterDimension.
-        /// </summary>
-        /// <param name="id">The id of the customMeterDimension.</param>
-        /// <param name="customMeterDimension">The updated customMeterDimension.</param>
-        /// <returns>HTTP 204 NO CONTENT.</returns>
-        [HttpPut("customMeterDimensions/{id}")]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public async Task<ActionResult> UpdateAsync(long id, [FromBody] CustomMeterDimension customMeterDimension)
-        {
-            await _customMeterDimensionService.UpdateAsync(id, customMeterDimension);
-            return NoContent();
+            if (customMeterDimension == null)
+            {
+                throw new LunaBadRequestUserException(LoggingUtils.ComposePayloadNotProvidedErrorMessage(nameof(customMeterDimension)), UserErrorCode.PayloadNotProvided);
+            }
+
+            if (!planName.Equals(customMeterDimension.PlanName))
+            {
+                throw new LunaBadRequestUserException(LoggingUtils.ComposeNameMismatchErrorMessage(nameof(offerName)), UserErrorCode.NameMismatch);
+            }
+
+            if (!meterName.Equals(customMeterDimension.MeterName))
+            {
+                throw new LunaBadRequestUserException(LoggingUtils.ComposeNameMismatchErrorMessage(nameof(meterName)), UserErrorCode.NameMismatch);
+            }
+
+            if (await _customMeterDimensionService.ExistsAsync(offerName, planName, meterName))
+            {
+                await _customMeterDimensionService.UpdateAsync(offerName, planName, meterName, customMeterDimension);
+                return Ok(customMeterDimension);
+            }
+            else
+            {
+                await _customMeterDimensionService.CreateAsync(offerName, planName, meterName, customMeterDimension);
+                return CreatedAtRoute(nameof(GetAsync) + nameof(CustomMeterDimension), 
+                    new { offerName = offerName, planName = planName, meterName = meterName }, 
+                    customMeterDimension);;
+            }
         }
 
         /// <summary>
         /// Deletes a customMeterDimension.
         /// </summary>
-        /// <param name="id">The id of the customMeterDimension.</param>
+        /// <param name="offerName">The name of the offer.</param>
+        /// <param name="planName">The name of the plan.</param>
+        /// <param name="meterName">The name of the meter.</param>
         /// <returns>HTTP 204 NO CONTENT.</returns>
-        [HttpDelete("customMeterDimensions/{id}")]
+        [HttpDelete("offers/{offerName}/plans/{planName}/customMeterDimensions/{metername}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public async Task<ActionResult> DeleteAsync(long id)
+        public async Task<ActionResult> DeleteAsync(string offerName, string planName, string meterName)
         {
-            await _customMeterDimensionService.DeleteAsync(id);
+            AADAuthHelper.VerifyUserAccess(this.HttpContext, _logger, true);
+
+            _logger.LogInformation($"Delete custom meter dimenstion {meterName} in offer {offerName} and plan {planName}.");
+            await _customMeterDimensionService.DeleteAsync(offerName, planName, meterName);
             return NoContent();
         }
     }

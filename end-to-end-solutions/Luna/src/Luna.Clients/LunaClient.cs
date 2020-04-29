@@ -168,6 +168,21 @@ namespace Luna.Clients
         }
 
         /// <summary>
+        /// Process all active provisions
+        /// </summary>
+        /// <returns></returns>
+        public async Task<HttpResponseMessage> ProcessCustomMeterEvents()
+        {
+            var client = _httpClientFactory.CreateClient("Luna");
+            var result = await client.PostAsync(
+            $"{client.BaseAddress}/subscriptions/processCustomMeterEvents",
+            null
+        ).ConfigureAwait(false);
+            _logger.LogInformation($"Received response ProcessCustomMeterEvents. Response content: {result}");
+            return result.EnsureSuccessStatusCode();
+        }
+
+        /// <summary>
         /// Get arm template by name
         /// </summary>
         /// <param name="offerName"></param>
