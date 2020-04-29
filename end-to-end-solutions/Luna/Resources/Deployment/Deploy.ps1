@@ -213,16 +213,15 @@ Function NewAzureRoleAssignment($scope, $objectId, $retryCount) {
     }
 }
 
+
 if($lunaServiceSubscriptionId -ne "default"){
+    Write-Host $lunaServiceSubscriptionId
+    Write-Host $tenantId
     if($tenantId -ne "default"){
-        
-        $context = Get-AzSubscription -SubscriptionId $lunaServiceSubscriptionId -TenantId $tenantId
-        Set-AzContext $context
+        Set-AzContext -Subscription $lunaServiceSubscriptionId -Tenant $tenantId
     }
     else{
-    
-        $context = Get-AzSubscription -SubscriptionId $lunaServiceSubscriptionId
-        Set-AzContext $context
+        Set-AzContext -Subscription $lunaServiceSubscriptionId
     }
 }
 

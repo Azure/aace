@@ -228,8 +228,8 @@ namespace Luna.Services.CustomMeterEvent
                     // Try to query and report meter events from the earliest attempted/failed time
                     while (true)
                     {
-                        // Give 3 hours grace period for all telemetry data being stored
-                        if (effectiveStartTime > DateTime.UtcNow.AddHours(-3))
+                        // Give 1 hours grace period for all telemetry data being stored
+                        if (effectiveStartTime > DateTime.UtcNow.AddHours(-2))
                         {
                             _logger.LogInformation($"The events of meter {meter.MeterName} was lastly processed at {effectiveStartTime}. The current time is {DateTime.UtcNow}.");
                             break;

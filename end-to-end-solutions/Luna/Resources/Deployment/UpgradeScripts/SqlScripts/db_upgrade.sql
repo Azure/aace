@@ -83,5 +83,7 @@ BEGIN
 		CONSTRAINT FK_subscription_id_subscription_custom_meter_usage FOREIGN KEY (SubscriptionId)
 		REFERENCES Subscriptions(SubscriptionId)
 	) ON [PRIMARY]
-
+	
 END
+
+UPDATE [dbo].[MetadataVersion] SET currentVersion = @target_version
