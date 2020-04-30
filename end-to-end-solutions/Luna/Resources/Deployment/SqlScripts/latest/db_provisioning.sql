@@ -47,9 +47,9 @@ DROP TABLE [dbo].[AadSecretTmps]
 END
 GO
 
-IF EXISTS (select * from sys.tables tb join sys.schemas sch on tb.schema_id = sch.schema_id where tb.name = 'SubscriptionCustomMeterUsage' AND sch.name = 'dbo')
+IF EXISTS (select * from sys.tables tb join sys.schemas sch on tb.schema_id = sch.schema_id where tb.name = 'SubscriptionCustomMeterUsages' AND sch.name = 'dbo')
 BEGIN
-DROP TABLE [dbo].[SubscriptionCustomMeterUsage]
+DROP TABLE [dbo].[SubscriptionCustomMeterUsages]
 END
 GO
 
@@ -149,12 +149,6 @@ DROP TABLE [dbo].[Offers]
 END
 GO
 
-IF EXISTS (select * from sys.tables tb join sys.schemas sch on tb.schema_id = sch.schema_id where tb.name = 'AMLWorkspaces' AND sch.name = 'dbo')
-BEGIN
-DROP TABLE [dbo].[AMLWorkspaces]
-END
-GO
-
 IF EXISTS (select * from sys.tables tb join sys.schemas sch on tb.schema_id = sch.schema_id where tb.name = 'APISubscriptions' AND sch.name = 'dbo')
 BEGIN
 DROP TABLE [dbo].[APISubscriptions]
@@ -174,9 +168,15 @@ DROP TABLE [dbo].[Deployments]
 END
 GO
 
-IF EXISTS (select * from sys.tables tb join sys.schemas sch on tb.schema_id = sch.schema_id where tb.name = 'Product' AND sch.name = 'dbo')
+IF EXISTS (select * from sys.tables tb join sys.schemas sch on tb.schema_id = sch.schema_id where tb.name = 'Products' AND sch.name = 'dbo')
 BEGIN
-DROP TABLE [dbo].[Product]
+DROP TABLE [dbo].[Products]
+END
+GO
+
+IF EXISTS (select * from sys.tables tb join sys.schemas sch on tb.schema_id = sch.schema_id where tb.name = 'AMLWorkspaces' AND sch.name = 'dbo')
+BEGIN
+DROP TABLE [dbo].[AMLWorkspaces]
 END
 GO
 
@@ -488,6 +488,15 @@ CREATE TABLE [dbo].[WebhookWebhookParameters](
 	CONSTRAINT FK_WebhookParameterId_WebhookWebhookParameters FOREIGN KEY (WebhookParameterId) REFERENCES WebhookParameters(Id)
 )
 
+CREATE TABLE [dbo].[AMLWorkspaces](
+	[Id] [bigint] IDENTITY(1,1) NOT NULL,
+	[WorkspaceName] [nvarchar](50) NOT NULL,
+	[AADApplicationId] [uniqueidentifier] NOT NULL,
+	[AADApplicationSecrets] [nvarchar](128) NOT NULL,
+	PRIMARY KEY (Id)
+) ON [PRIMARY]
+GO
+
 CREATE TABLE [dbo].[Products](
 	[Id] [bigint] IDENTITY(1,1) NOT NULL,
 	[ProductName] [nvarchar](50) NOT NULL,
@@ -522,11 +531,12 @@ CREATE TABLE [dbo].[APIVersions](
 	[DeployModelAPI] [nvarchar](max) NULL,
 	[AuthenticationType] [nvarchar](8) NOT NULL,
 	[AuthenticationKey] [nvarchar](64) NULL,
-	[AMLWorkspaceId] [nvarchar](50) NULL,
+	[AMLWorkspaceId] [bigint] NULL,
 	[CreatedTime] [datetime2](7) NOT NULL,
 	[LastUpdatedTime] [datetime2](7) NOT NULL,
 	PRIMARY KEY (Id),
-	CONSTRAINT FK_deploymentId_APIVersions FOREIGN KEY (DeploymentId) REFERENCES Deployments(Id)
+	CONSTRAINT FK_deploymentId_APIVersions FOREIGN KEY (DeploymentId) REFERENCES Deployments(Id),
+	CONSTRAINT FK_amlworkspaceId_APIVersions FOREIGN KEY (AMLWorkspaceId) REFERENCES AMLWorkspaces(Id)
 ) ON [PRIMARY]
 GO
 
@@ -541,14 +551,5 @@ CREATE TABLE [dbo].[APISubscriptions](
 	[LastUpdatedTime] [datetime2](7) NOT NULL,
 	PRIMARY KEY (SubscriptionId),
 	CONSTRAINT FK_deploymentId_APISubscriptions FOREIGN KEY (DeploymentId) REFERENCES Deployments(Id)
-) ON [PRIMARY]
-GO
-
-CREATE TABLE [dbo].[AMLWorkspace](
-	[Id] [bigint] IDENTITY(1,1) NOT NULL,
-	[WorkspaceName] [nvarchar](50) NOT NULL,
-	[AADApplicationId] [uniqueidentifier] NOT NULL,
-	[AADApplicationSecrets] [nvarchar](128) NOT NULL,
-	PRIMARY KEY (Id)
 ) ON [PRIMARY]
 GO
