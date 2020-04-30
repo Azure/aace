@@ -86,7 +86,7 @@ namespace Luna.API.Controllers.Admin
                 BatchInferenceAPI = @"https://batchinference.ai",
                 DeployModelAPI = @"https://deploymodel.ai",
                 AuthenticationType = "Token",
-                AMLWorkspaceId = "dummyWorkspace"
+                AMLWorkspaceName = "dummyWorkspace"
             };
 
             return Ok(new APIVersion[] { versionNone, versionKey, versionToken });
@@ -126,7 +126,7 @@ namespace Luna.API.Controllers.Admin
             else if (versionName.Equals("dummyVersionToken", StringComparison.InvariantCultureIgnoreCase))
             {
                 version.AuthenticationType = "Token";
-                version.AMLWorkspaceId = "dummyWorkspace";
+                version.AMLWorkspaceName = "dummyWorkspace";
             }
 
             version.VersionName = versionName;

@@ -49,7 +49,11 @@ namespace Luna.Data.Entities
 
         public string AuthenticationKey { get; set; }
 
-        public string AMLWorkspaceId { get; set; }
+        [JsonIgnore]
+        public long AMLWorkspaceId { get; set; }
+
+        [NotMapped]
+        public string AMLWorkspaceName { get; set; }
 
         public DateTime CreatedTime { get; set; }
 
