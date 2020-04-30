@@ -98,30 +98,6 @@ namespace Luna.API.Controllers.Admin
         }
 
         /// <summary>
-        /// Gets all deleted apiSubscriptions.
-        /// </summary>
-        /// <returns>HTTP 200 OK with apiSubscription JSON objects in response body.</returns>
-        [HttpGet("deletedAPISubscriptions")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult> GetAllDeletedAsync()
-        {
-            AADAuthHelper.VerifyUserAccess(this.HttpContext, _logger, true);
-            _logger.LogInformation(LoggingUtils.ComposeGetAllResourcesMessage(typeof(APISubscription).Name));
-            _logger.LogInformation($"Deleted apiSubscriptions only");
-            string owner = "";
-            if (Request.Query.ContainsKey("owner"))
-            {
-                owner = Request.Query["owner"].ToString();
-                _logger.LogInformation($"APISubscription owner name: {owner}.");
-            }
-
-            string[] status = new string[] {nameof(FulfillmentState.Purged),
-                nameof(FulfillmentState.Unsubscribed)};
-
-            return Ok(await _apiSubscriptionService.GetAllAsync(status: status, owner: owner));
-        }
-
-        /// <summary>
         /// Gets a apiSubscription.
         /// </summary>
         /// <param name="apiSubscriptionId">The apiSubscription id.</param>
@@ -220,9 +196,8 @@ namespace Luna.API.Controllers.Admin
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> RegenerateKey(Guid apiSubscriptionId, [FromBody] APISubscriptionKeyName keyName)
         {
-            string activatedBy = this.HttpContext.User.Identity.Name;
             AADAuthHelper.VerifyUserAccess(this.HttpContext, _logger, true);
-            _logger.LogInformation($"Activate apiSubscription {apiSubscriptionId}. Activated by {activatedBy}.");
+            _logger.LogInformation($"Regenerate {keyName.KeyName} key for apiSubscription {apiSubscriptionId}.");
 
             if (!await _apiSubscriptionService.ExistsAsync(apiSubscriptionId))
             {
