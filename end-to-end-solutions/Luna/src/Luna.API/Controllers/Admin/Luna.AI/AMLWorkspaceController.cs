@@ -42,7 +42,7 @@ namespace Luna.API.Controllers.Admin
         /// Gets all workspaces.
         /// </summary>
         /// <returns>HTTP 200 OK with workspace JSON objects in response body.</returns>
-        [HttpGet("workspaces")]
+        [HttpGet("amlworkspaces")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> GetAllAsync()
         {
@@ -56,7 +56,7 @@ namespace Luna.API.Controllers.Admin
         /// </summary>
         /// <param name="workspaceName">The name of the workspace to get.</param>
         /// <returns>HTTP 200 OK with workspace JSON object in response body.</returns>
-        [HttpGet("workspaces/{workspaceName}", Name = nameof(GetAsync) + nameof(AMLWorkspace))]
+        [HttpGet("amlworkspaces/{workspaceName}", Name = nameof(GetAsync) + nameof(AMLWorkspace))]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> GetAsync(string workspaceName)
         {
@@ -71,7 +71,7 @@ namespace Luna.API.Controllers.Admin
         /// <param name="workspaceName">The name of the workspace to update.</param>
         /// <param name="workspace">The updated workspace object.</param>
         /// <returns>HTTP 204 NO CONTENT.</returns>
-        [HttpPut("workspaces/{workspaceName}")]
+        [HttpPut("amlworkspaces/{workspaceName}")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> CreateOrUpdateAsync(string workspaceName, [FromBody] AMLWorkspace workspace)
@@ -107,7 +107,7 @@ namespace Luna.API.Controllers.Admin
         /// </summary>
         /// <param name="workspaceName">The name of the workspace to delete.</param>
         /// <returns>HTTP 204 NO CONTENT.</returns>
-        [HttpDelete("workspaces/{workspaceName}")]
+        [HttpDelete("amlworkspaces/{workspaceName}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<ActionResult> DeleteAsync(string workspaceName)
         {
