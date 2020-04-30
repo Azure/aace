@@ -16,7 +16,8 @@ export const Offers =
     },
     ipAddress:"Pre-allocate ip blocks in your private vNet and configure how many ip addresses needed per subscription. This is needed only when some Azure services are running in your private vNet as a part of the application.",
     armTemplates:"ARM templates can be used to manage Azure resources when user create, update or delete the subscription. ARM template parameters are extracted automatically from uploaded ARM templates. ARM template parameter values will be evaluated as C# expression.",
-    webHooks:"Webhook can be used to define your own business logic when user create, update or delete the subscription. For example, you can define a webhook to send a welcome email to the user when they create the subscription.",
+    webHooks:"Webhooks can be used to define your own business logic when user create, update or delete the subscription. For example, you can define a webhook to send a welcome email to the user when they create the subscription.",
+    meters:"Define custom meters and how to collect meter events from telemetry data.",
     plans:
     {
         planId:"<b>Plan ID</b> - Create a unique plan ID for each plan in this offer. This ID will be visible to customers in the product URL and Azure Resource Manager templates (if applicable)"+
@@ -26,4 +27,14 @@ export const Offers =
         restrictedAudience:"<b>Restricted Audience (Tenant IDs)</b> - Assign the audience that will have access to this private plan."+
         "<br/> <br/> <b>Note: </b> This must correspond to the Restricted Audience specified on the Plan overview tab (Plan audience, check “This is a private plan.”) of the partner center."
     }
+}
+
+export const Products=
+{
+    product:{
+        ProductId:'',
+        ProductType:'',
+        HostType:'',
+        Owner:''
+    },   
 }

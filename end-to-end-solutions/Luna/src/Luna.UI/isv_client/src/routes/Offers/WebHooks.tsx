@@ -295,7 +295,7 @@ const WebHooks: React.FunctionComponent = () => {
           toast.success("Success!");
 
           getWebHookParameters();
-          setTimeout(() => {globalContext.setFormDirty(false);}, 500);
+          setTimeout(() => {globalContext.setSecondaryFormDirty(false);}, 500);
 
         }}
       >

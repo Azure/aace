@@ -199,6 +199,17 @@ div.ms-TextField > span div span {
 .planmodal .ms-Dialog-actions {
   height: 60px;
 }
+
+.fixed_header tbody{
+  display:block;
+  overflow:auto;
+  max-height:145px;
+  width:100%;
+}
+
+.fixed_header thead tr{
+  display:block;
+}
 /*Plan ends*/
 
 /*Error Message */
@@ -895,4 +906,35 @@ table.offer thead tr th {
 {
   background: rgb(234, 234, 234) !important;
   color:rgb(51, 51, 51) !important;
+}
+
+.deploymentmodalpopup
+{
+width: 100%;
+}
+.deploymentmodalpopup .ms-Dialog-main
+{
+max-width: 100%;
+min-width: 45%;
+}
+
+.Productnav-header
+{
+  height: 10px!important;
+  border-bottom: none;
+}
+.OrangeButton
+{
+  background-color: #ED7D31 !important;
+}
+.wdth_100_per {
+  width: 100%;
+}
+.padd-right-10_Per
+{
+  padding-right: 10%;
+}
+.mar-right-2_Per
+{
+  margin-right: 2% !important;
 }

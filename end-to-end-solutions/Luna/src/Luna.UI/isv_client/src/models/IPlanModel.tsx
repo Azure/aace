@@ -16,6 +16,7 @@ export interface IPlanModel extends IBaseModel {
   annualBase: number,
   privatePlan: boolean
   restrictedUsers: IRestrictedUsersModel[];
+  customMeterDimensions: ICustomMeterDimensionsModel[];
   planIdList?: string,
   planNameList?: string  
 }
@@ -23,4 +24,13 @@ export interface IPlanModel extends IBaseModel {
 export interface IRestrictedUsersModel extends IBaseModel {
   tenantId: string,
   description: string
+}
+
+export interface ICustomMeterDimensionsModel extends IBaseModel {
+  meterName: string,
+  planName: string,
+  monthlyUnlimited: boolean,
+  annualUnlimited: boolean,
+  monthlyQuantityIncludedInBase: number,
+  annualQuantityIncludedInBase: number
 }

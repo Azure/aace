@@ -127,19 +127,24 @@ const ArmTemplates: React.FunctionComponent = () => {
 
   const _arrayItemErrorMessage = (primary: boolean, globalContext, errors, touched, object, idx, objectName, dirty) => {
 
-    if (primary)
-      globalContext.setFormDirty(dirty);
-    else
-      globalContext.setSecondaryFormDirty(dirty);
+    setTimeout(() => {
+      if (primary)
+        globalContext.setFormDirty(dirty);
+      else
+        globalContext.setSecondaryFormDirty(dirty);
+    }, 1);
 
     return arrayItemErrorMessage(errors, touched, object, idx, objectName);
   }
 
   const _arrayItemErrorMessageWithoutTouch = (primary: boolean, globalContext, errors, touched, object, idx, objectName, dirty) => {
-    if (primary)
-      globalContext.setFormDirty(dirty);
-    else
-      globalContext.setSecondaryFormDirty(dirty);
+
+    setTimeout(() => {
+      if (primary)
+        globalContext.setFormDirty(dirty);
+      else
+        globalContext.setSecondaryFormDirty(dirty);
+    }, 1);
 
     return arrayItemErrorMessageWithoutTouch(errors, touched, object, idx, objectName);
   }

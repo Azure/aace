@@ -44,7 +44,7 @@ class AdalContext {
     }});
     
     var token = adalContext.getCachedToken(appId);
-    //console.log(token);
+    console.log(token);
     return token;
   }
 }

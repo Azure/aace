@@ -1,5 +1,5 @@
 import { ServiceBase } from "../services/ServiceBase";
-import { IPlanModel, Result, IRestrictedUsersModel } from "../models";
+import {IPlanModel, Result, IRestrictedUsersModel, ICustomMeterDimensionsModel} from "../models";
 import { v4 as uuid } from "uuid";
 
 export default class PlansService extends ServiceBase {
@@ -149,6 +149,35 @@ export default class PlansService extends ServiceBase {
     public static async deleteRestrictedUser(offerName: string, planName: string, tenantId: string): Promise<Result<{}>> {
         var result = await this.requestJson<Result<{}>>({
             url: `/offers/${offerName}/plans/${planName}/restrictedUsers/${tenantId}`,
+            method: "DELETE"
+        });
+        return result;
+    }
+
+    public static async createOrUpdateCustomMeterDimension(offerName: string, model: ICustomMeterDimensionsModel): Promise<Result<ICustomMeterDimensionsModel>> {
+
+        var result = await this.requestJson<ICustomMeterDimensionsModel>({
+            url: `/offers/${offerName}/plans/${model.planName}/customMeterDimensions/${model.meterName}`,
+            method: "PUT",
+            data: model
+        });
+
+        return result;
+    }
+
+    public static async getCustomMeterDimensions(offerName: string, planName: string): Promise<Result<ICustomMeterDimensionsModel[]>> {
+
+        var result = await this.requestJson<ICustomMeterDimensionsModel[]>({
+            url: `/offers/${offerName}/plans/${planName}/customMeterDimensions`,
+            method: "GET"
+        });
+
+        return result;
+    }
+
+    public static async deleteCustomMeterDimension(offerName: string, planName: string, meterName: string): Promise<Result<{}>> {
+        var result = await this.requestJson<Result<{}>>({
+            url: `/offers/${offerName}/plans/${planName}/customMeterDimensions/${meterName}`,
             method: "DELETE"
         });
         return result;

@@ -24,7 +24,10 @@ interface IDetailsListDocumentsExampleState {
 
 const Subscriptions: React.FunctionComponent = () => {
     const history = useHistory();
-        
+
+    const v1Enabled = (window.Configs.ENABLE_V1.toLowerCase() == 'true' ? true : false);
+    const v2Enabled = (window.Configs.ENABLE_V2.toLowerCase() == 'true' ? true : false);
+
     const [subscription, setsubscription] = useState<ISubscriptionsModel[]>([]);
     const [state, setstate] = useState<IDetailsListDocumentsExampleState>();
     const [subscriptionWarnings, setsubscriptionWarnings] = useState<ISubscriptionsWarnings[]>(getInitialSubscriptionsWarningsModel);
