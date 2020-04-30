@@ -10,6 +10,7 @@ const Header: React.FunctionComponent = () => {
 
   const logo = "../../logo.png";
   const isvName = window.Configs.ISV_NAME;
+  const headerBackgroundColor = window.Configs.HEADER_BACKGROUND_COLOR;
   let userName = "";
 
   const theme = getTheme();
@@ -29,7 +30,7 @@ const Header: React.FunctionComponent = () => {
       verticalAlign={"center"}
       styles={{
         root: {
-          backgroundColor: '#004578',
+          backgroundColor: `${headerBackgroundColor}`,
           height:57
         }
       }}

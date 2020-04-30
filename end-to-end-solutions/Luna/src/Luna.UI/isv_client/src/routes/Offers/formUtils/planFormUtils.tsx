@@ -1,6 +1,6 @@
 import * as yup from "yup";
 import {ObjectSchema} from "yup";
-import {IPlanModel, IRestrictedUsersModel} from "../../../models";
+import {ICustomMeterDimensionsModel, IPlanModel, IRestrictedUsersModel} from "../../../models";
 import {v4 as uuid} from "uuid";
 import {aplicationID_AADTenantRegExp, planIdRegExp} from "./RegExp";
 import {ErrorMessage} from "./ErrorMessage";
@@ -24,7 +24,8 @@ export const getInitialPlan = (): IPlanFormValues => {
       privatePlan: false,
       isNew: true,
       clientId: uuid(),
-      restrictedUsers: []      
+      restrictedUsers: [],
+      customMeterDimensions: []
     }
   }
 };
@@ -33,6 +34,19 @@ export const getInitialRestrictedUser = (): IRestrictedUsersModel => {
   return {
     tenantId: '',
     description: '',
+    isNew: true,
+    clientId: uuid()
+  }
+};
+
+export const getInitialCustomMeterDimension = (): ICustomMeterDimensionsModel => {
+  return {
+    annualQuantityIncludedInBase: 0,
+    monthlyQuantityIncludedInBase: 0,
+    annualUnlimited: false,
+    monthlyUnlimited: false,
+    meterName: '',
+    planName: '',
     isNew: true,
     clientId: uuid()
   }
@@ -59,7 +73,7 @@ const planValidator: ObjectSchema<IPlanModel> = yup.object().shape(
       } else {
         return yup.number().integer().isValidSync(val);
       }
-    }).min(0, "Value must be an int greater or equals to 0")
+    }).min(0, "Value must be an int greater or equal to 0")
       .required("DataRetentionInDays is a required field"),
     subscribeArmTemplateName: yup.string(),
     unsubscribeArmTemplateName: yup.string(),
@@ -99,6 +113,30 @@ const planValidator: ObjectSchema<IPlanModel> = yup.object().shape(
           })).max(10, 'Only 10 users may be used.'),
         otherwise: yup.array().notRequired()
       }),
+    customMeterDimensions: yup.array<ICustomMeterDimensionsModel>().of(
+      yup.object().uniqueProperty('meterName', 'No duplicate Meters')
+        .shape({
+          meterName: yup.mixed().when('isDeleted', {
+            is: (val) => {
+              return !!val === false
+            },
+            then: yup.string().required('Meter is required'),
+            otherwise: yup.mixed().notRequired()
+          }),
+          planName: yup.string(),
+          monthlyUnlimited: yup.boolean(),
+          annualUnlimited: yup.boolean(),
+          monthlyQuantityIncludedInBase: yup.number().test('validNumber', 'Not a valid integer', (val): boolean => {
+            if (val === null || val === undefined || val === '') {
+              return true;
+            } else {
+              return yup.number().integer().isValidSync(val);
+            }
+          }).min(0, "Value must be an int greater or equal to 0")
+            .required("Included in Base is a required field"),
+          annualQuantityIncludedInBase: yup.number(),
+          clientId: yup.string(),
+        })),
     privatePlan: yup.boolean(),
     isNew: yup.boolean(),
     status: yup.string(),

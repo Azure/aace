@@ -1,6 +1,9 @@
 var Configs = {
     API_ENDPOINT: "https://lunatest-apiapp.azurewebsites.net/api/",
-    ISV_NAME: "Contoso AI",
-    AAD_APPID: "95e7065f-e11a-4770-b0bb-e980e7148e77",
-    AAD_ENDPOINT: "https://lunatest-isvapp.azurewebsites.net"
+    ISV_NAME: "Microsoft",
+    AAD_APPID: "50a6b69d-325a-4c02-aff3-51703d904789",
+    AAD_ENDPOINT: "https://lunatest-isvapp.azurewebsites.net",
+    HEADER_BACKGROUND_COLOR: "#118811",
+    ENABLE_V1: "true",
+    ENABLE_V2: "true"
 }

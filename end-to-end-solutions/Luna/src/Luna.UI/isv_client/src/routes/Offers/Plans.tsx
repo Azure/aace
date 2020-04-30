@@ -8,9 +8,10 @@ import ModifyPlan from "./ModifyPlan";
 import {Formik} from "formik";
 import {getInitialPlan, IPlanFormValues, planValidationSchema} from "./formUtils/planFormUtils";
 import FormLabel from '../../shared/components/FormLabel';
-import {handleSubmissionErrorsForForm} from "../../shared/formUtils/utils";
+import {handleSubmissionErrorsForArray, handleSubmissionErrorsForForm} from "../../shared/formUtils/utils";
 import {toast} from "react-toastify";
 import { useGlobalContext } from '../../shared/components/GlobalProvider';
+import CustomMetersService from "../../services/MetersService";
 
 const Plans: React.FunctionComponent = () => {
 
@@ -217,6 +218,8 @@ const Plans: React.FunctionComponent = () => {
               }
             }
 
+            //zb: commenting this out for now per xiaochen
+            /*
             if (values.plan.privatePlan) {
 
               // Next find all of the new parameters and attempt to create them
@@ -233,7 +236,76 @@ const Plans: React.FunctionComponent = () => {
                 // remove the delete param from the collection
                 user.isNew = false;
               }
+            }*/
+
+            // save the custom meter dimension changes
+
+            // Grab all of our modified entries before we start modifying the state of items during the saving process
+            let parametersToUpdate = values.plan.customMeterDimensions.filter(x => !!x.isNew === false && !!x.isDeleted === false && !!x.isSaved === false);
+
+            // First find all of the existing parameters that were deleted and attempt to delete them
+            // We don't care about parameters that were created and deleted by the client but never saved
+            let parametersToDelete = values.plan.customMeterDimensions.filter(x => x.isDeleted && !!x.isNew === false && !!x.isSaved === false);
+            for (let param of parametersToDelete) {
+
+              var paramDeleteResult = await PlansService.deleteCustomMeterDimension(offerName as string, values.plan.planName, param.meterName);
+              var idx = values.plan.customMeterDimensions.findIndex(x => x.clientId === param.clientId);
+              //TODO: NEED TO HANDLE THE DISPLAY OF ERRORS FOR subkeys for forms
+              if (!paramDeleteResult.success) {
+                globalContext.hideProcessing();
+                return;
+              }
+              /*if (handleSubmissionErrorsForArray (setErrors, setSubmitting, setFormError, 'plan.customMeterDimensions', idx, paramDeleteResult)) {
+                globalContext.hideProcessing();
+                return;
+              }*/
+
+              param.isSaved = true;
             }
+
+            // Next find all of the new parameters and attempt to create them
+            let parametersToCreate = values.plan.customMeterDimensions.filter(x => x.isNew && !!x.isDeleted === false && !!x.isSaved === false);
+            for (let param of parametersToCreate) {
+              param.planName = values.plan.planName;
+              param.annualQuantityIncludedInBase = param.monthlyQuantityIncludedInBase;
+              param.annualUnlimited = param.monthlyUnlimited;
+
+              var paramCreateResult = await PlansService.createOrUpdateCustomMeterDimension(offerName as string, param);
+              var idx1 = values.plan.customMeterDimensions.findIndex(x => x.clientId === param.clientId);
+              //TODO: NEED TO HANDLE THE DISPLAY OF ERRORS FOR subkeys for forms
+              if (!paramCreateResult.success) {
+                globalContext.hideProcessing();
+                return;
+              }
+              /*if (handleSubmissionErrorsForArray(setErrors, setSubmitting, setFormError, 'customMeters', idx1, paramCreateResult)) {
+                globalContext.hideProcessing();
+                return;
+              }*/
+
+              param.isNew = false;
+            }
+
+            // Finally, find all of the existing parameters that are not new or deleted and update them
+            for (let param of parametersToUpdate) {
+              param.annualQuantityIncludedInBase = param.monthlyQuantityIncludedInBase;
+              param.annualUnlimited = param.monthlyUnlimited;
+
+              var paramUpdateResult = await PlansService.createOrUpdateCustomMeterDimension(offerName as string, param);
+              var idx2 = values.plan.customMeterDimensions.findIndex(x => x.clientId === param.clientId);
+              //TODO: NEED TO HANDLE THE DISPLAY OF ERRORS FOR subkeys for forms
+              if (!paramUpdateResult.success) {
+                globalContext.hideProcessing();
+                return;
+              }
+              /*if (handleSubmissionErrorsForArray(setErrors, setSubmitting, setFormError, 'customMeters', idx1, paramCreateResult)) {
+                globalContext.hideProcessing();
+                return;
+              }*/
+
+              // do not mark the record as saved since the user could potentially change something about it for the next pass
+              // if one of the other records had a problem
+            }
+
 
             hidePlanDialog();
             globalContext.hideProcessing();

@@ -61,6 +61,13 @@ const OfferContent: React.FunctionComponent<OfferProps> = (props) => {
           }
         },
         {
+          title: "Meters",
+          paths: [`/modifyoffer/${offerName}/Meters`],
+          menuClick: () => {
+            preventDataLoss('Meters');
+          }
+        },
+        {
           title: "Plans",
           paths: [`/modifyoffer/${offerName}/Plans`],
           menuClick: () => {
@@ -147,6 +154,7 @@ const OfferContent: React.FunctionComponent<OfferProps> = (props) => {
   useEffect( () => {
 
     setHideSave(location.pathname.toLowerCase().endsWith("/plans"));
+    setHideSave(location.pathname.toLowerCase().endsWith("/meters"));
 // eslint-disable-next-line react-hooks/exhaustive-deps
   },[history.location,location.pathname]);
 

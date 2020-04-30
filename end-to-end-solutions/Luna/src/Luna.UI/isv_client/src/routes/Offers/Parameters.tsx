@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import {
   Checkbox,
-  FontIcon,  
+  FontIcon,
   MessageBar,
   MessageBarType,
   PrimaryButton,
   Stack,
-  TextField,  
+  TextField,
   IDropdownOption,
-  Dropdown,
+  Dropdown, Label,
 } from 'office-ui-fabric-react';
 import FormLabel from "../../shared/components/FormLabel";
 import { RouteComponentProps, useParams } from "react-router";
@@ -97,7 +97,7 @@ const Parameters: React.FunctionComponent<OfferProps> = (props) => {
         {Offers.offer.Parameters}
       </span>
       <Formik
-        initialValues={formState}
+        initialValues={formState}        
         validationSchema={offerParametersValidationSchema}
         validateOnBlur={true}
         onSubmit={async (values, { setSubmitting, setErrors }) => {
@@ -289,7 +289,7 @@ export const ParametersForm: React.FunctionComponent<IOfferParametersFormProps> 
   }
 
   const setDirty = (errors, touched, offerParameters, idx, parameterName ,dirty) => {
-    globalContext.setFormDirty(dirty);
+    setTimeout(() => { globalContext.setFormDirty(dirty) }, 1);
     return arrayItemErrorMessage(errors, touched, offerParameters, idx, parameterName);
   }
 
@@ -361,14 +361,19 @@ export const ParametersForm: React.FunctionComponent<IOfferParametersFormProps> 
                     return (
                       <tr key={idx}>
                         <td>
-                          <TextField
-                            name={`offerParameters.${idx}.parameterName`}
-                            value={value.parameterName}
-                            onChange={handleChange}
-                            maxLength={50}
-                            onBlur={handleBlur}
-                            errorMessage={setDirty(errors, touched, 'offerParameters', idx, 'parameterName', dirty)}
-                            placeholder={'Id'} />
+                          {value.isNew ? <TextField
+                              name={`offerParameters.${idx}.parameterName`}
+                              value={value.parameterName}
+                              onChange={handleChange}
+                              maxLength={50}
+                              onBlur={handleBlur}
+                              errorMessage={setDirty(errors, touched, 'offerParameters', idx, 'parameterName', dirty)}
+                              placeholder={'Id'} /> :
+                            <Label
+                              style={{width: 200, marginLeft:10}}
+                            >
+                              {value.parameterName}
+                            </Label>}
                         </td>
                         <td>
                           <TextField

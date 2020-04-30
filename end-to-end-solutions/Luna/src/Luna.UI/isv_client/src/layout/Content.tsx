@@ -1,5 +1,5 @@
 import React from 'react';
-import {Stack, Nav} from 'office-ui-fabric-react';
+import {Stack, Nav, INavLink} from 'office-ui-fabric-react';
 import { useHistory, useLocation } from 'react-router';
 import { WebRoute } from "../shared/constants/routes";
 
@@ -10,10 +10,49 @@ const Content: React.FunctionComponent = (props) => {
   
   const history = useHistory();
   const location = useLocation();
-  let offersTabActive = (location.pathname.toLowerCase().startsWith('/offers') || location.pathname.toLowerCase().startsWith('/modifyoffer'));
-  let selectedMenuItemKey = 'Offers';
-  if (!offersTabActive) {
-    selectedMenuItemKey = 'Subscriptions';
+  const v1Enabled = (window.Configs.ENABLE_V1.toLowerCase() == 'true' ? true : false);
+  const v2Enabled = (window.Configs.ENABLE_V2.toLowerCase() == 'true' ? true : false);
+
+  let offersTabActive = (location.pathname.toLowerCase().startsWith('/offers') 
+  || location.pathname.toLowerCase().startsWith('/modifyoffer'));
+  let productsTabActive = (location.pathname.toLowerCase().startsWith('/products'));
+  let subscriptionTabActive = (location.pathname.toLowerCase().startsWith('/subscriptions'));
+  let selectedMenuItemKey = '';
+  if (offersTabActive) {
+    selectedMenuItemKey = 'Offers';
+  }
+  if(productsTabActive)
+  {
+    selectedMenuItemKey='Products';
+  }
+  if(subscriptionTabActive){
+    selectedMenuItemKey= 'Subscriptions';
+  }
+
+  let navLinks: INavLink[] = [];
+  if (v1Enabled) {
+    navLinks.push({
+      url:'',
+      onClick: (ev, item) => { history.push(WebRoute.Offers) },
+      name: 'Offers',
+      key:'Offers',
+    });
+  }
+  if (v1Enabled || v2Enabled) {
+    navLinks.push({
+      url:'',
+      onClick: (ev, item) => { history.push(WebRoute.Subscriptions) },
+      name: 'Subscriptions',
+      key: 'Subscriptions',
+    });
+  }
+  if (v2Enabled) {
+    navLinks.push({
+      url:'',
+      onClick: (ev, item) => { history.push(WebRoute.Products) },
+      name: 'Products',
+      key:'Products',
+    });
   }
 
   return (
@@ -43,20 +82,7 @@ const Content: React.FunctionComponent = (props) => {
         }}
         groups={[
           {
-            links: [
-              {
-                url:'',
-                onClick: (ev, item) => { history.push(WebRoute.Offers) },
-                name: 'Offers',
-                key:'Offers',
-              },
-              {
-                url:'',
-                onClick: (ev, item) => { history.push(WebRoute.Subscriptions) },
-                name: 'Subscriptions',
-                key: 'Subscriptions',
-              }
-            ]
+            links: navLinks
           }
         ]}
       />

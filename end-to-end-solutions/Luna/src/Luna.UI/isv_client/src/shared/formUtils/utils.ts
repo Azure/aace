@@ -16,6 +16,21 @@ export const arrayItemErrorMessageWithoutTouch = (errors: any, touched: any, col
     errors[collectionName][collectionIndex][propertyName];
 }
 
+export const arrayItemErrorMessageFromForm = (errors: any, touched: any, formName: string, collectionName: string, collectionIndex: number, propertyName: string): string | undefined => {
+  return errors && errors[formName] && errors[formName][collectionName] &&
+    errors[formName][collectionName][collectionIndex] &&
+    touched[formName][collectionName] &&
+    touched[formName][collectionName][collectionIndex] &&
+    touched[formName][collectionName][collectionIndex][propertyName] &&
+    errors[formName][collectionName][collectionIndex][propertyName];
+}
+
+export const arrayItemErrorMessageWithoutTouchFromForm = (errors: any, touched: any, formName: string, collectionName: string, collectionIndex: number, propertyName: string): string | undefined => {
+  return errors && errors[formName] && errors[formName][collectionName] &&
+    errors[formName][collectionName][collectionIndex] &&
+    errors[formName][collectionName][collectionIndex][propertyName];
+}
+
 export const ChildarrayItemErrorMessage = (errors: any, touched: any, collectionName: string, collectionIndex: number
   , childCollectionname: string, childcollectionIndex: number, propertyName?: string): string | undefined => {
 

@@ -1,7 +1,23 @@
 import {ServiceBase} from "../services/ServiceBase";
-import {ISubscriptionsModel, ISubscriptionsPostModel, ISubscriptionsWarnings, Result} from "../models";
+import {
+    ISubscriptionsModel,
+    ISubscriptionsPostModel,
+    ISubscriptionsV2Model,
+    ISubscriptionsWarnings,
+    Result
+} from "../models";
 
 export default class SubscriptionsService extends ServiceBase {
+
+    public static async listV2(): Promise<Result<ISubscriptionsV2Model[]>> {
+
+        var result = await this.requestJson<ISubscriptionsV2Model[]>({
+            url: `/subscriptions`,
+            method: "GET"
+        });
+
+        return result;
+    }
 
     public static async list(): Promise<Result<ISubscriptionsModel[]>> {
 

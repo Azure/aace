@@ -100,7 +100,14 @@ export abstract class ServiceBase {
             result = new Result<T>(null, false, error.response.data.error.details);
         }
         else {
-          let message = (error.title ? error.title : error.mesage);
+          let message = '';
+          if (error.response.data.error.code) {
+            message = (error.response.data.error.code ? error.response.data.error.code : '');
+            if (error.response.data.error.message) {
+              message += ' - ' + error.response.data.error.message;
+            }
+          }
+
           ServiceBase.dispatchGlobalError(message);
           result = new Result<T>(null, false,null);
         }

@@ -45,7 +45,6 @@ const Info: React.FunctionComponent = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   },[]);
 
-
   if (loadingFormData)
     return (
       <Stack
@@ -102,6 +101,7 @@ const Info: React.FunctionComponent = () => {
         }}
       >
         <OfferForm isNew={false} formError={formError} offers={[]}/>
+
       </Formik>
     </Stack>
   );
@@ -111,6 +111,104 @@ export type IOfferFormProps = {
   isNew: boolean;
   formError?: string | null;
   offers: IOfferModel[];
+}
+export const TestForm: React.FunctionComponent<IOfferFormProps> = (props) => {
+
+  const {values, handleChange, handleBlur, touched, errors, handleSubmit, submitForm, dirty} = useFormikContext<IOfferInfoFormValues>(); // formikProps
+  const {formError, isNew} = props;
+
+  const globalContext = useGlobalContext();
+
+  useEffect(() => {
+    globalContext.modifySaveForm(async () => {
+      await submitForm();
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  },[]);
+
+  const textboxClassName = (props.isNew ? "form_textboxmodal" : "form_textbox");
+
+  const getOfferFormErrorString = (touched, errors, property: string) => {
+
+    setTimeout(() => {
+      globalContext.setFormDirty(dirty);
+    }, 1);
+
+    return touched.offer && errors.offer && touched.offer[property] && errors.offer[property] ? errors.offer[property] : '';
+  };
+
+  return (
+    <form style={{width: '100%'}} autoComplete={"off"} onSubmit={handleSubmit}>
+      {formError && <div style={{marginBottom: 15}}><MessageBar messageBarType={MessageBarType.error}>
+          <div dangerouslySetInnerHTML={{__html: formError}} style={{textAlign: 'left'}}></div>
+      </MessageBar></div>}
+      <Stack
+        verticalAlign="start"
+        horizontal={false}
+        gap={10}
+        styles={{
+          root: {}
+        }}
+      >
+        {isNew &&
+        <React.Fragment>
+            <Stack className={"form_row"}>
+                <FormLabel title={"ID:"} toolTip={Offers.offer.ID}/>
+                <TextField
+                    name={'offer.offerName'}
+                    value={values.offer.offerName}
+                    maxLength={50}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    placeholder={'Offer ID'}/>
+            </Stack>
+            <Stack className={"form_row"}>
+                <FormLabel title={"Alias:"} toolTip={Offers.offer.Alias}/>
+                <TextField
+                    name={'offer.offerAlias'}
+                    value={values.offer.offerAlias}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    placeholder={'Alias'}/>
+            </Stack>
+        </React.Fragment>
+        }
+        <Stack className={"form_row"}>
+          <FormLabel title={"Version:"} toolTip={Offers.offer.Version}/>
+          <TextField
+            name={'offer.offerVersion'}
+            value={values.offer.offerVersion}
+            onChange={handleChange}
+            onBlur={handleBlur}
+            errorMessage={getOfferFormErrorString(touched, errors, 'offerVersion')}
+            placeholder={'Version'}
+            className={textboxClassName}/>
+        </Stack>
+        <Stack className={"form_row"}>
+          <FormLabel title={"Owners:"} toolTip={Offers.offer.Owners}/>
+          <TextField
+            name={'offer.owners'}
+            value={values.offer.owners}
+            onChange={handleChange}
+            onBlur={handleBlur}
+            errorMessage={getOfferFormErrorString(touched, errors, 'owners')}
+            placeholder={'Owners'}
+            className={textboxClassName}/>
+        </Stack>
+        <Stack className={"form_row"}>
+          <FormLabel title={"Host Subscription:"} toolTip={Offers.offer.HostSubscription}/>
+          <TextField
+            name={'offer.hostSubscription'}
+            value={values.offer.hostSubscription}
+            onChange={handleChange}
+            onBlur={handleBlur}
+            errorMessage={getOfferFormErrorString(touched, errors, 'hostSubscription')}
+            placeholder={'Host Subscription'}
+            className={textboxClassName}/>
+        </Stack>
+      </Stack>
+    </form>
+  );
 }
 export const OfferForm: React.FunctionComponent<IOfferFormProps> = (props) => {
   const {values, handleChange, handleBlur, touched, errors, handleSubmit, submitForm, dirty} = useFormikContext<IOfferInfoFormValues>(); // formikProps
@@ -125,9 +223,11 @@ export const OfferForm: React.FunctionComponent<IOfferFormProps> = (props) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   },[]);
 
-  const getOfferFormErrorString = (touched, errors, property: string, dirty) => {
+  const getOfferFormErrorString = (touched, errors, property: string) => {
 
-    globalContext.setFormDirty(dirty);
+    setTimeout(() => {
+      globalContext.setFormDirty(dirty);
+    }, 1);
 
     return touched.offer && errors.offer && touched.offer[property] && errors.offer[property] ? errors.offer[property] : '';
   };
@@ -172,7 +272,7 @@ export const OfferForm: React.FunctionComponent<IOfferFormProps> = (props) => {
                     maxLength={50}
                     onChange={handleChange}
                     onBlur={handleBlur}
-                    errorMessage={getOfferFormErrorString(touched, errors, 'offerName', dirty)}
+                    errorMessage={getOfferFormErrorString(touched, errors, 'offerName')}
                     placeholder={'Offer ID'}
                     className={textboxClassName}/>
             </Stack>
@@ -183,7 +283,7 @@ export const OfferForm: React.FunctionComponent<IOfferFormProps> = (props) => {
                     value={values.offer.offerAlias}
                     onChange={handleChange}
                     onBlur={handleBlur}
-                    errorMessage={getOfferFormErrorString(touched, errors, 'offerAlias', dirty)}
+                    errorMessage={getOfferFormErrorString(touched, errors, 'offerAlias')}
                     placeholder={'Alias'}
                     className={textboxClassName}/>
             </Stack>
@@ -196,7 +296,7 @@ export const OfferForm: React.FunctionComponent<IOfferFormProps> = (props) => {
             value={values.offer.offerVersion}
             onChange={handleChange}
             onBlur={handleBlur}
-            errorMessage={getOfferFormErrorString(touched, errors, 'offerVersion', dirty)}
+            errorMessage={getOfferFormErrorString(touched, errors, 'offerVersion')}
             placeholder={'Version'}
             className={textboxClassName}/>
         </Stack>
@@ -207,7 +307,7 @@ export const OfferForm: React.FunctionComponent<IOfferFormProps> = (props) => {
             value={values.offer.owners}
             onChange={handleChange}
             onBlur={handleBlur}
-            errorMessage={getOfferFormErrorString(touched, errors, 'owners', dirty)}
+            errorMessage={getOfferFormErrorString(touched, errors, 'owners')}
             placeholder={'Owners'}
             className={textboxClassName}/>
         </Stack>
@@ -218,7 +318,7 @@ export const OfferForm: React.FunctionComponent<IOfferFormProps> = (props) => {
             value={values.offer.hostSubscription}
             onChange={handleChange}
             onBlur={handleBlur}
-            errorMessage={getOfferFormErrorString(touched, errors, 'hostSubscription', dirty)}
+            errorMessage={getOfferFormErrorString(touched, errors, 'hostSubscription')}
             placeholder={'Host Subscription'}
             className={textboxClassName}/>
         </Stack>
