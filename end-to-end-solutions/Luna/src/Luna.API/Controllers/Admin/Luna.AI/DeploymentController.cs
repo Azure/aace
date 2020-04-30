@@ -46,9 +46,19 @@ namespace Luna.API.Controllers.Admin
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> GetAllAsync(string productName)
         {
+            AADAuthHelper.VerifyUserAccess(this.HttpContext, _logger, true);
             // all users can call this API.
             _logger.LogInformation($"Get all deployments in product {productName}.");
-            return Ok(await _deploymentService.GetAllAsync(productName));
+            //return Ok(await _deploymentService.GetAllAsync(productName));
+
+            Deployment deployment = new Deployment()
+            {
+                DeploymentName = "dummyDeployment",
+                ProductName = "dummyProduct",
+                Description = "this is a dummy deployment"
+            };
+
+            return Ok(new Deployment[] { deployment });
         }
 
         /// <summary>
@@ -63,7 +73,16 @@ namespace Luna.API.Controllers.Admin
         {
             AADAuthHelper.VerifyUserAccess(this.HttpContext, _logger, true);
             _logger.LogInformation($"Get deployment {deploymentName} in product {productName}.");
-            return Ok(await _deploymentService.GetAsync(productName, deploymentName));
+            //return Ok(await _deploymentService.GetAsync(productName, deploymentName));
+
+            Deployment deployment = new Deployment()
+            {
+                DeploymentName = deploymentName,
+                ProductName = "dummyProduct",
+                Description = "this is a dummy deployment"
+            };
+
+            return Ok(deployment);
         }
 
         /// <summary>
@@ -78,6 +97,15 @@ namespace Luna.API.Controllers.Admin
         [ProducesResponseType(StatusCodes.Status201Created)]
         public async Task<ActionResult> CreateOrUpdateAsync(string productName, string deploymentName, [FromBody] Deployment deployment)
         {
+            if (deploymentName.Equals("dummydeployment", StringComparison.InvariantCultureIgnoreCase))
+            {
+                return Ok(deployment);
+            }
+            else
+            {
+                return CreatedAtRoute(nameof(GetAsync) + nameof(Deployment), new { productName = productName, deploymentName = deployment.DeploymentName }, deployment);
+            }
+            /*
             AADAuthHelper.VerifyUserAccess(this.HttpContext, _logger, true);
             if (deployment == null)
             {
@@ -102,6 +130,7 @@ namespace Luna.API.Controllers.Admin
                 await _deploymentService.CreateAsync(productName, deployment);
                 return CreatedAtRoute(nameof(GetAsync) + nameof(Deployment), new { productName = productName, deploymentName = deployment.DeploymentName }, deployment);
             }
+            */
         }
 
         /// <summary>
@@ -116,7 +145,7 @@ namespace Luna.API.Controllers.Admin
         {
             AADAuthHelper.VerifyUserAccess(this.HttpContext, _logger, true);
             _logger.LogInformation($"Delete deployment {deploymentName} from product {productName}.");
-            await _deploymentService.DeleteAsync(productName, deploymentName);
+            //await _deploymentService.DeleteAsync(productName, deploymentName);
             return NoContent();
         }
     }

@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Luna.Clients.Azure.Auth;
@@ -49,7 +50,46 @@ namespace Luna.API.Controllers.Admin
         {
             AADAuthHelper.VerifyUserAccess(this.HttpContext, _logger, true);
             _logger.LogInformation($"Get all apiVersions in deployment {deploymentName} in product {productName}.");
-            return Ok(await _apiVersionService.GetAllAsync(productName, deploymentName));
+            //return Ok(await _apiVersionService.GetAllAsync(productName, deploymentName));
+
+            APIVersion versionNone = new APIVersion()
+            {
+                ProductName = "dummyProduct",
+                DeploymentName = "dummyDeployment",
+                VersionName = "dummyVersionNone",
+                RealTimePredictAPI = @"https://realtimepredict.ai",
+                TrainModelAPI = @"https://trainmodel.ai",
+                BatchInferenceAPI = @"https://batchinference.ai",
+                DeployModelAPI = @"https://deploymodel.ai",
+                AuthenticationType = "None"
+            };
+
+            APIVersion versionKey = new APIVersion()
+            {
+                ProductName = "dummyProduct",
+                DeploymentName = "dummyDeployment",
+                VersionName = "dummyVersionKey",
+                RealTimePredictAPI = @"https://realtimepredict.ai",
+                TrainModelAPI = @"https://trainmodel.ai",
+                BatchInferenceAPI = @"https://batchinference.ai",
+                DeployModelAPI = @"https://deploymodel.ai",
+                AuthenticationType = "Key"
+            };
+
+            APIVersion versionToken = new APIVersion()
+            {
+                ProductName = "dummyProduct",
+                DeploymentName = "dummyDeployment",
+                VersionName = "dummyVersionToken",
+                RealTimePredictAPI = @"https://realtimepredict.ai",
+                TrainModelAPI = @"https://trainmodel.ai",
+                BatchInferenceAPI = @"https://batchinference.ai",
+                DeployModelAPI = @"https://deploymodel.ai",
+                AuthenticationType = "Token",
+                AMLWorkspaceId = "dummyWorkspace"
+            };
+
+            return Ok(new APIVersion[] { versionNone, versionKey, versionToken });
         }
 
         /// <summary>
@@ -65,7 +105,33 @@ namespace Luna.API.Controllers.Admin
         {
             AADAuthHelper.VerifyUserAccess(this.HttpContext, _logger, true);
             _logger.LogInformation($"Get apiVersion {versionName.ToString()} in deployment {deploymentName} in product {productName}.");
-            return Ok(await _apiVersionService.GetAsync(productName, deploymentName, versionName));
+            //return Ok(await _apiVersionService.GetAsync(productName, deploymentName, versionName));
+
+            APIVersion version = new APIVersion()
+            {
+                ProductName = "dummyProduct",
+                DeploymentName = "dummyDeployment",
+                VersionName = "dummyVersionNone",
+                RealTimePredictAPI = @"https://realtimepredict.ai",
+                TrainModelAPI = @"https://trainmodel.ai",
+                BatchInferenceAPI = @"https://batchinference.ai",
+                DeployModelAPI = @"https://deploymodel.ai",
+                AuthenticationType = "None"
+            };
+
+            if (versionName.Equals("dummyVersionKey", StringComparison.InvariantCultureIgnoreCase))
+            {
+                version.AuthenticationType = "Key";
+            }
+            else if (versionName.Equals("dummyVersionToken", StringComparison.InvariantCultureIgnoreCase))
+            {
+                version.AuthenticationType = "Token";
+                version.AMLWorkspaceId = "dummyWorkspace";
+            }
+
+            version.VersionName = versionName;
+
+            return Ok(version);
         }
 
         /// <summary>
@@ -81,6 +147,17 @@ namespace Luna.API.Controllers.Admin
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> CreateOrUpdateAsync(string productName, string deploymentName, string versionName, [FromBody] APIVersion apiVersion)
         {
+            if (versionName.StartsWith("dummyVersion", StringComparison.InvariantCultureIgnoreCase))
+            {
+                apiVersion.AuthenticationKey = null;
+                return Ok(apiVersion);
+            }
+            else
+            {
+                apiVersion.AuthenticationKey = null;
+                return CreatedAtRoute(nameof(GetAsync) + nameof(APIVersion), new { productName = productName, deploymentName = deploymentName, versionName = versionName }, apiVersion);
+            }
+            /*
             AADAuthHelper.VerifyUserAccess(this.HttpContext, _logger, true);
             if (apiVersion == null)
             {
@@ -105,7 +182,7 @@ namespace Luna.API.Controllers.Admin
                 await _apiVersionService.CreateAsync(productName, deploymentName, apiVersion);
                 return CreatedAtRoute(nameof(GetAsync) + nameof(APIVersion), new { productName = productName, deploymentName = deploymentName, versionName = versionName }, apiVersion);
             }
-
+            */
         }
 
 
@@ -123,7 +200,7 @@ namespace Luna.API.Controllers.Admin
 
             AADAuthHelper.VerifyUserAccess(this.HttpContext, _logger, true);
             _logger.LogInformation($"Delete apiVersion {versionName.ToString()} in deployment {deploymentName} in product {productName}.");
-            await _apiVersionService.DeleteAsync(productName, deploymentName, versionName);
+            //await _apiVersionService.DeleteAsync(productName, deploymentName, versionName);
             return NoContent();
         }
     }

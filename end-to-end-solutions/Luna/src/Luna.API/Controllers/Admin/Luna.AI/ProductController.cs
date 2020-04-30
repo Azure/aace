@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Luna.Clients.Azure.Auth;
 using Luna.Clients.Exceptions;
@@ -46,17 +47,16 @@ namespace Luna.API.Controllers.Admin
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> GetAllAsync()
         {
-            //AADAuthHelper.VerifyUserAccess(this.HttpContext, _logger, true);
-            //_logger.LogInformation("Get all products.");
+            AADAuthHelper.VerifyUserAccess(this.HttpContext, _logger, true);
+            _logger.LogInformation("Get all products.");
             //return Ok(await _productService.GetAllAsync());
 
             Product product = new Product()
             {
-                ProductName = "test",
-                ProductType = "test",
-                HostType = "test",
-                Owner = "test"
-
+                ProductName = "dummyProduct",
+                ProductType = "real-time prediction",
+                HostType = "SaaS",
+                Owner = "xiwu@microsoft.com"
             };
 
             return Ok(new Product[] { product });
@@ -73,7 +73,17 @@ namespace Luna.API.Controllers.Admin
         {
             AADAuthHelper.VerifyUserAccess(this.HttpContext, _logger, true);
             _logger.LogInformation($"Get product {productName}");
-            return Ok(await _productService.GetAsync(productName));
+            //return Ok(await _productService.GetAsync(productName));
+
+            Product product = new Product()
+            {
+                ProductName = productName,
+                ProductType = "real-time prediction",
+                HostType = "SaaS",
+                Owner = "xiwu@microsoft.com"
+            };
+
+            return Ok(product);
         }
 
         /// <summary>
@@ -88,6 +98,17 @@ namespace Luna.API.Controllers.Admin
         public async Task<ActionResult> CreateOrUpdateAsync(string productName, [FromBody] Product product)
         {
             AADAuthHelper.VerifyUserAccess(this.HttpContext, _logger, true);
+
+            if (productName.Equals("dummyProduct", StringComparison.InvariantCultureIgnoreCase))
+            {
+                return Ok(product);
+            }
+            else
+            {
+                return CreatedAtRoute(nameof(GetAsync) + nameof(Product), new { productName = product.ProductName }, product);
+            }
+
+            /*
             if (product == null)
             {
                 throw new LunaBadRequestUserException(LoggingUtils.ComposePayloadNotProvidedErrorMessage(nameof(product)), UserErrorCode.PayloadNotProvided);
@@ -111,6 +132,7 @@ namespace Luna.API.Controllers.Admin
                 await _productService.CreateAsync(product);
                 return CreatedAtRoute(nameof(GetAsync) + nameof(Product), new { productName = product.ProductName }, product);
             }
+            */
         }
 
         /// <summary>
@@ -124,7 +146,7 @@ namespace Luna.API.Controllers.Admin
         {
             AADAuthHelper.VerifyUserAccess(this.HttpContext, _logger, true);
             _logger.LogInformation($"Delete product {productName}.");
-            await _productService.DeleteAsync(productName);
+            //await _productService.DeleteAsync(productName);
             return NoContent();
         }
     }

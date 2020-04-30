@@ -8,9 +8,8 @@ namespace Luna.Data.DataContracts
     {
         public string KeyName { get; set; }
 
-        public APISubscriptionKeyName(string keyName)
+        public APISubscriptionKeyName()
         {
-            KeyName = keyName;
         }
     }
 }

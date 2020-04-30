@@ -42,13 +42,22 @@ namespace Luna.API.Controllers.Admin
         /// Gets all workspaces.
         /// </summary>
         /// <returns>HTTP 200 OK with workspace JSON objects in response body.</returns>
-        [HttpGet("workspaces")]
+        [HttpGet("amlworkspaces")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> GetAllAsync()
         {
             AADAuthHelper.VerifyUserAccess(this.HttpContext, _logger, true);
             _logger.LogInformation("Get all workspaces.");
-            return Ok(await _workspaceService.GetAllAsync());
+            //return Ok(await _workspaceService.GetAllAsync());
+
+            AMLWorkspace workspace = new AMLWorkspace()
+            {
+                WorkspaceName = "dummyworkspace",
+                ResourceId = "/subsriptions/xxxx/resourcegroup/yyy/service/xxx",
+                AADApplicationId = Guid.Parse("31333002-6e05-4478-b423-c959d2600bc2")
+            };
+
+            return Ok(new AMLWorkspace[] { workspace });
         }
 
         /// <summary>
@@ -56,13 +65,22 @@ namespace Luna.API.Controllers.Admin
         /// </summary>
         /// <param name="workspaceName">The name of the workspace to get.</param>
         /// <returns>HTTP 200 OK with workspace JSON object in response body.</returns>
-        [HttpGet("workspaces/{workspaceName}", Name = nameof(GetAsync) + nameof(AMLWorkspace))]
+        [HttpGet("amlworkspaces/{workspaceName}", Name = nameof(GetAsync) + nameof(AMLWorkspace))]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> GetAsync(string workspaceName)
         {
             AADAuthHelper.VerifyUserAccess(this.HttpContext, _logger, true);
             _logger.LogInformation($"Get workspace {workspaceName}");
-            return Ok(await _workspaceService.GetAsync(workspaceName));
+            //return Ok(await _workspaceService.GetAsync(workspaceName));
+
+            AMLWorkspace workspace = new AMLWorkspace()
+            {
+                WorkspaceName = workspaceName,
+                ResourceId = "/subsriptions/xxxx/resourcegroup/yyy/service/xxx",
+                AADApplicationId = Guid.Parse("31333002-6e05-4478-b423-c959d2600bc2")
+            };
+
+            return Ok(workspace);
         }
 
         /// <summary>
@@ -71,11 +89,22 @@ namespace Luna.API.Controllers.Admin
         /// <param name="workspaceName">The name of the workspace to update.</param>
         /// <param name="workspace">The updated workspace object.</param>
         /// <returns>HTTP 204 NO CONTENT.</returns>
-        [HttpPut("workspaces/{workspaceName}")]
+        [HttpPut("amlworkspaces/{workspaceName}")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> CreateOrUpdateAsync(string workspaceName, [FromBody] AMLWorkspace workspace)
         {
+            if (workspaceName.Equals("dummyworkspace", StringComparison.InvariantCultureIgnoreCase))
+            {
+                workspace.AADApplicationSecrets = null;
+                return Ok(workspace);
+            }
+            else
+            {
+                workspace.AADApplicationSecrets = null;
+                return CreatedAtRoute(nameof(GetAsync) + nameof(AMLWorkspace), new { workspaceName = workspace.WorkspaceName }, workspace);
+            }
+            /*
             AADAuthHelper.VerifyUserAccess(this.HttpContext, _logger, true);
             if (workspace == null)
             {
@@ -100,6 +129,7 @@ namespace Luna.API.Controllers.Admin
                 await _workspaceService.CreateAsync(workspace);
                 return CreatedAtRoute(nameof(GetAsync) + nameof(AMLWorkspace), new { workspaceName = workspace.WorkspaceName }, workspace);
             }
+            */
         }
 
         /// <summary>
@@ -107,13 +137,13 @@ namespace Luna.API.Controllers.Admin
         /// </summary>
         /// <param name="workspaceName">The name of the workspace to delete.</param>
         /// <returns>HTTP 204 NO CONTENT.</returns>
-        [HttpDelete("workspaces/{workspaceName}")]
+        [HttpDelete("amlworkspaces/{workspaceName}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<ActionResult> DeleteAsync(string workspaceName)
         {
             AADAuthHelper.VerifyUserAccess(this.HttpContext, _logger, true);
             _logger.LogInformation($"Delete workspace {workspaceName}.");
-            await _workspaceService.DeleteAsync(workspaceName);
+            //await _workspaceService.DeleteAsync(workspaceName);
             return NoContent();
         }
     }

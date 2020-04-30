@@ -61,7 +61,7 @@ namespace Luna.API.Controllers.Admin
         public async Task<ActionResult> GetAllAsync()
         {
             _logger.LogInformation(LoggingUtils.ComposeGetAllResourcesMessage(typeof(APISubscription).Name));
-
+            /*
             string owner = "";
             if (Request.Query.ContainsKey("owner"))
             {
@@ -95,30 +95,21 @@ namespace Luna.API.Controllers.Admin
             }
 
             return Ok(await _apiSubscriptionService.GetAllAsync(status: statusList, owner: owner));
-        }
+            */
 
-        /// <summary>
-        /// Gets all deleted apiSubscriptions.
-        /// </summary>
-        /// <returns>HTTP 200 OK with apiSubscription JSON objects in response body.</returns>
-        [HttpGet("deletedAPISubscriptions")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult> GetAllDeletedAsync()
-        {
-            AADAuthHelper.VerifyUserAccess(this.HttpContext, _logger, true);
-            _logger.LogInformation(LoggingUtils.ComposeGetAllResourcesMessage(typeof(APISubscription).Name));
-            _logger.LogInformation($"Deleted apiSubscriptions only");
-            string owner = "";
-            if (Request.Query.ContainsKey("owner"))
+            APISubscription subscription = new APISubscription()
             {
-                owner = Request.Query["owner"].ToString();
-                _logger.LogInformation($"APISubscription owner name: {owner}.");
-            }
+                SubscriptionId = Guid.NewGuid(),
+                SubscriptionName = "dummySubscription",
+                ProductName = "dummyProduct",
+                DeploymentName = "dummyDeployment",
+                Status = "Subscribed",
+                BaseUrl = @"https://realtimeprediction.ai/predict",
+                PrimaryKey = "dummyPrimaryKey",
+                SecondaryKey = "dummySecondaryKey"
+            };
 
-            string[] status = new string[] {nameof(FulfillmentState.Purged),
-                nameof(FulfillmentState.Unsubscribed)};
-
-            return Ok(await _apiSubscriptionService.GetAllAsync(status: status, owner: owner));
+            return Ok(new APISubscription[] { subscription });
         }
 
         /// <summary>
@@ -131,10 +122,24 @@ namespace Luna.API.Controllers.Admin
         public async Task<ActionResult> GetAsync(Guid apiSubscriptionId)
         {
             _logger.LogInformation($"Get apiSubscription {apiSubscriptionId}.");
-            var apiSubscription = await _apiSubscriptionService.GetAsync(apiSubscriptionId);
+            //var apiSubscription = await _apiSubscriptionService.GetAsync(apiSubscriptionId);
 
-            AADAuthHelper.VerifyUserAccess(this.HttpContext, _logger, false, apiSubscription.UserId);
-            return Ok(apiSubscription);
+            //AADAuthHelper.VerifyUserAccess(this.HttpContext, _logger, false, apiSubscription.UserId);
+            //return Ok(apiSubscription);
+
+            APISubscription subscription = new APISubscription()
+            {
+                SubscriptionId = apiSubscriptionId,
+                SubscriptionName = "dummySubscription",
+                ProductName = "dummyProduct",
+                DeploymentName = "dummyDeployment",
+                Status = "Subscribed",
+                BaseUrl = @"https://realtimeprediction.ai/predict",
+                PrimaryKey = "dummyPrimaryKey",
+                SecondaryKey = "dummySecondaryKey"
+            };
+
+            return Ok(subscription);
         }
 
         /// <summary>
@@ -220,16 +225,30 @@ namespace Luna.API.Controllers.Admin
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> RegenerateKey(Guid apiSubscriptionId, [FromBody] APISubscriptionKeyName keyName)
         {
-            string activatedBy = this.HttpContext.User.Identity.Name;
             AADAuthHelper.VerifyUserAccess(this.HttpContext, _logger, true);
-            _logger.LogInformation($"Activate apiSubscription {apiSubscriptionId}. Activated by {activatedBy}.");
-
+            _logger.LogInformation($"Regenerate key {keyName.KeyName} for apiSubscription {apiSubscriptionId}. ");
+            /*
             if (!await _apiSubscriptionService.ExistsAsync(apiSubscriptionId))
             {
                 throw new LunaNotFoundUserException($"The specified apiSubscription {apiSubscriptionId} doesn't exist or you don't have permission to access it.");
             }
-
             return Ok(await _apiSubscriptionService.RegenerateKey(apiSubscriptionId, keyName.KeyName));
+            
+            */
+
+            APISubscription subscription = new APISubscription()
+            {
+                SubscriptionId = apiSubscriptionId,
+                SubscriptionName = "dummySubscription",
+                ProductName = "dummyProduct",
+                DeploymentName = "dummyDeployment",
+                Status = "Subscribed",
+                BaseUrl = @"https://realtimeprediction.ai/predict",
+                PrimaryKey = keyName.KeyName.Equals("Primary", StringComparison.InvariantCultureIgnoreCase)? "newDummyPrimarykey":"dummyPrimaryKey",
+                SecondaryKey = keyName.KeyName.Equals("Secondary", StringComparison.InvariantCultureIgnoreCase) ? "newDummySecondaryKey":"dummySecondaryKey"
+            };
+
+            return Ok(subscription);
         }
     }
 }
