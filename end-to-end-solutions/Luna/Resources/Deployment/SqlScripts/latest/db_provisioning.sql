@@ -149,6 +149,36 @@ DROP TABLE [dbo].[Offers]
 END
 GO
 
+IF EXISTS (select * from sys.tables tb join sys.schemas sch on tb.schema_id = sch.schema_id where tb.name = 'AMLWorkspaces' AND sch.name = 'dbo')
+BEGIN
+DROP TABLE [dbo].[AMLWorkspaces]
+END
+GO
+
+IF EXISTS (select * from sys.tables tb join sys.schemas sch on tb.schema_id = sch.schema_id where tb.name = 'APISubscriptions' AND sch.name = 'dbo')
+BEGIN
+DROP TABLE [dbo].[APISubscriptions]
+END
+GO
+
+IF EXISTS (select * from sys.tables tb join sys.schemas sch on tb.schema_id = sch.schema_id where tb.name = 'APIVersions' AND sch.name = 'dbo')
+BEGIN
+DROP TABLE [dbo].[APIVersions]
+END
+GO
+
+
+IF EXISTS (select * from sys.tables tb join sys.schemas sch on tb.schema_id = sch.schema_id where tb.name = 'Deployments' AND sch.name = 'dbo')
+BEGIN
+DROP TABLE [dbo].[Deployments]
+END
+GO
+
+IF EXISTS (select * from sys.tables tb join sys.schemas sch on tb.schema_id = sch.schema_id where tb.name = 'Product' AND sch.name = 'dbo')
+BEGIN
+DROP TABLE [dbo].[Product]
+END
+GO
 
 CREATE TABLE [dbo].[Offers](
 	[Id] [bigint] IDENTITY(1,1) NOT NULL,
@@ -458,8 +488,66 @@ CREATE TABLE [dbo].[WebhookWebhookParameters](
 	CONSTRAINT FK_WebhookParameterId_WebhookWebhookParameters FOREIGN KEY (WebhookParameterId) REFERENCES WebhookParameters(Id)
 )
 
+CREATE TABLE [dbo].[Products](
+	[Id] [bigint] IDENTITY(1,1) NOT NULL,
+	[ProductName] [nvarchar](50) NOT NULL,
+	[ProductType] [nvarchar](64) NOT NULL,
+	[HostType] [nvarchar](64) NOT NULL,
+	[Owner] [nvarchar](512) NOT NULL,
+	[CreatedTime] [datetime2](7) NOT NULL,
+	[LastUpdatedTime] [datetime2](7) NOT NULL,
+	PRIMARY KEY (Id)
+) ON [PRIMARY]
+GO
 
+CREATE TABLE [dbo].[Deployments](
+	[Id] [bigint] IDENTITY(1,1) NOT NULL,
+	[ProductId] [bigint] NOT NULL,
+	[DeploymentName] [nvarchar](50) NOT NULL,
+	[Description] [nvarchar](1024) NOT NULL,
+	[CreatedTime] [datetime2](7) NOT NULL,
+	[LastUpdatedTime] [datetime2](7) NOT NULL,
+	PRIMARY KEY (Id),
+	CONSTRAINT FK_productId_Deployments FOREIGN KEY (ProductId) REFERENCES Products(Id)
+) ON [PRIMARY]
+GO
 
+CREATE TABLE [dbo].[APIVersions](
+	[Id] [bigint] IDENTITY(1,1) NOT NULL,
+	[DeploymentId] [bigint] NOT NULL,
+	[VersionName] [nvarchar](50) NOT NULL,
+	[RealTimePredictAPI] [nvarchar](max) NULL,
+	[TrainModelAPI] [nvarchar](max) NULL,
+	[BatchInferenceAPI] [nvarchar](max) NULL,
+	[DeployModelAPI] [nvarchar](max) NULL,
+	[AuthenticationType] [nvarchar](8) NOT NULL,
+	[AuthenticationKey] [nvarchar](64) NULL,
+	[AMLWorkspaceId] [nvarchar](50) NULL,
+	[CreatedTime] [datetime2](7) NOT NULL,
+	[LastUpdatedTime] [datetime2](7) NOT NULL,
+	PRIMARY KEY (Id),
+	CONSTRAINT FK_deploymentId_APIVersions FOREIGN KEY (DeploymentId) REFERENCES Deployments(Id)
+) ON [PRIMARY]
+GO
 
+CREATE TABLE [dbo].[APISubscriptions](
+	[SubscriptionId] [uniqueidentifier] NOT NULL,
+	[DeploymentId] [bigint] NOT NULL,
+	[userId] [nvarchar](512) NOT NULL,
+	[Status] [nvarchar](32) NULL,
+	[BaseUrl] [nvarchar](max) NULL,
+	[CreatedTime] [datetime2](7) NOT NULL,
+	[LastUpdatedTime] [datetime2](7) NOT NULL,
+	PRIMARY KEY (SubscriptionId),
+	CONSTRAINT FK_deploymentId_APISubscriptions FOREIGN KEY (DeploymentId) REFERENCES Deployments(Id)
+) ON [PRIMARY]
+GO
 
-
+CREATE TABLE [dbo].[AMLWorkspace](
+	[Id] [bigint] IDENTITY(1,1) NOT NULL,
+	[WorkspaceName] [nvarchar](50) NOT NULL,
+	[AADApplicationId] [uniqueidentifier] NOT NULL,
+	[AADApplicationSecrets] [nvarchar](128) NOT NULL,
+	PRIMARY KEY (Id)
+) ON [PRIMARY]
+GO

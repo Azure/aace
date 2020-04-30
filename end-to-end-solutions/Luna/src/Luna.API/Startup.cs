@@ -4,6 +4,7 @@ using System.Net;
 using System.Reflection;
 using Luna.API.Controllers.Admin;
 using Luna.Clients;
+using Luna.Clients.Azure.APIM;
 using Luna.Clients.Azure.Auth;
 using Luna.Clients.Azure.Storage;
 using Luna.Clients.CustomMetering;
@@ -15,6 +16,7 @@ using Luna.Data.Repository;
 using Luna.Services;
 using Luna.Services.CustomMeterEvent;
 using Luna.Services.Data;
+using Luna.Services.Data.Luna.AI;
 using Luna.Services.Marketplace;
 using Luna.Services.Provisoning;
 using Luna.Services.Utilities;
@@ -268,6 +270,13 @@ namespace Luna.API
             // Register the db context interface
             services.TryAddScoped<ISqlDbContext, SqlDbContext>();
 
+            services.AddOptions<APIMConfigurationOption>().Configure(
+                options =>
+                {
+                    this.configuration.Bind("APIM", options);
+                });
+
+            services.AddHttpClient<IAPIMUtility, APIMUtility>();
 
             services.AddOptions<StorageAccountConfigurationOption>().Configure(
                options => {
@@ -308,7 +317,13 @@ namespace Luna.API
             services.AddHttpClient("Luna", x => { x.BaseAddress = new Uri(configuration.GetValue<string>("LunaClient:BaseUri")); });
             services.TryAddScoped<LunaClient>();
 
-            
+            // Register Luna.AI services
+            services.TryAddScoped<IProductService, ProductService>();
+            services.TryAddScoped<IDeploymentService, DeploymentService>();
+            services.TryAddScoped<IAPIVersionService, APIVersionService>();
+            services.TryAddScoped<IAPISubscriptionService, APISubscriptionService>();
+            services.TryAddScoped<IAMLWorkspaceService, AMLWorkspaceService>();
+
             services.AddCors();
 
             services.AddRazorPages();
@@ -333,6 +348,11 @@ namespace Luna.API
                o.Conventions.Controller<RestrictedUserController>().HasApiVersion(latest);
                o.Conventions.Controller<WebhookController>().HasApiVersion(latest);
                o.Conventions.Controller<WebhookParameterController>().HasApiVersion(latest);
+                o.Conventions.Controller<AMLWorkspaceController>().HasApiVersion(latest);
+                o.Conventions.Controller<APISubscriptionController>().HasApiVersion(latest);
+                o.Conventions.Controller<APIVersionController>().HasApiVersion(latest);
+                o.Conventions.Controller<DeploymentController>().HasApiVersion(latest);
+                o.Conventions.Controller<ProductController>().HasApiVersion(latest);
             });
 
             // Register the Swagger generator, defining 1 or more Swagger documents
