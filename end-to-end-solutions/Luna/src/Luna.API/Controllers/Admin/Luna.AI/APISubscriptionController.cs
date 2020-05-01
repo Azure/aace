@@ -113,15 +113,52 @@ namespace Luna.API.Controllers.Admin
             return Ok(apiSubscription);
         }
 
+        [HttpPost("apiSubscriptions/Create")]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        public async Task<ActionResult> CreateAsync([FromBody] APISubscription apiSubscription)
+        {
+            // If request body is not specified, try to compose the payload from query parameters
+            if (apiSubscription == null)
+            {
+                if (Request.Query.ContainsKey("SubscriptionName") &&
+                    Request.Query.ContainsKey("SubscriptionId") &&
+                    Request.Query.ContainsKey("ProductName") &&
+                    Request.Query.ContainsKey("DeploymentName") &&
+                    Request.Query.ContainsKey("UserId"))
+                {
+                    apiSubscription = new APISubscription()
+                    {
+                        SubscriptionName = Request.Query["SubscriptionName"].ToString(),
+                        SubscriptionId = Guid.Parse(Request.Query["SubscriptionId"].ToString()),
+                        ProductName = Request.Query["ProductName"].ToString(),
+                        DeploymentName = Request.Query["DeploymentName"].ToString(),
+                        UserId = Request.Query["UserId"].ToString()
+                    };
+                }
+                else
+                {
+                    throw new LunaBadRequestUserException(LoggingUtils.ComposePayloadNotProvidedErrorMessage(nameof(apiSubscription)), UserErrorCode.PayloadNotProvided);
+                }
+            }
+
+            _logger.LogInformation($"Create apiSubscription {apiSubscription.SubscriptionName} with payload {JsonSerializer.Serialize(apiSubscription)}.");
+            // Create a new apiSubscription
+            AADAuthHelper.VerifyUserAccess(this.HttpContext, _logger, false, apiSubscription.UserId);
+            await _apiSubscriptionService.CreateAsync(apiSubscription);
+            return CreatedAtRoute(nameof(GetAsync) + nameof(APISubscription), new
+            {
+                apiSubscriptionId = apiSubscription.SubscriptionId
+            }, apiSubscription);
+        }
+
         /// <summary>
-        /// Create or update a apiSubscription
+        /// Update a apiSubscription
         /// </summary>
         /// <param name="apiSubscriptionId">The apiSubscription id.</param>
         /// <param name="apiSubscription">The apiSubscription object</param>
         /// <returns>The apiSubscription info</returns>
         [HttpPut("apiSubscriptions/{apiSubscriptionId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status201Created)]
         public async Task<ActionResult> CreateOrUpdateAsync(Guid apiSubscriptionId, [FromBody] APISubscription apiSubscription)
         {
             if (apiSubscription == null)
@@ -134,38 +171,26 @@ namespace Luna.API.Controllers.Admin
                 throw new LunaBadRequestUserException(LoggingUtils.ComposeNameMismatchErrorMessage(typeof(APISubscription).Name),
                     UserErrorCode.NameMismatch);
             }
-
-            if (await _apiSubscriptionService.ExistsAsync(apiSubscriptionId))
+            _logger.LogInformation($"Update apiSubscription {apiSubscriptionId} with payload {JsonSerializer.Serialize(apiSubscription)}.");
+            var sub = await _apiSubscriptionService.GetAsync(apiSubscriptionId);
+            AADAuthHelper.VerifyUserAccess(this.HttpContext, _logger, false, sub.UserId);
+            if (!sub.ProductName.Equals(apiSubscription.ProductName, StringComparison.InvariantCultureIgnoreCase))
             {
-                _logger.LogInformation($"Update apiSubscription {apiSubscriptionId} with payload {JsonSerializer.Serialize(apiSubscription)}.");
-                var sub = await _apiSubscriptionService.GetAsync(apiSubscriptionId);
-                AADAuthHelper.VerifyUserAccess(this.HttpContext, _logger, false, sub.UserId);
-                if (!sub.ProductName.Equals(apiSubscription.ProductName, StringComparison.InvariantCultureIgnoreCase))
-                {
-                    throw new LunaBadRequestUserException("Product name of an existing apiSubscription can not be changed.", UserErrorCode.InvalidParameter);
-                }
-
-                if (!string.IsNullOrEmpty(apiSubscription.UserId) && !sub.UserId.Equals(apiSubscription.UserId, StringComparison.InvariantCultureIgnoreCase))
-                {
-                    throw new LunaBadRequestUserException("Owner name of an existing apiSubscription can not be changed.", UserErrorCode.InvalidParameter);
-                }
-                
-                if (sub.DeploymentName.Equals(apiSubscription.DeploymentName, StringComparison.InvariantCultureIgnoreCase))
-                {
-                    throw new LunaConflictUserException($"The apiSubscription {apiSubscription.SubscriptionId} is already in plan {apiSubscription.DeploymentName}.");
-                }
-
-                await _apiSubscriptionService.UpdateAsync(apiSubscriptionId, apiSubscription);
-                return Ok(await _apiSubscriptionService.GetAsync(apiSubscriptionId));
+                throw new LunaBadRequestUserException("Product name of an existing apiSubscription can not be changed.", UserErrorCode.InvalidParameter);
             }
-            else
+
+            if (!string.IsNullOrEmpty(apiSubscription.UserId) && !sub.UserId.Equals(apiSubscription.UserId, StringComparison.InvariantCultureIgnoreCase))
             {
-                _logger.LogInformation($"Create apiSubscription {apiSubscriptionId} with payload {JsonSerializer.Serialize(apiSubscription)}.");
-                // Create a new apiSubscription
-                AADAuthHelper.VerifyUserAccess(this.HttpContext, _logger, false, apiSubscription.UserId);
-                await _apiSubscriptionService.CreateAsync(apiSubscription);
-                return CreatedAtRoute(nameof(GetAsync) + nameof(APISubscription), new { apiSubscriptionId = apiSubscription.SubscriptionId }, apiSubscription);
+                throw new LunaBadRequestUserException("Owner name of an existing apiSubscription can not be changed.", UserErrorCode.InvalidParameter);
             }
+
+            if (sub.DeploymentName.Equals(apiSubscription.DeploymentName, StringComparison.InvariantCultureIgnoreCase))
+            {
+                throw new LunaConflictUserException($"The apiSubscription {apiSubscription.SubscriptionId} is already in plan {apiSubscription.DeploymentName}.");
+            }
+
+            await _apiSubscriptionService.UpdateAsync(apiSubscriptionId, apiSubscription);
+            return Ok(await _apiSubscriptionService.GetAsync(apiSubscriptionId));
 
         }
 
@@ -185,6 +210,21 @@ namespace Luna.API.Controllers.Admin
             _logger.LogInformation($"Delete apiSubscription {apiSubscriptionId}.");
             await _apiSubscriptionService.DeleteAsync(apiSubscriptionId);
             return NoContent();
+        }
+
+        [HttpPost("apiSubscriptions/Delete")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        public async Task<ActionResult> DeleteByPostAsync()
+        {
+            Guid subscriptionId;
+            if (Request.Query.ContainsKey("SubscriptionId") && Guid.TryParse(Request.Query["SubscriptionId"].ToString(), out subscriptionId))
+            {
+                return await DeleteAsync(subscriptionId);
+            }
+            else
+            {
+                throw new LunaBadRequestUserException("The query parameter SubscriptionId is not found.", UserErrorCode.InvalidParameter);
+            }
         }
 
         /// <summary>
