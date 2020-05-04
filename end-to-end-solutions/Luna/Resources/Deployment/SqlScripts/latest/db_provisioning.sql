@@ -532,6 +532,7 @@ CREATE TABLE [dbo].[APIVersions](
 	[AuthenticationType] [nvarchar](8) NOT NULL,
 	[AuthenticationKey] [nvarchar](64) NULL,
 	[AMLWorkspaceId] [bigint] NULL,
+	[AdvancedSettings] [nvarchar](max) NULL,
 	[CreatedTime] [datetime2](7) NOT NULL,
 	[LastUpdatedTime] [datetime2](7) NOT NULL,
 	PRIMARY KEY (Id),
