@@ -55,6 +55,8 @@ namespace Luna.Data.Entities
         [NotMapped]
         public string AMLWorkspaceName { get; set; }
 
+        public string AdvancedSettings { get; set; }
+
         public DateTime CreatedTime { get; set; }
 
         public DateTime LastUpdatedTime { get; set; }

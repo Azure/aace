@@ -61,7 +61,8 @@ namespace Luna.API.Controllers.Admin
                 TrainModelAPI = @"https://trainmodel.ai",
                 BatchInferenceAPI = @"https://batchinference.ai",
                 DeployModelAPI = @"https://deploymodel.ai",
-                AuthenticationType = "None"
+                AuthenticationType = "None",
+                AdvancedSettings = "callRatePerMonth=1000"
             };
 
             APIVersion versionKey = new APIVersion()
@@ -73,7 +74,8 @@ namespace Luna.API.Controllers.Admin
                 TrainModelAPI = @"https://trainmodel.ai",
                 BatchInferenceAPI = @"https://batchinference.ai",
                 DeployModelAPI = @"https://deploymodel.ai",
-                AuthenticationType = "Key"
+                AuthenticationType = "Key",
+                AdvancedSettings = "callRatePerMonth=1000"
             };
 
             APIVersion versionToken = new APIVersion()
@@ -86,7 +88,8 @@ namespace Luna.API.Controllers.Admin
                 BatchInferenceAPI = @"https://batchinference.ai",
                 DeployModelAPI = @"https://deploymodel.ai",
                 AuthenticationType = "Token",
-                AMLWorkspaceName = "dummyWorkspace"
+                AMLWorkspaceName = "dummyWorkspace",
+                AdvancedSettings = "callRatePerMonth=1000"
             };
 
             return Ok(new APIVersion[] { versionNone, versionKey, versionToken });
@@ -116,7 +119,8 @@ namespace Luna.API.Controllers.Admin
                 TrainModelAPI = @"https://trainmodel.ai",
                 BatchInferenceAPI = @"https://batchinference.ai",
                 DeployModelAPI = @"https://deploymodel.ai",
-                AuthenticationType = "None"
+                AuthenticationType = "None",
+                AdvancedSettings = "callRatePerMonth=1000"
             };
 
             if (versionName.Equals("dummyVersionKey", StringComparison.InvariantCultureIgnoreCase))
