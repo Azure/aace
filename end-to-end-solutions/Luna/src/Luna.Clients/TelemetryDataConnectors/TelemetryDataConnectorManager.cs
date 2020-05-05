@@ -4,6 +4,7 @@ using System.Net.Http;
 using System.Text;
 using Luna.Clients.Azure.Auth;
 using Luna.Clients.Exceptions;
+using Luna.Clients.TelemetryDataConnectors.SQL;
 using Microsoft.Extensions.Logging;
 
 namespace Luna.Clients.TelemetryDataConnectors
@@ -27,6 +28,11 @@ namespace Luna.Clients.TelemetryDataConnectors
             if (type.Equals(TelemetryDataConnectorTypes.LogAnalytics.ToString(), StringComparison.InvariantCultureIgnoreCase))
             {
                 ITelemetryDataConnector connector = new LogAnalyticsTelemetryDataConnector(_httpClient, _logger, _keyVaultHelper, configuration);
+                return connector;
+            }
+            else if (type.Equals(TelemetryDataConnectorTypes.SQL.ToString(), StringComparison.InvariantCultureIgnoreCase))
+            {
+                ITelemetryDataConnector connector = new SqlTelemetryDataConnector(_logger, _keyVaultHelper, configuration);
                 return connector;
             }
             else

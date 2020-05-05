@@ -93,8 +93,7 @@ namespace Luna.Clients.TelemetryDataConnectors
                     {
                         // Check columns
                         if (CheckTableColumnNameAndType(table, 0, "resourceId", "string") &&
-                         CheckTableColumnNameAndType(table, 1, "quantity", "real", "long") &&
-                         CheckTableColumnNameAndType(table, 2, "EffectiveStartTime", "datetime"))
+                         CheckTableColumnNameAndType(table, 1, "quantity", "real", "long"))
                         {
                             foreach (var row in table.rows)
                             {
@@ -104,7 +103,7 @@ namespace Luna.Clients.TelemetryDataConnectors
                                     PlanId = "",
                                     ResourceId = row[0].ToString(),
                                     Quantity = Double.Parse(row[1].ToString()),
-                                    EffectiveStartTime = row[2].ToString()
+                                    EffectiveStartTime = startTime.ToString()
                                 });
                             }
 
