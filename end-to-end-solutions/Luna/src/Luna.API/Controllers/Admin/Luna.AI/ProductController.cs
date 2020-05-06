@@ -46,9 +46,9 @@ namespace Luna.API.Controllers.Admin
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> GetAllAsync()
         {
-            //AADAuthHelper.VerifyUserAccess(this.HttpContext, _logger, true);
-            //_logger.LogInformation("Get all products.");
-            //return Ok(await _productService.GetAllAsync());
+            AADAuthHelper.VerifyUserAccess(this.HttpContext, _logger, true);
+            _logger.LogInformation("Get all products.");
+            return Ok(await _productService.GetAllAsync());
 
             Product product = new Product()
             {

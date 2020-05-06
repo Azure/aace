@@ -1,9 +1,15 @@
-﻿using Luna.Data.Entities;
+﻿using Luna.Clients.Exceptions;
+using Luna.Clients.Logging;
+using Luna.Data.Entities;
+using Luna.Data.Enums;
 using Luna.Data.Repository;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace Luna.Services.Data.Luna.AI
@@ -23,35 +29,142 @@ namespace Luna.Services.Data.Luna.AI
             _context = sqlDbContext ?? throw new ArgumentNullException(nameof(sqlDbContext));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
-
-        public async Task<Product> CreateAsync(Product product)
-        {
-            throw new NotImplementedException();
-        }
-
-        public async Task<Product> DeleteAsync(string productName)
-        {
-            throw new NotImplementedException();
-        }
-
-        public async Task<bool> ExistsAsync(string productName)
-        {
-            throw new NotImplementedException();
-        }
-
         public async Task<List<Product>> GetAllAsync()
         {
-            throw new NotImplementedException();
+            _logger.LogInformation(LoggingUtils.ComposeGetAllResourcesMessage(typeof(Product).Name));
+
+            // Get all products
+            var products = await _context.Products.ToListAsync();
+            _logger.LogInformation(LoggingUtils.ComposeReturnCountMessage(typeof(Offer).Name, products.Count()));
+
+            return products;
         }
 
         public async Task<Product> GetAsync(string productName)
         {
-            throw new NotImplementedException();
+            if (!await ExistsAsync(productName))
+            {
+                throw new LunaNotFoundUserException(LoggingUtils.ComposeNotFoundErrorMessage(typeof(Product).Name,
+                    productName));
+            }
+            _logger.LogInformation(LoggingUtils.ComposeGetSingleResourceMessage(typeof(Product).Name, productName));
+
+            // Get the product that matches the provided productName
+            var offer = await _context.Products.SingleOrDefaultAsync(o => (o.ProductName == productName));
+            _logger.LogInformation(LoggingUtils.ComposeReturnValueMessage(typeof(Product).Name,
+               productName,
+               JsonSerializer.Serialize(offer)));
+
+            return offer;
+        }
+
+        public async Task<Product> CreateAsync(Product product)
+        {
+            if (product is null)
+            {
+                throw new LunaBadRequestUserException(LoggingUtils.ComposePayloadNotProvidedErrorMessage(typeof(Product).Name),
+                    UserErrorCode.PayloadNotProvided);
+            }
+
+            // Check that an offer with the same name does not already exist
+            if (await ExistsAsync(product.ProductName))
+            {
+                throw new LunaConflictUserException(LoggingUtils.ComposeAlreadyExistsErrorMessage(typeof(Product).Name,
+                        product.ProductName));
+            }
+            _logger.LogInformation(LoggingUtils.ComposeCreateResourceMessage(typeof(Offer).Name, product.ProductName, payload: JsonSerializer.Serialize(product)));
+
+            // Update the host type
+            product.HostType = nameof(HostType.SaaS);
+
+            // Update the product created time
+            product.CreatedTime = DateTime.UtcNow;
+
+            // Update the product last updated time
+            product.LastUpdatedTime = product.CreatedTime;
+
+            // Add product to db
+            _context.Products.Add(product);
+            await _context._SaveChangesAsync();
+            _logger.LogInformation(LoggingUtils.ComposeResourceCreatedMessage(typeof(Offer).Name, product.ProductName));
+
+            return product;
         }
 
         public async Task<Product> UpdateAsync(string productName, Product product)
         {
-            throw new NotImplementedException();
+            if (product is null)
+            {
+                throw new LunaBadRequestUserException(LoggingUtils.ComposePayloadNotProvidedErrorMessage(typeof(Product).Name),
+                    UserErrorCode.PayloadNotProvided);
+            }
+            _logger.LogInformation(LoggingUtils.ComposeUpdateResourceMessage(typeof(Product).Name, product.ProductName, payload: JsonSerializer.Serialize(product)));
+
+            // Get the offer that matches the offerName provided
+            var productDb = await GetAsync(productName);
+
+            // Check if (the offerName has been updated) && 
+            //          (an offer with the same new name does not already exist)
+            if ((productName != product.ProductName) && (await ExistsAsync(product.ProductName)))
+            {
+                throw new LunaBadRequestUserException(LoggingUtils.ComposeNameMismatchErrorMessage(typeof(Product).Name),
+                    UserErrorCode.NameMismatch);
+            }
+
+            // Copy over the changes
+            productDb.Copy(product);
+
+            // Update the offer last updated time
+            productDb.LastUpdatedTime = DateTime.UtcNow;
+
+            // Update offerDb values and save changes in db
+            _context.Products.Update(productDb);
+            await _context._SaveChangesAsync();
+            _logger.LogInformation(LoggingUtils.ComposeResourceUpdatedMessage(typeof(Product).Name, product.ProductName));
+
+            return productDb;
+        }
+
+        public async Task<Product> DeleteAsync(string productName)
+        {
+            _logger.LogInformation(LoggingUtils.ComposeDeleteResourceMessage(typeof(Product).Name, productName));
+
+            // Get the offer that matches the offerName provide
+            var product = await GetAsync(productName);
+
+            // Remove the plan from the db
+            _context.Products.Remove(product);
+            await _context._SaveChangesAsync();
+            _logger.LogInformation(LoggingUtils.ComposeResourceDeletedMessage(typeof(Product).Name, productName));
+
+            return product;
+        }
+
+        public async Task<bool> ExistsAsync(string productName)
+        {
+            _logger.LogInformation(LoggingUtils.ComposeCheckResourceExistsMessage(typeof(Product).Name, productName));
+
+            // Check that only one offer with this offerName exists and has not been deleted
+            var count = await _context.Products
+                .CountAsync(p => (p.ProductName == productName));
+
+            // More than one instance of an object with the same name exists, this should not happen
+            if (count > 1)
+            {
+                throw new NotSupportedException(LoggingUtils.ComposeFoundDuplicatesErrorMessage(typeof(Product).Name, productName));
+
+            }
+            else if (count == 0)
+            {
+                _logger.LogInformation(LoggingUtils.ComposeResourceExistsOrNotMessage(typeof(Product).Name, productName, false));
+                return false;
+            }
+            else
+            {
+                _logger.LogInformation(LoggingUtils.ComposeResourceExistsOrNotMessage(typeof(Product).Name, productName, true));
+                // count = 1
+                return true;
+            }
         }
     }
 }

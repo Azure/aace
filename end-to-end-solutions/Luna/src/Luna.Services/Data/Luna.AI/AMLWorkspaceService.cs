@@ -1,9 +1,13 @@
-﻿using Luna.Data.Entities;
+﻿using Luna.Clients.Exceptions;
+using Luna.Clients.Logging;
+using Luna.Data.Entities;
 using Luna.Data.Repository;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace Luna.Services.Data.Luna.AI
@@ -24,9 +28,57 @@ namespace Luna.Services.Data.Luna.AI
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
+        public async Task<List<AMLWorkspace>> GetAllAsync()
+        {
+            _logger.LogInformation(LoggingUtils.ComposeGetAllResourcesMessage(typeof(AMLWorkspace).Name));
+
+            // Get all products
+            var workspaces = await _context.AMLWorkspaces.ToListAsync();
+            _logger.LogInformation(LoggingUtils.ComposeReturnCountMessage(typeof(AMLWorkspace).Name, workspaces.Count()));
+
+            return workspaces;
+        }
+
+        public async Task<AMLWorkspace> GetAsync(string workspaceName)
+        {
+            if (!await ExistsAsync(workspaceName))
+            {
+                throw new LunaNotFoundUserException(LoggingUtils.ComposeNotFoundErrorMessage(typeof(Product).Name,
+                    workspaceName));
+            }
+            _logger.LogInformation(LoggingUtils.ComposeGetSingleResourceMessage(typeof(Product).Name, workspaceName));
+
+            // Get the product that matches the provided productName
+            var workspace = await _context.AMLWorkspaces.SingleOrDefaultAsync(o => (o.WorkspaceName == workspaceName));
+            _logger.LogInformation(LoggingUtils.ComposeReturnValueMessage(typeof(Product).Name,
+               workspaceName,
+               JsonSerializer.Serialize(workspace)));
+
+            return workspace;
+        }
+
         public async Task<AMLWorkspace> CreateAsync(AMLWorkspace workspace)
         {
-            throw new NotImplementedException();
+            if (workspace is null)
+            {
+                throw new LunaBadRequestUserException(LoggingUtils.ComposePayloadNotProvidedErrorMessage(typeof(AMLWorkspace).Name),
+                    UserErrorCode.PayloadNotProvided);
+            }
+
+            // Check that an offer with the same name does not already exist
+            if (await ExistsAsync(workspace.WorkspaceName))
+            {
+                throw new LunaConflictUserException(LoggingUtils.ComposeAlreadyExistsErrorMessage(typeof(AMLWorkspace).Name,
+                        workspace.WorkspaceName));
+            }
+            _logger.LogInformation(LoggingUtils.ComposeCreateResourceMessage(typeof(AMLWorkspace).Name, workspace.WorkspaceName, payload: JsonSerializer.Serialize(workspace)));
+
+            // Add product to db
+            _context.AMLWorkspaces.Add(workspace);
+            await _context._SaveChangesAsync();
+            _logger.LogInformation(LoggingUtils.ComposeResourceCreatedMessage(typeof(AMLWorkspace).Name, workspace.WorkspaceName));
+
+            return workspace;
         }
 
         public async Task<AMLWorkspace> DeleteAsync(string workspaceName)
@@ -39,19 +91,37 @@ namespace Luna.Services.Data.Luna.AI
             throw new NotImplementedException();
         }
 
-        public async Task<List<AMLWorkspace>> GetAllAsync()
-        {
-            throw new NotImplementedException();
-        }
-
-        public async Task<AMLWorkspace> GetAsync(string workspaceName)
-        {
-            throw new NotImplementedException();
-        }
+        
 
         public async Task<AMLWorkspace> UpdateAsync(string workspaceName, AMLWorkspace workspace)
         {
-            throw new NotImplementedException();
+            if (workspace is null)
+            {
+                throw new LunaBadRequestUserException(LoggingUtils.ComposePayloadNotProvidedErrorMessage(typeof(AMLWorkspace).Name),
+                    UserErrorCode.PayloadNotProvided);
+            }
+            _logger.LogInformation(LoggingUtils.ComposeUpdateResourceMessage(typeof(Product).Name, workspace.WorkspaceName, payload: JsonSerializer.Serialize(workspace)));
+
+            // Get the offer that matches the offerName provided
+            var workspaceDb = await GetAsync(workspaceName);
+
+            // Check if (the offerName has been updated) && 
+            //          (an offer with the same new name does not already exist)
+            if ((workspaceName != workspace.WorkspaceName) && (await ExistsAsync(workspace.WorkspaceName)))
+            {
+                throw new LunaBadRequestUserException(LoggingUtils.ComposeNameMismatchErrorMessage(typeof(AMLWorkspace).Name),
+                    UserErrorCode.NameMismatch);
+            }
+
+            // Copy over the changes
+            workspaceDb.Copy(workspace);
+
+            // Update offerDb values and save changes in db
+            _context.AMLWorkspaces.Update(workspaceDb);
+            await _context._SaveChangesAsync();
+            _logger.LogInformation(LoggingUtils.ComposeResourceUpdatedMessage(typeof(Product).Name, workspace.WorkspaceName));
+
+            return workspaceDb;
         }
     }
 }
