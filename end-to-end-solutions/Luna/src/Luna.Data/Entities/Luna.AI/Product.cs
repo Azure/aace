@@ -25,6 +25,7 @@ namespace Luna.Data.Entities
         {
         }
 
+
         [Key]
         [JsonIgnore]
         public long Id { get; set; }
