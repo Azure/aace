@@ -25,6 +25,12 @@ namespace Luna.Data.Entities
         public void Copy(APIVersion version)
         {
         }
+
+        public string GetVersionIdFormat()
+        {
+            return VersionName.Replace(".", "-");
+        }
+
         [Key]
         [JsonIgnore]
         public long Id { get; set; }

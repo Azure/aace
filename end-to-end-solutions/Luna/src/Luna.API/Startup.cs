@@ -276,7 +276,13 @@ namespace Luna.API
                     this.configuration.Bind("APIM", options);
                 });
 
-            services.AddHttpClient<IAPIMUtility, APIMUtility>();
+            services.AddHttpClient<IProductAPIM, ProductAPIM>();
+            services.AddHttpClient<IAPIVersionSetAPIM, APIVersionSetAPIM>();
+            services.AddHttpClient<IAPIVersionAPIM, APIVersionAPIM>();
+            services.AddHttpClient<IProductAPIVersionAPIM, ProductAPIVersionAPIM>();
+            services.AddHttpClient<IOperationAPIM, OperationAPIM>();
+            services.AddHttpClient<IAPISubscriptionAPIM, APISubscriptionAPIM>();
+            services.AddHttpClient<IUserAPIM, UserAPIM>();
 
             services.AddOptions<StorageAccountConfigurationOption>().Configure(
                options => {

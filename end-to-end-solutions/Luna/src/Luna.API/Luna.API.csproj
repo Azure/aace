@@ -39,7 +39,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Controllers\APIRounting\" />
+    <Folder Include="Controllers\APIRouting\" />
   </ItemGroup>
 
   <PropertyGroup>

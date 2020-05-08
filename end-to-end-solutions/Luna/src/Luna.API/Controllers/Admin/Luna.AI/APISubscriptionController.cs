@@ -11,7 +11,6 @@ using Luna.Services.CustomMeterEvent;
 using Luna.Services.Data;
 using Luna.Services.Marketplace;
 using Luna.Services.Provisoning;
-using Luna.Services.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
