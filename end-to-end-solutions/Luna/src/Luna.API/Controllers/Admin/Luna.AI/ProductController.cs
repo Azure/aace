@@ -49,17 +49,7 @@ namespace Luna.API.Controllers.Admin
             AADAuthHelper.VerifyUserAccess(this.HttpContext, _logger, true);
             _logger.LogInformation("Get all products.");
             return Ok(await _productService.GetAllAsync());
-
-            Product product = new Product()
-            {
-                ProductName = "test",
-                ProductType = "test",
-                HostType = "test",
-                Owner = "test"
-
-            };
-
-            return Ok(new Product[] { product });
+            
         }
 
         /// <summary>

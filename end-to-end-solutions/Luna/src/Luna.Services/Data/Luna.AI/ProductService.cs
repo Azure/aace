@@ -1,4 +1,5 @@
-﻿using Luna.Clients.Exceptions;
+﻿using Luna.Clients.Azure.APIM;
+using Luna.Clients.Exceptions;
 using Luna.Clients.Logging;
 using Luna.Data.Entities;
 using Luna.Data.Enums;
@@ -8,7 +9,6 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 
@@ -18,16 +18,21 @@ namespace Luna.Services.Data.Luna.AI
     {
         private readonly ISqlDbContext _context;
         private readonly ILogger<ProductService> _logger;
+        private readonly IProductAPIM _productAPIM;
+        private readonly IUserAPIM _userAPIM;
 
         /// <summary>
         /// Constructor that uses dependency injection.
         /// </summary>
         /// <param name="sqlDbContext">The context to be injected.</param>
         /// <param name="logger">The logger.</param>
-        public ProductService(ISqlDbContext sqlDbContext, ILogger<ProductService> logger)
+        public ProductService(ISqlDbContext sqlDbContext, ILogger<ProductService> logger, 
+            IProductAPIM productAPIM, IUserAPIM userAPIM)
         {
             _context = sqlDbContext ?? throw new ArgumentNullException(nameof(sqlDbContext));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _productAPIM = productAPIM ?? throw new ArgumentNullException(nameof(productAPIM));
+            _userAPIM = userAPIM ?? throw new ArgumentNullException(nameof(userAPIM));
         }
         public async Task<List<Product>> GetAllAsync()
         {
@@ -35,7 +40,7 @@ namespace Luna.Services.Data.Luna.AI
 
             // Get all products
             var products = await _context.Products.ToListAsync();
-            _logger.LogInformation(LoggingUtils.ComposeReturnCountMessage(typeof(Offer).Name, products.Count()));
+            _logger.LogInformation(LoggingUtils.ComposeReturnCountMessage(typeof(Product).Name, products.Count()));
 
             return products;
         }
@@ -50,12 +55,12 @@ namespace Luna.Services.Data.Luna.AI
             _logger.LogInformation(LoggingUtils.ComposeGetSingleResourceMessage(typeof(Product).Name, productName));
 
             // Get the product that matches the provided productName
-            var offer = await _context.Products.SingleOrDefaultAsync(o => (o.ProductName == productName));
+            var product = await _context.Products.SingleOrDefaultAsync(o => (o.ProductName == productName));
             _logger.LogInformation(LoggingUtils.ComposeReturnValueMessage(typeof(Product).Name,
                productName,
-               JsonSerializer.Serialize(offer)));
+               JsonSerializer.Serialize(product)));
 
-            return offer;
+            return product;
         }
 
         public async Task<Product> CreateAsync(Product product)
@@ -72,16 +77,16 @@ namespace Luna.Services.Data.Luna.AI
                 throw new LunaConflictUserException(LoggingUtils.ComposeAlreadyExistsErrorMessage(typeof(Product).Name,
                         product.ProductName));
             }
-            _logger.LogInformation(LoggingUtils.ComposeCreateResourceMessage(typeof(Offer).Name, product.ProductName, payload: JsonSerializer.Serialize(product)));
-
-            // Update the host type
-            product.HostType = nameof(HostType.SaaS);
+            _logger.LogInformation(LoggingUtils.ComposeCreateResourceMessage(typeof(Product).Name, product.ProductName, payload: JsonSerializer.Serialize(product)));
 
             // Update the product created time
             product.CreatedTime = DateTime.UtcNow;
 
             // Update the product last updated time
             product.LastUpdatedTime = product.CreatedTime;
+
+            await _productAPIM.CreateAsync(product);
+            await _userAPIM.CreateAsync(product);
 
             // Add product to db
             _context.Products.Add(product);
@@ -111,13 +116,17 @@ namespace Luna.Services.Data.Luna.AI
                     UserErrorCode.NameMismatch);
             }
 
-            // Copy over the changes
-            productDb.Copy(product);
+            // Update the product owner
+            productDb.Owner = product.Owner;
 
-            // Update the offer last updated time
+            // Update the product last updated time
             productDb.LastUpdatedTime = DateTime.UtcNow;
 
-            // Update offerDb values and save changes in db
+            // Update productDb values and save changes in APIM
+            await _productAPIM.UpdateAsync(productDb);
+            await _userAPIM.CreateAsync(productDb);
+
+            // Update productDb values and save changes in db
             _context.Products.Update(productDb);
             await _context._SaveChangesAsync();
             _logger.LogInformation(LoggingUtils.ComposeResourceUpdatedMessage(typeof(Product).Name, product.ProductName));
@@ -132,7 +141,10 @@ namespace Luna.Services.Data.Luna.AI
             // Get the offer that matches the offerName provide
             var product = await GetAsync(productName);
 
-            // Remove the plan from the db
+            // remove the product from the APIM
+            await _productAPIM.DeleteAsync(product);
+
+            // Remove the product from the db
             _context.Products.Remove(product);
             await _context._SaveChangesAsync();
             _logger.LogInformation(LoggingUtils.ComposeResourceDeletedMessage(typeof(Product).Name, productName));

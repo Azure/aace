@@ -1,4 +1,5 @@
-﻿using Luna.Clients.Azure.APIM;
+﻿using Luna.Clients.Azure;
+using Luna.Clients.Azure.APIM;
 using Luna.Clients.Exceptions;
 using Luna.Clients.Logging;
 using Luna.Data.Entities;
@@ -19,19 +20,20 @@ namespace Luna.Services.Data.Luna.AI
         private readonly ISqlDbContext _context;
         private readonly IProductService _productService;
         private readonly ILogger<DeploymentService> _logger;
-        private readonly IAPIMUtility _apimUtility;
+        private readonly IAPIVersionSetAPIM _apiVersionSetAPIM;
 
         /// <summary>
         /// Constructor that uses dependency injection.
         /// </summary>
         /// <param name="sqlDbContext">The context to be injected.</param>
         /// <param name="logger">The logger.</param>
-        public DeploymentService(ISqlDbContext sqlDbContext, IProductService productService, ILogger<DeploymentService> logger, IAPIMUtility apimUtility)
+        public DeploymentService(ISqlDbContext sqlDbContext, IProductService productService, ILogger<DeploymentService> logger,
+            IAPIVersionSetAPIM apiVersionSetAPIM)
         {
             _context = sqlDbContext ?? throw new ArgumentNullException(nameof(sqlDbContext));
             _productService = productService ?? throw new ArgumentNullException(nameof(productService));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _apimUtility = apimUtility ?? throw new ArgumentNullException(nameof(apimUtility));
+            _apiVersionSetAPIM = apiVersionSetAPIM ?? throw new ArgumentNullException(nameof(apiVersionSetAPIM));
         }
         public async Task<List<Deployment>> GetAllAsync(string productName)
         {
@@ -98,6 +100,8 @@ namespace Luna.Services.Data.Luna.AI
             // Set the FK to offer
             deployment.ProductId = product.Id;
 
+            await _apiVersionSetAPIM.CreateAsync(deployment);
+
             // Add offerParameter to db
             _context.Deployments.Add(deployment);
             await _context._SaveChangesAsync();
@@ -128,7 +132,9 @@ namespace Luna.Services.Data.Luna.AI
             var deploymentDB = await GetAsync(productName, deploymentName);
 
             // Copy over the changes
-            deploymentDB.Copy(deployment);
+            deploymentDB.Description = deployment.Description;
+
+            await _apiVersionSetAPIM.UpdateAsync(deployment);
 
             // Update offerParameterDb values and save changes in db
             _context.Deployments.Update(deploymentDB);
@@ -144,6 +150,8 @@ namespace Luna.Services.Data.Luna.AI
 
             // Get the offerParameter that matches the parameterName provided
             var deployment = await GetAsync(productName, deploymentName);
+
+            await _apiVersionSetAPIM.DeleteAsync(deployment);
 
             // Remove the offerParameter from the db
             _context.Deployments.Remove(deployment);

@@ -1,4 +1,6 @@
-﻿using Luna.Clients.Exceptions;
+﻿using Luna.Clients.Azure;
+using Luna.Clients.Azure.APIM;
+using Luna.Clients.Exceptions;
 using Luna.Clients.Logging;
 using Luna.Data.Entities;
 using Luna.Data.Repository;
@@ -8,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -17,19 +20,29 @@ namespace Luna.Services.Data.Luna.AI
     public class APIVersionService : IAPIVersionService
     {
         private readonly ISqlDbContext _context;
+        private readonly IProductService _productService;
         private readonly IDeploymentService _deploymentService;
         private readonly ILogger<APIVersionService> _logger;
+        private readonly IAPIVersionAPIM _apiVersionAPIM;
+        private readonly IProductAPIVersionAPIM _productAPIVersionAPIM;
+        private readonly IOperationAPIM _operationAPIM;
 
         /// <summary>
         /// Constructor that uses dependency injection.
         /// </summary>
         /// <param name="sqlDbContext">The context to be injected.</param>
         /// <param name="logger">The logger.</param>
-        public APIVersionService(ISqlDbContext sqlDbContext, IProductService productService, IDeploymentService deploymentService, ILogger<APIVersionService> logger)
+        public APIVersionService(ISqlDbContext sqlDbContext, IProductService productService, IDeploymentService deploymentService, 
+            ILogger<APIVersionService> logger, 
+            IAPIVersionAPIM apiVersionAPIM, IProductAPIVersionAPIM productAPIVersionAPIM, IOperationAPIM operationAPIM)
         {
             _context = sqlDbContext ?? throw new ArgumentNullException(nameof(sqlDbContext));
+            _productService = productService ?? throw new ArgumentNullException(nameof(productService));
             _deploymentService = deploymentService ?? throw new ArgumentNullException(nameof(deploymentService));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _apiVersionAPIM = apiVersionAPIM ?? throw new ArgumentNullException(nameof(apiVersionAPIM));
+            _productAPIVersionAPIM = productAPIVersionAPIM ?? throw new ArgumentNullException(nameof(productAPIVersionAPIM));
+            _operationAPIM = operationAPIM ?? throw new ArgumentNullException(nameof(operationAPIM));
         }
 
         public async Task<List<APIVersion>> GetAllAsync(string productName, string deploymentName)
@@ -92,12 +105,20 @@ namespace Luna.Services.Data.Luna.AI
             _logger.LogInformation(LoggingUtils.ComposeCreateResourceMessage(typeof(APIVersion).Name, version.VersionName, payload: JsonSerializer.Serialize(version)));
 
             // Get the offer associated with the offerName provided
+            var product = await _productService.GetAsync(productName);
             var deployment = await _deploymentService.GetAsync(productName, deploymentName);
 
             // Set the FK to offer
+            version.ProductName = product.ProductName;
+            version.DeploymentName = deployment.DeploymentName;
             version.DeploymentId = deployment.Id;
 
-            // Add offerParameter to db
+            // Add deployment to APIM
+            await _apiVersionAPIM.CreateAsync(product.ProductType, version);
+            await _productAPIVersionAPIM.CreateAsync(product.ProductType, version);
+            await _operationAPIM.CreateAsync(product.ProductType, version);
+
+            // Add deployment to db
             _context.APIVersions.Add(version);
             await _context._SaveChangesAsync();
             _logger.LogInformation(LoggingUtils.ComposeResourceCreatedMessage(typeof(APIVersion).Name, version.VersionName));
@@ -127,7 +148,20 @@ namespace Luna.Services.Data.Luna.AI
             var versionDb = await GetAsync(productName, deploymentName, versionName);
 
             // Copy over the changes
-            versionDb.Copy(version);
+            versionDb.RealTimePredictAPI = version.RealTimePredictAPI;
+            versionDb.BatchInferenceAPI = version.BatchInferenceAPI;
+            versionDb.TrainModelAPI = version.TrainModelAPI;
+            versionDb.DeployModelAPI = version.DeployModelAPI;
+            versionDb.AuthenticationType = version.AuthenticationType;
+            versionDb.AuthenticationKey = version.AuthenticationKey;
+
+            var product = await _productService.GetAsync(productName);
+
+            // Add deployment to APIM
+            await _apiVersionAPIM.CreateAsync(product.ProductType, versionDb);
+            await _productAPIVersionAPIM.CreateAsync(product.ProductType, versionDb);
+            await _operationAPIM.DeleteAsync(product.ProductType, version);
+
 
             // Update offerParameterDb values and save changes in db
             _context.APIVersions.Update(versionDb);
@@ -142,7 +176,13 @@ namespace Luna.Services.Data.Luna.AI
             _logger.LogInformation(LoggingUtils.ComposeDeleteResourceMessage(typeof(APIVersion).Name, versionName));
 
             // Get the offerParameter that matches the parameterName provided
+            var product = await _productService.GetAsync(productName);
             var version = await GetAsync(productName, deploymentName, versionName);
+
+            // Add version to APIM
+            await _operationAPIM.DeleteAsync(product.ProductType, version);
+            await _productAPIVersionAPIM.DeleteAsync(product.ProductType, version);
+            await _apiVersionAPIM.DeleteAsync(product.ProductType, version);
 
             // Remove the offerParameter from the db
             _context.APIVersions.Remove(version);

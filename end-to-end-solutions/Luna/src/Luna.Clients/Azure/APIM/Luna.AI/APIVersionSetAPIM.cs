@@ -4,24 +4,18 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
-using Luna.Clients.Azure.APIM;
 using Luna.Clients.Exceptions;
 using Luna.Data.Entities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 
-namespace Luna.Clients.Azure
+namespace Luna.Clients.Azure.APIM
 {
-    public class APIVersionSetAPIM
+    public class APIVersionSetAPIM : IAPIVersionSetAPIM
     {
         private string REQUEST_BASE_URL = "https://lunav2.management.azure-api.net";
         private string PATH_FORMAT = "/subscriptions/{0}/resourceGroups/{1}/providers/Microsoft.ApiManagement/service/{2}/apiVersionSets/{3}";
-        private static IDictionary<string, string> QUERY_PARAMS = new Dictionary<string, string>
-                {
-                    {"api-version","2019-12-01"},
-                    {"deleteSubscriptions","true"}
-                };
         private Guid _subscriptionId;
         private string _resourceGroupName;
         private string _apimServiceName;
@@ -67,7 +61,7 @@ namespace Luna.Clients.Azure
             Uri requestUri = GetDeploymentAPIMRequestURI(deployment.DeploymentName);
             var request = new HttpRequestMessage { RequestUri = requestUri, Method = HttpMethod.Put };
 
-            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _token);
+            request.Headers.Add("Authorization", _token);
             request.Headers.Add("If-Match", "*");
 
             request.Content = new StringContent(JsonConvert.SerializeObject(GetUser(deployment)), Encoding.UTF8, "application/json");
@@ -86,7 +80,7 @@ namespace Luna.Clients.Azure
             Uri requestUri = GetDeploymentAPIMRequestURI(deployment.DeploymentName);
             var request = new HttpRequestMessage { RequestUri = requestUri, Method = HttpMethod.Put };
 
-            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _token);
+            request.Headers.Add("Authorization", _token);
             request.Headers.Add("If-Match", "*");
 
             request.Content = new StringContent(JsonConvert.SerializeObject(GetUser(deployment)), Encoding.UTF8, "application/json");
@@ -105,7 +99,7 @@ namespace Luna.Clients.Azure
             Uri requestUri = GetDeploymentAPIMRequestURI(deployment.DeploymentName);
             var request = new HttpRequestMessage { RequestUri = requestUri, Method = HttpMethod.Delete };
 
-            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _token);
+            request.Headers.Add("Authorization", _token);
             request.Headers.Add("If-Match", "*");
 
             request.Content = new StringContent(JsonConvert.SerializeObject(GetUser(deployment)), Encoding.UTF8, "application/json");

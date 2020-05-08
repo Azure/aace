@@ -4,27 +4,24 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web;
 using Luna.Clients.Exceptions;
 using Luna.Data.Entities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 
-namespace Luna.Clients.Azure.APIM.Luna.AI
+namespace Luna.Clients.Azure.APIM
 {
-    public class UserAPIM
+    public class UserAPIM : IUserAPIM
     {
         private string REQUEST_BASE_URL = "https://lunav2.management.azure-api.net";
         private string PATH_FORMAT = "/subscriptions/{0}/resourceGroups/{1}/providers/Microsoft.ApiManagement/service/{2}/users/{3}";
-        private static IDictionary<string, string> QUERY_PARAMS = new Dictionary<string, string>
-                {
-                    {"api-version","2019-12-01"},
-                    {"deleteSubscriptions","true"}
-                };
         private Guid _subscriptionId;
         private string _resourceGroupName;
         private string _apimServiceName;
         private string _token;
+        private string _apiVersion;
         private HttpClient _httpClient;
 
         [ActivatorUtilitiesConstructor]
@@ -39,6 +36,7 @@ namespace Luna.Clients.Azure.APIM.Luna.AI
             _resourceGroupName = options.CurrentValue.Config.ResourceGroupname;
             _apimServiceName = options.CurrentValue.Config.APIMServiceName;
             _token = options.CurrentValue.Config.Token;
+            _apiVersion = options.CurrentValue.Config.APIVersion;
             _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
         }
 
@@ -47,10 +45,19 @@ namespace Luna.Clients.Azure.APIM.Luna.AI
             return owner.Replace("@", "").Replace(".", "");
         }
 
-        private Uri GetUserAPIMRequestURI(string owner)
+        private Uri GetUserAPIMRequestURI(string owner, IDictionary<string, string> queryParams = null)
         {
             var userName = GetUserName(owner);
-            return new Uri(REQUEST_BASE_URL + GetAPIMRESTAPIPath(userName));
+            var builder = new UriBuilder(REQUEST_BASE_URL + GetAPIMRESTAPIPath(userName));
+
+            var query = HttpUtility.ParseQueryString(string.Empty);
+            foreach (KeyValuePair<string, string> kv in queryParams ?? new Dictionary<string, string>()) query[kv.Key] = kv.Value;
+            query["api-version"] = _apiVersion;
+            string queryString = query.ToString();
+
+            builder.Query = queryString;
+
+            return new Uri(builder.ToString());
         }
 
         private Models.Azure.User GetUser(Product product)
@@ -76,7 +83,7 @@ namespace Luna.Clients.Azure.APIM.Luna.AI
             Uri requestUri = GetUserAPIMRequestURI(product.Owner);
             var request = new HttpRequestMessage { RequestUri = requestUri, Method = HttpMethod.Put };
 
-            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _token);
+            request.Headers.Add("Authorization", _token);
             request.Headers.Add("If-Match", "*");
 
             request.Content = new StringContent(JsonConvert.SerializeObject(GetUser(product)), Encoding.UTF8, "application/json");
@@ -95,7 +102,7 @@ namespace Luna.Clients.Azure.APIM.Luna.AI
             Uri requestUri = GetUserAPIMRequestURI(product.Owner);
             var request = new HttpRequestMessage { RequestUri = requestUri, Method = HttpMethod.Put };
 
-            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _token);
+            request.Headers.Add("Authorization", _token);
             request.Headers.Add("If-Match", "*");
 
             request.Content = new StringContent(JsonConvert.SerializeObject(GetUser(product)), Encoding.UTF8, "application/json");
@@ -114,7 +121,7 @@ namespace Luna.Clients.Azure.APIM.Luna.AI
             Uri requestUri = GetUserAPIMRequestURI(product.Owner);
             var request = new HttpRequestMessage { RequestUri = requestUri, Method = HttpMethod.Delete };
 
-            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _token);
+            request.Headers.Add("Authorization", _token);
             request.Headers.Add("If-Match", "*");
 
             request.Content = new StringContent(JsonConvert.SerializeObject(GetUser(product)), Encoding.UTF8, "application/json");

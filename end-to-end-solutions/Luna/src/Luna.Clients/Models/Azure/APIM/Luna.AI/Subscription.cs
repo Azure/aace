@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Luna.Clients.Models.Azure
 {
-    public class Subscription
+    public class APISubscription
     {
         public string name { get; set; }
         public Properties properties { get; set; }
@@ -18,7 +18,7 @@ namespace Luna.Clients.Models.Azure
             public string primaryKey { get; set; }
             public string secondaryKey { get; set; }
         }
-        public Subscription()
+        public APISubscription()
         {
             this.properties = new Properties();
         }

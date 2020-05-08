@@ -29,7 +29,7 @@ namespace Luna.Data.Entities
         [Key]
         public Guid SubscriptionId { get; set; }
 
-        public string SubscriptioName { get; set; }
+        public string SubscriptionName { get; set; }
 
         [JsonIgnore]
         public long DeploymentId { get; set; }

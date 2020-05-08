@@ -1,7 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Luna.Data.Entities;
 
-namespace Luna.Clients.Azure
+namespace Luna.Clients.Azure.APIM
 {
     public interface IAPIVersionSetAPIM
     {

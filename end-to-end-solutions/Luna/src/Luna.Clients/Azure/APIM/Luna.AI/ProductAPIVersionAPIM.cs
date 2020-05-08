@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 using Luna.Clients.Controller;
@@ -13,19 +11,23 @@ using Newtonsoft.Json;
 
 namespace Luna.Clients.Azure.APIM
 {
-    public class OperationAPIM : IOperationAPIM
+    public class ProductAPIVersionAPIM : IProductAPIVersionAPIM
     {
         private string REQUEST_BASE_URL = "https://lunav2.management.azure-api.net";
-        private string PATH_FORMAT = "/subscriptions/{0}/resourceGroups/{1}/providers/Microsoft.ApiManagement/service/{2}/apis/{3}/operations/{4}";
+        private string PATH_FORMAT = "/subscriptions/{0}/resourceGroups/{1}/providers/Microsoft.ApiManagement/products/{2}/apis/{3}";
         private Guid _subscriptionId;
         private string _resourceGroupName;
         private string _apimServiceName;
         private string _token;
         private HttpClient _httpClient;
+        private IAPIVersionAPIM _apiVersionAPIM;
+        private IAPIVersionSetAPIM _apiVersionSetAPIM;
 
         [ActivatorUtilitiesConstructor]
-        public OperationAPIM(IOptionsMonitor<APIMConfigurationOption> options,
-                           HttpClient httpClient)
+        public ProductAPIVersionAPIM(IOptionsMonitor<APIMConfigurationOption> options,
+                           HttpClient httpClient,
+                           IAPIVersionAPIM apiVersionAPIM,
+                           IAPIVersionSetAPIM apiVersionSetAPIM)
         {
             if (options == null)
             {
@@ -36,43 +38,43 @@ namespace Luna.Clients.Azure.APIM
             _apimServiceName = options.CurrentValue.Config.APIMServiceName;
             _token = options.CurrentValue.Config.Token;
             _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
+            _apiVersionAPIM = apiVersionAPIM;
+            _apiVersionSetAPIM = apiVersionSetAPIM;
         }
 
-        private Uri GetAPIVersionAPIMRequestURI(string type, string versionName)
+        private Uri GetProductAPIMRequestURI(string productName, string deploymentName)
         {
-            return new Uri(REQUEST_BASE_URL + GetAPIMRESTAPIPath(versionName, type));
+            return new Uri(REQUEST_BASE_URL + GetAPIMRESTAPIPath(productName, deploymentName));
         }
 
-        private Models.Azure.Operation GetUser(string type)
+        private Models.Azure.APIVersion GetProduct(string type, APIVersion version)
         {
-            Models.Azure.Operation operation = new Models.Azure.Operation();
+            Models.Azure.APIVersion versionAPIM = new Models.Azure.APIVersion();
+            versionAPIM.name = version.GetVersionIdFormat();
+            versionAPIM.properties.displayName = version.VersionName;
+            versionAPIM.properties.apiVersion = version.VersionName;
 
             IController controller = ControllerHelper.GetController(type);
-
-            operation.name = controller.GetName();
-            operation.properties.displayName = controller.GetName();
-            operation.properties.method = controller.GetMethod();
-            operation.properties.urlTemplate = controller.GetUrlTemplate();
-
-            return operation;
+            versionAPIM.properties.serviceUrl = controller.GetBaseUrl() + controller.GetPath(version.ProductName, version.DeploymentName);
+            versionAPIM.properties.path = _apiVersionAPIM.GetAPIMPath(version.ProductName, version.DeploymentName);
+            versionAPIM.properties.apiVersionSetId = _apiVersionSetAPIM.GetAPIMRESTAPIPath(version.DeploymentName);
+            return versionAPIM;
         }
 
-        public string GetAPIMRESTAPIPath(string type, string versionName)
+        public string GetAPIMRESTAPIPath(string productName, string deploymentName)
         {
-            IController controller = ControllerHelper.GetController(type);
-            var operationName = controller.GetName();
-            return string.Format(PATH_FORMAT, _subscriptionId, _resourceGroupName, _apimServiceName, versionName, operationName);
+            return string.Format(PATH_FORMAT, _subscriptionId, _resourceGroupName, _apimServiceName, productName, deploymentName);
         }
 
         public async Task CreateAsync(string type, APIVersion version)
         {
-            Uri requestUri = GetAPIVersionAPIMRequestURI(type, version.GetVersionIdFormat());
+            Uri requestUri = GetProductAPIMRequestURI(version.ProductName, version.DeploymentName);
             var request = new HttpRequestMessage { RequestUri = requestUri, Method = HttpMethod.Put };
 
             request.Headers.Add("Authorization", _token);
             request.Headers.Add("If-Match", "*");
 
-            request.Content = new StringContent(JsonConvert.SerializeObject(GetUser(type)), Encoding.UTF8, "application/json");
+            request.Content = new StringContent(JsonConvert.SerializeObject(GetProduct(type, version)), Encoding.UTF8, "application/json");
 
             var response = await _httpClient.SendAsync(request);
 
@@ -85,13 +87,13 @@ namespace Luna.Clients.Azure.APIM
 
         public async Task UpdateAsync(string type, APIVersion version)
         {
-            Uri requestUri = GetAPIVersionAPIMRequestURI(type, version.GetVersionIdFormat());
+            Uri requestUri = GetProductAPIMRequestURI(version.ProductName, version.DeploymentName);
             var request = new HttpRequestMessage { RequestUri = requestUri, Method = HttpMethod.Put };
 
             request.Headers.Add("Authorization", _token);
             request.Headers.Add("If-Match", "*");
 
-            request.Content = new StringContent(JsonConvert.SerializeObject(GetUser(type)), Encoding.UTF8, "application/json");
+            request.Content = new StringContent(JsonConvert.SerializeObject(GetProduct(type, version)), Encoding.UTF8, "application/json");
 
             var response = await _httpClient.SendAsync(request);
 
@@ -104,13 +106,13 @@ namespace Luna.Clients.Azure.APIM
 
         public async Task DeleteAsync(string type, APIVersion version)
         {
-            Uri requestUri = GetAPIVersionAPIMRequestURI(type, version.GetVersionIdFormat());
+            Uri requestUri = GetProductAPIMRequestURI(version.ProductName, version.DeploymentName);
             var request = new HttpRequestMessage { RequestUri = requestUri, Method = HttpMethod.Delete };
 
             request.Headers.Add("Authorization", _token);
             request.Headers.Add("If-Match", "*");
 
-            request.Content = new StringContent(JsonConvert.SerializeObject(GetUser(type)), Encoding.UTF8, "application/json");
+            request.Content = new StringContent(JsonConvert.SerializeObject(GetProduct(type, version)), Encoding.UTF8, "application/json");
 
             var response = await _httpClient.SendAsync(request);
 

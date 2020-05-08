@@ -1,7 +1,7 @@
 ﻿using System.Threading.Tasks;
-using Luna.Clients.Models.Azure;
+using Luna.Data.Entities;
 
-namespace Luna.Clients.Azure
+namespace Luna.Clients.Azure.APIM
 {
     public interface IUserAPIM
     {

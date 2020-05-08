@@ -11,17 +11,12 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 
-namespace Luna.Clients.Azure.APIM.Luna.AI
+namespace Luna.Clients.Azure.APIM
 {
-    public class APIVersionAPIM
+    public class APIVersionAPIM : IAPIVersionAPIM
     {
         private string REQUEST_BASE_URL = "https://lunav2.management.azure-api.net";
         private string PATH_FORMAT = "/subscriptions/{0}/resourceGroups/{1}/providers/Microsoft.ApiManagement/service/{2}/apis/{3}";
-        private static IDictionary<string, string> QUERY_PARAMS = new Dictionary<string, string>
-                {
-                    {"api-version","2019-12-01"},
-                    {"deleteSubscriptions","true"}
-                };
         private Guid _subscriptionId;
         private string _resourceGroupName;
         private string _apimServiceName;
@@ -51,11 +46,6 @@ namespace Luna.Clients.Azure.APIM.Luna.AI
             return new Uri(REQUEST_BASE_URL + GetAPIMRESTAPIPath(versionName));
         }
 
-        private string GetAPIMPath(string productName, string deploymentName)
-        {
-            return string.Format("{0}/{1}", productName, deploymentName);
-        }
-
         private Models.Azure.APIVersion GetUser(string type, APIVersion version)
         {
             Models.Azure.APIVersion api = new Models.Azure.APIVersion();
@@ -71,6 +61,11 @@ namespace Luna.Clients.Azure.APIM.Luna.AI
             return api;
         }
 
+        public string GetAPIMPath(string productName, string deploymentName)
+        {
+            return string.Format("{0}/{1}", productName, deploymentName);
+        }
+
         public string GetAPIMRESTAPIPath(string versionName)
         {
             return string.Format(PATH_FORMAT, _subscriptionId, _resourceGroupName, _apimServiceName, versionName);
@@ -81,7 +76,7 @@ namespace Luna.Clients.Azure.APIM.Luna.AI
             Uri requestUri = GetAPIVersionAPIMRequestURI(version.DeploymentName);
             var request = new HttpRequestMessage { RequestUri = requestUri, Method = HttpMethod.Put };
 
-            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _token);
+            request.Headers.Add("Authorization", _token);
             request.Headers.Add("If-Match", "*");
 
             request.Content = new StringContent(JsonConvert.SerializeObject(GetUser(type, version)), Encoding.UTF8, "application/json");
@@ -100,7 +95,7 @@ namespace Luna.Clients.Azure.APIM.Luna.AI
             Uri requestUri = GetAPIVersionAPIMRequestURI(version.DeploymentName);
             var request = new HttpRequestMessage { RequestUri = requestUri, Method = HttpMethod.Put };
 
-            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _token);
+            request.Headers.Add("Authorization", _token);
             request.Headers.Add("If-Match", "*");
 
             request.Content = new StringContent(JsonConvert.SerializeObject(GetUser(type, version)), Encoding.UTF8, "application/json");
@@ -119,7 +114,7 @@ namespace Luna.Clients.Azure.APIM.Luna.AI
             Uri requestUri = GetAPIVersionAPIMRequestURI(version.DeploymentName);
             var request = new HttpRequestMessage { RequestUri = requestUri, Method = HttpMethod.Delete };
 
-            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _token);
+            request.Headers.Add("Authorization", _token);
             request.Headers.Add("If-Match", "*");
 
             request.Content = new StringContent(JsonConvert.SerializeObject(GetUser(type, version)), Encoding.UTF8, "application/json");
