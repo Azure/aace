@@ -531,12 +531,12 @@ CREATE TABLE [dbo].[APIVersions](
 	[DeployModelAPI] [nvarchar](max) NULL,
 	[AuthenticationType] [nvarchar](8) NOT NULL,
 	[AuthenticationKey] [nvarchar](64) NULL,
-	[AMLWorkspaceId] [bigint] NULL,
+	-- [AMLWorkspaceId] [bigint] NULL,
 	[CreatedTime] [datetime2](7) NOT NULL,
 	[LastUpdatedTime] [datetime2](7) NOT NULL,
 	PRIMARY KEY (Id),
 	CONSTRAINT FK_deploymentId_APIVersions FOREIGN KEY (DeploymentId) REFERENCES Deployments(Id),
-	CONSTRAINT FK_amlworkspaceId_APIVersions FOREIGN KEY (AMLWorkspaceId) REFERENCES AMLWorkspaces(Id)
+	-- CONSTRAINT FK_amlworkspaceId_APIVersions FOREIGN KEY (AMLWorkspaceId) REFERENCES AMLWorkspaces(Id)
 ) ON [PRIMARY]
 GO
 

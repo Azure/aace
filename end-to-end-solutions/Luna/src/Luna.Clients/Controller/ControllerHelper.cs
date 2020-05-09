@@ -14,7 +14,7 @@ namespace Luna.Clients.Controller
     public static class ControllerHelper
     {
         private static IDictionary<string, IController> ControllerMap = new Dictionary<string, IController> {
-            {"predict", new PredictionController()},
+            {"RTP", new PredictionController()},
         };
         private static HttpClient HttpClient = new HttpClient();
 

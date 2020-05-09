@@ -119,8 +119,14 @@ namespace Luna.Services.Data.Luna.AI
             await _operationAPIM.CreateAsync(product.ProductType, version);
 
             // Add deployment to db
-            _context.APIVersions.Add(version);
-            await _context._SaveChangesAsync();
+            try
+            {
+                _context.APIVersions.Add(version);
+                await _context._SaveChangesAsync();
+            }
+            catch (Exception ex)
+            { 
+            }
             _logger.LogInformation(LoggingUtils.ComposeResourceCreatedMessage(typeof(APIVersion).Name, version.VersionName));
 
             return version;
@@ -158,10 +164,9 @@ namespace Luna.Services.Data.Luna.AI
             var product = await _productService.GetAsync(productName);
 
             // Add deployment to APIM
-            await _apiVersionAPIM.CreateAsync(product.ProductType, versionDb);
-            await _productAPIVersionAPIM.CreateAsync(product.ProductType, versionDb);
-            await _operationAPIM.DeleteAsync(product.ProductType, version);
-
+            await _apiVersionAPIM.UpdateAsync(product.ProductType, versionDb);
+            await _productAPIVersionAPIM.UpdateAsync(product.ProductType, versionDb);
+            await _operationAPIM.UpdateAsync(product.ProductType, version);
 
             // Update offerParameterDb values and save changes in db
             _context.APIVersions.Update(versionDb);
@@ -200,8 +205,8 @@ namespace Luna.Services.Data.Luna.AI
             var deployment = await _deploymentService.GetAsync(productName, deploymentName);
 
             // Check that only one offerParameter with this parameterName exists within the offer
-            var count = await _context.OfferParameters
-                .CountAsync(a => (a.OfferId == deployment.Id) && (a.ParameterName == versionName));
+            var count = await _context.APIVersions
+                .CountAsync(a => (a.DeploymentId.Equals(deployment.Id)) && (a.VersionName == versionName));
 
             // More than one instance of an object with the same name exists, this should not happen
             if (count > 1)

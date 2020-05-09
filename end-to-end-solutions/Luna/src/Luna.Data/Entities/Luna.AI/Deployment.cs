@@ -42,7 +42,7 @@ namespace Luna.Data.Entities
 
         public DateTime CreatedTime { get; set; }
 
-        public DateTime UpdatedTime { get; set; }
+        public DateTime LastUpdatedTime { get; set; }
 
         [JsonIgnore]
         public virtual Product Product { get; set; }
