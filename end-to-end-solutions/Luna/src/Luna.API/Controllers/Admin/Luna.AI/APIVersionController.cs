@@ -96,7 +96,7 @@ namespace Luna.API.Controllers.Admin
             if(await _apiVersionService.ExistsAsync(productName, deploymentName, versionName))
             {
                 _logger.LogInformation($"Update resticted user {versionName} in deployment {deploymentName} in product {productName} with payload {JsonSerializer.Serialize(apiVersion)}.");
-                await _apiVersionService.UpdateAsync(productName, deploymentName, versionName, apiVersion);
+                apiVersion = await _apiVersionService.UpdateAsync(productName, deploymentName, versionName, apiVersion);
                 return Ok(apiVersion);
             }
             else
