@@ -37,13 +37,13 @@ namespace Luna.Services.Data.Luna.AI
         }
         public async Task<List<Deployment>> GetAllAsync(string productName)
         {
-            _logger.LogInformation(LoggingUtils.ComposeGetAllResourcesMessage(typeof(Deployment).Name, offerName: productName));
+            _logger.LogInformation(LoggingUtils.ComposeGetAllResourcesMessage(typeof(Deployment).Name));
 
             // Get the offer associated with the productName provided
             var product = await _productService.GetAsync(productName);
 
             // Get all offerParameters with a FK to the offer
-            var deployments = await _context.Deployments.Where(d => d.ProductId == product.Id).ToListAsync();
+            var deployments = await _context.Deployments.Where(d => d.ProductId.Equals(product.Id)).ToListAsync();
             _logger.LogInformation(LoggingUtils.ComposeReturnCountMessage(typeof(Deployment).Name, deployments.Count()));
 
             return deployments;
