@@ -92,7 +92,7 @@ namespace Luna.API.Controllers.Admin
             if (await _productService.ExistsAsync(productName))
             {
                 _logger.LogInformation($"Update product {productName} with payload {JsonConvert.SerializeObject(product)}");
-                await _productService.UpdateAsync(productName, product);
+                product = await _productService.UpdateAsync(productName, product);
                 return Ok(product);
             }
             else

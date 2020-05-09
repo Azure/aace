@@ -24,6 +24,10 @@ namespace Luna.Data.Entities
         /// <param name="subscription">The object to be copied.</param>
         public void Copy(APISubscription subscription)
         {
+            this.ProductName = subscription.ProductName;
+            this.DeploymentName = subscription.DeploymentName;
+            this.BaseUrl = subscription.BaseUrl;
+            this.Status = subscription.Status;
         }
 
         [Key]
@@ -31,8 +35,8 @@ namespace Luna.Data.Entities
 
         public string SubscriptionName { get; set; }
 
-        [JsonIgnore]
-        public long DeploymentId { get; set; }
+        //[JsonIgnore]
+        //public long DeploymentId { get; set; }
 
         [NotMapped]
         public string ProductName { get; set; }

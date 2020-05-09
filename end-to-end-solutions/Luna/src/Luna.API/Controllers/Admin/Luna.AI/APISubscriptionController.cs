@@ -171,22 +171,18 @@ namespace Luna.API.Controllers.Admin
                     UserErrorCode.NameMismatch);
             }
             _logger.LogInformation($"Update apiSubscription {apiSubscriptionId} with payload {JsonSerializer.Serialize(apiSubscription)}.");
-            var sub = await _apiSubscriptionService.GetAsync(apiSubscriptionId);
-            AADAuthHelper.VerifyUserAccess(this.HttpContext, _logger, false, sub.UserId);
-            if (!sub.ProductName.Equals(apiSubscription.ProductName, StringComparison.InvariantCultureIgnoreCase))
+            AADAuthHelper.VerifyUserAccess(this.HttpContext, _logger, false, apiSubscription.UserId);
+            /*if (!sub.ProductName.Equals(apiSubscription.ProductName, StringComparison.InvariantCultureIgnoreCase))
             {
                 throw new LunaBadRequestUserException("Product name of an existing apiSubscription can not be changed.", UserErrorCode.InvalidParameter);
-            }
+            }*/
 
-            if (!string.IsNullOrEmpty(apiSubscription.UserId) && !sub.UserId.Equals(apiSubscription.UserId, StringComparison.InvariantCultureIgnoreCase))
-            {
-                throw new LunaBadRequestUserException("Owner name of an existing apiSubscription can not be changed.", UserErrorCode.InvalidParameter);
-            }
+            
 
-            if (sub.DeploymentName.Equals(apiSubscription.DeploymentName, StringComparison.InvariantCultureIgnoreCase))
+            /*if (sub.DeploymentName.Equals(apiSubscription.DeploymentName, StringComparison.InvariantCultureIgnoreCase))
             {
                 throw new LunaConflictUserException($"The apiSubscription {apiSubscription.SubscriptionId} is already in plan {apiSubscription.DeploymentName}.");
-            }
+            }*/
 
             await _apiSubscriptionService.UpdateAsync(apiSubscriptionId, apiSubscription);
             return Ok(await _apiSubscriptionService.GetAsync(apiSubscriptionId));

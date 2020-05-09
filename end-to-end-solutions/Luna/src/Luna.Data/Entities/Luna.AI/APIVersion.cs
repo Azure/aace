@@ -24,6 +24,14 @@ namespace Luna.Data.Entities
         /// <param name="version">The object to be copied.</param>
         public void Copy(APIVersion version)
         {
+            this.ProductName = version.ProductName;
+            this.DeploymentName = version.DeploymentName;
+            this.RealTimePredictAPI = version.RealTimePredictAPI;
+            this.BatchInferenceAPI = version.BatchInferenceAPI;
+            this.TrainModelAPI = version.TrainModelAPI;
+            this.DeployModelAPI = version.DeployModelAPI;
+            this.AuthenticationType = version.AuthenticationType;
+            this.AuthenticationKey = version.AuthenticationKey;
         }
 
         public string GetVersionIdFormat()
@@ -55,13 +63,13 @@ namespace Luna.Data.Entities
 
         public string AuthenticationKey { get; set; }
 
-        [JsonIgnore]
-        public long AMLWorkspaceId { get; set; }
+        //[JsonIgnore]
+        //public long AMLWorkspaceId { get; set; }
 
-        [NotMapped]
-        public string AMLWorkspaceName { get; set; }
+        //[NotMapped]
+        //public string AMLWorkspaceName { get; set; }
 
-        public string AdvancedSettings { get; set; }
+        //public string AdvancedSettings { get; set; }
 
         public DateTime CreatedTime { get; set; }
 

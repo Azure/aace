@@ -1,8 +1,7 @@
+using Luna.Data.Entities;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Luna.Data.Entities;
-using Luna.Data.DataContracts;
-using System;
 
 namespace Luna.Services.Data
 {

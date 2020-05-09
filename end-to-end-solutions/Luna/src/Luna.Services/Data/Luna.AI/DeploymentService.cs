@@ -37,13 +37,13 @@ namespace Luna.Services.Data.Luna.AI
         }
         public async Task<List<Deployment>> GetAllAsync(string productName)
         {
-            _logger.LogInformation(LoggingUtils.ComposeGetAllResourcesMessage(typeof(Deployment).Name, offerName: productName));
+            _logger.LogInformation(LoggingUtils.ComposeGetAllResourcesMessage(typeof(Deployment).Name));
 
             // Get the offer associated with the productName provided
             var product = await _productService.GetAsync(productName);
 
             // Get all offerParameters with a FK to the offer
-            var deployments = await _context.Deployments.Where(d => d.ProductId == product.Id).ToListAsync();
+            var deployments = await _context.Deployments.Where(d => d.ProductId.Equals(product.Id)).ToListAsync();
             _logger.LogInformation(LoggingUtils.ComposeReturnCountMessage(typeof(Deployment).Name, deployments.Count()));
 
             return deployments;
@@ -57,7 +57,7 @@ namespace Luna.Services.Data.Luna.AI
                 throw new LunaNotFoundUserException(LoggingUtils.ComposeNotFoundErrorMessage(typeof(Deployment).Name,
                         deploymentName));
             }
-            _logger.LogInformation(LoggingUtils.ComposeGetSingleResourceMessage(typeof(OfferParameter).Name, deploymentName));
+            _logger.LogInformation(LoggingUtils.ComposeGetSingleResourceMessage(typeof(Deployment).Name, deploymentName));
 
 
             // Get the offer associated with the offerName provided
@@ -66,7 +66,7 @@ namespace Luna.Services.Data.Luna.AI
             // Find the offerParameter that matches the parameterName provided
             var deployment = await _context.Deployments
                 .SingleOrDefaultAsync(a => (a.ProductId == product.Id) && (a.DeploymentName == deploymentName));
-            _logger.LogInformation(LoggingUtils.ComposeReturnValueMessage(typeof(OfferParameter).Name,
+            _logger.LogInformation(LoggingUtils.ComposeReturnValueMessage(typeof(Deployment).Name,
                 deploymentName,
                 JsonSerializer.Serialize(deployment)));
 
@@ -94,11 +94,18 @@ namespace Luna.Services.Data.Luna.AI
             }
             _logger.LogInformation(LoggingUtils.ComposeCreateResourceMessage(typeof(Deployment).Name, deployment.DeploymentName, payload: JsonSerializer.Serialize(deployment)));
 
-            // Get the offer associated with the offerName provided
+            // Get the deployment associated with the deploymentName provided
             var product = await _productService.GetAsync(productName);
 
-            // Set the FK to offer
+            // Set the FK to deployment
             deployment.ProductId = product.Id;
+            deployment.ProductName = product.ProductName;
+
+            // Update the deployment created time
+            deployment.CreatedTime = DateTime.UtcNow;
+
+            // Update the deployment last updated time
+            deployment.LastUpdatedTime = deployment.CreatedTime;
 
             await _apiVersionSetAPIM.CreateAsync(deployment);
 
@@ -126,20 +133,23 @@ namespace Luna.Services.Data.Luna.AI
                     UserErrorCode.NameMismatch);
             }
 
-            _logger.LogInformation(LoggingUtils.ComposeUpdateResourceMessage(typeof(OfferParameter).Name, deploymentName, payload: JsonSerializer.Serialize(deployment)));
+            _logger.LogInformation(LoggingUtils.ComposeUpdateResourceMessage(typeof(Deployment).Name, deploymentName, payload: JsonSerializer.Serialize(deployment)));
 
             // Get the offerParameter that matches the parameterName provided
             var deploymentDB = await GetAsync(productName, deploymentName);
 
             // Copy over the changes
-            deploymentDB.Description = deployment.Description;
+            deploymentDB.Copy(deployment);
 
-            await _apiVersionSetAPIM.UpdateAsync(deployment);
+            // Update the product last updated time
+            deploymentDB.LastUpdatedTime = DateTime.UtcNow;
+
+            await _apiVersionSetAPIM.UpdateAsync(deploymentDB);
 
             // Update offerParameterDb values and save changes in db
             _context.Deployments.Update(deploymentDB);
             await _context._SaveChangesAsync();
-            _logger.LogInformation(LoggingUtils.ComposeResourceUpdatedMessage(typeof(OfferParameter).Name, deploymentName));
+            _logger.LogInformation(LoggingUtils.ComposeResourceUpdatedMessage(typeof(Deployment).Name, deploymentName));
 
             return deploymentDB;
         }

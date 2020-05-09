@@ -531,19 +531,18 @@ CREATE TABLE [dbo].[APIVersions](
 	[DeployModelAPI] [nvarchar](max) NULL,
 	[AuthenticationType] [nvarchar](8) NOT NULL,
 	[AuthenticationKey] [nvarchar](64) NULL,
-	[AMLWorkspaceId] [bigint] NULL,
-	[AdvancedSettings] [nvarchar](max) NULL,
+	-- [AMLWorkspaceId] [bigint] NULL,
 	[CreatedTime] [datetime2](7) NOT NULL,
 	[LastUpdatedTime] [datetime2](7) NOT NULL,
 	PRIMARY KEY (Id),
 	CONSTRAINT FK_deploymentId_APIVersions FOREIGN KEY (DeploymentId) REFERENCES Deployments(Id),
-	CONSTRAINT FK_amlworkspaceId_APIVersions FOREIGN KEY (AMLWorkspaceId) REFERENCES AMLWorkspaces(Id)
+	-- CONSTRAINT FK_amlworkspaceId_APIVersions FOREIGN KEY (AMLWorkspaceId) REFERENCES AMLWorkspaces(Id)
 ) ON [PRIMARY]
 GO
 
 CREATE TABLE [dbo].[APISubscriptions](
 	[SubscriptionId] [uniqueidentifier] NOT NULL,
-	[DeploymentId] [bigint] NOT NULL,
+	-- [DeploymentId] [bigint] NOT NULL,
 	[SubscriptionName] [nvarchar](64) NOT NULL,
 	[userId] [nvarchar](512) NOT NULL,
 	[Status] [nvarchar](32) NULL,
@@ -551,6 +550,6 @@ CREATE TABLE [dbo].[APISubscriptions](
 	[CreatedTime] [datetime2](7) NOT NULL,
 	[LastUpdatedTime] [datetime2](7) NOT NULL,
 	PRIMARY KEY (SubscriptionId),
-	CONSTRAINT FK_deploymentId_APISubscriptions FOREIGN KEY (DeploymentId) REFERENCES Deployments(Id)
+	-- CONSTRAINT FK_deploymentId_APISubscriptions FOREIGN KEY (DeploymentId) REFERENCES Deployments(Id)
 ) ON [PRIMARY]
 GO

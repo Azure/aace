@@ -47,8 +47,7 @@ namespace Luna.Clients.Azure.APIM
 
         private Uri GetUserAPIMRequestURI(string owner, IDictionary<string, string> queryParams = null)
         {
-            var userName = GetUserName(owner);
-            var builder = new UriBuilder(REQUEST_BASE_URL + GetAPIMRESTAPIPath(userName));
+            var builder = new UriBuilder(REQUEST_BASE_URL + GetAPIMRESTAPIPath(owner));
 
             var query = HttpUtility.ParseQueryString(string.Empty);
             foreach (KeyValuePair<string, string> kv in queryParams ?? new Dictionary<string, string>()) query[kv.Key] = kv.Value;
@@ -74,8 +73,9 @@ namespace Luna.Clients.Azure.APIM
             return user;
         }
 
-        public string GetAPIMRESTAPIPath(string userName)
+        public string GetAPIMRESTAPIPath(string owner)
         {
+            string userName = GetUserName(owner);
             return string.Format(PATH_FORMAT, _subscriptionId, _resourceGroupName, _apimServiceName, userName);
         }
         public async Task CreateAsync(Product product)

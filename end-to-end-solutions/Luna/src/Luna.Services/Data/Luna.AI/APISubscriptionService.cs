@@ -111,7 +111,10 @@ namespace Luna.Services.Data.Luna.AI
 
             // Get the offer that matches the offerName provided
             var apiSubscriptionDb = await GetAsync(apiSubscriptionId);
-
+            if (!string.IsNullOrEmpty(apiSubscription.UserId) && !apiSubscriptionDb.UserId.Equals(apiSubscription.UserId, StringComparison.InvariantCultureIgnoreCase))
+            {
+                throw new LunaBadRequestUserException("Owner name of an existing apiSubscription can not be changed.", UserErrorCode.InvalidParameter);
+            }
             // Check if (the offerName has been updated) && 
             //          (an offer with the same new name does not already exist)
             if ((!apiSubscriptionId.Equals(apiSubscription.SubscriptionId)) && (await ExistsAsync(apiSubscription.SubscriptionId)))
@@ -121,7 +124,7 @@ namespace Luna.Services.Data.Luna.AI
             }
 
             // Copy over the changes
-            apiSubscriptionDb.Status = apiSubscription.Status;
+            apiSubscriptionDb.Copy(apiSubscription);
 
             // Update the offer last updated time
             apiSubscriptionDb.LastUpdatedTime = DateTime.UtcNow;
@@ -138,7 +141,7 @@ namespace Luna.Services.Data.Luna.AI
             // Update productDb values and save changes in db
             _context.APISubscriptions.Update(apiSubscriptionDb);
             await _context._SaveChangesAsync();
-            _logger.LogInformation(LoggingUtils.ComposeResourceUpdatedMessage(typeof(Product).Name, apiSubscription.SubscriptionId.ToString()));
+            _logger.LogInformation(LoggingUtils.ComposeResourceUpdatedMessage(typeof(APISubscription).Name, apiSubscription.SubscriptionId.ToString()));
 
             return apiSubscriptionDb;
         }

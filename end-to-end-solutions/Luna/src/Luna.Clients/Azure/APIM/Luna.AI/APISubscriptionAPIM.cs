@@ -5,6 +5,7 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using System.Web;
 using Luna.Clients.Exceptions;
 using Luna.Data.Entities;
 using Microsoft.Extensions.DependencyInjection;
@@ -16,11 +17,12 @@ namespace Luna.Clients.Azure.APIM
     public class APISubscriptionAPIM : IAPISubscriptionAPIM
     {
         private string REQUEST_BASE_URL = "https://lunav2.management.azure-api.net";
-        private string PATH_FORMAT = "/subscriptions/{0}/resourceGroups/{1}/providers/Microsoft.ApiManagement/service/{2}/subscriptions/{sid}";
+        private string PATH_FORMAT = "/subscriptions/{0}/resourceGroups/{1}/providers/Microsoft.ApiManagement/service/{2}/subscriptions/{3}";
         private Guid _subscriptionId;
         private string _resourceGroupName;
         private string _apimServiceName;
         private string _token;
+        private string _apiVersion;
         private HttpClient _httpClient;
         private IProductAPIM _productAPIM;
         private IUserAPIM _userAPIM;
@@ -39,6 +41,7 @@ namespace Luna.Clients.Azure.APIM
             _resourceGroupName = options.CurrentValue.Config.ResourceGroupname;
             _apimServiceName = options.CurrentValue.Config.APIMServiceName;
             _token = options.CurrentValue.Config.Token;
+            _apiVersion = options.CurrentValue.Config.APIVersion;
             _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
             _productAPIM = productAPIM;
             _userAPIM = userAPIM;
@@ -46,7 +49,15 @@ namespace Luna.Clients.Azure.APIM
 
         private Uri GetSubscriptionAPIMRequestURI(Guid subscriptionId, string path = "")
         {
-            return new Uri(REQUEST_BASE_URL + GETAPIMRESTAPIPath(subscriptionId) + path);
+            var builder = new UriBuilder(REQUEST_BASE_URL + GETAPIMRESTAPIPath(subscriptionId) + path);
+
+            var query = HttpUtility.ParseQueryString(string.Empty);
+            query["api-version"] = _apiVersion;
+            string queryString = query.ToString();
+
+            builder.Query = query.ToString();
+
+            return new Uri(builder.ToString());
         }
 
         private Models.Azure.APISubscription GetSubscription(APISubscription subscription)
@@ -103,7 +114,8 @@ namespace Luna.Clients.Azure.APIM
             request.Headers.Add("Authorization", _token);
             request.Headers.Add("If-Match", "*");
 
-            request.Content = new StringContent(JsonConvert.SerializeObject(GetSubscription(subscription)), Encoding.UTF8, "application/json");
+            var body = JsonConvert.SerializeObject(GetSubscription(subscription));
+            request.Content = new StringContent(body, Encoding.UTF8, "application/json");
 
             var response = await _httpClient.SendAsync(request);
 
@@ -190,16 +202,8 @@ namespace Luna.Clients.Azure.APIM
                 throw new LunaServerException($"Query failed with response {responseContent}");
             }
 
-            Models.Azure.APISubscription.Properties apiSubscriptionProperties = (Models.Azure.APISubscription.Properties)System.Text.Json.JsonSerializer.Deserialize(responseContent, typeof(Models.Azure.APISubscription.Properties));
-            if (apiSubscriptionProperties == null)
-            {
-                throw new LunaServerException($"Query result in bad format. The response is {responseContent}.");
-            }
+            Models.Azure.APISubscription.Properties apiSubscriptionProperties = await ListSecrets(subscriptionId);
 
-            if (apiSubscriptionProperties.primaryKey == null || apiSubscriptionProperties.secondaryKey == null)
-            {
-                throw new LunaServerException($"Can't find any result. The response is {responseContent}.");
-            }
             return apiSubscriptionProperties;
         }
     }
