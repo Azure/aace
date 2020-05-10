@@ -93,7 +93,7 @@ namespace Luna.API.Controllers.Admin
             if (await _deploymentService.ExistsAsync(productName, deploymentName))
             {
                 _logger.LogInformation($"Update deployment {deploymentName} in product {productName} with payload {JsonSerializer.Serialize(deployment)}.");
-                await _deploymentService.UpdateAsync(productName, deploymentName, deployment);
+                deployment = await _deploymentService.UpdateAsync(productName, deploymentName, deployment);
                 return Ok(deployment);
             }
             else

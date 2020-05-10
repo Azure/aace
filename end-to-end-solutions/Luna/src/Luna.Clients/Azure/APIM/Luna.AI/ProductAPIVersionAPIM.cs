@@ -46,9 +46,9 @@ namespace Luna.Clients.Azure.APIM
             _apiVersionSetAPIM = apiVersionSetAPIM;
         }
 
-        private Uri GetProductAPIMRequestURI(string productName, string deploymentName, IDictionary<string, string> queryParams = null)
+        private Uri GetProductAPIMRequestURI(string productName, string versionNameFormat, IDictionary<string, string> queryParams = null)
         {
-            var builder = new UriBuilder(REQUEST_BASE_URL + GetAPIMRESTAPIPath(productName, deploymentName));
+            var builder = new UriBuilder(REQUEST_BASE_URL + GetAPIMRESTAPIPath(productName, versionNameFormat));
 
             var query = HttpUtility.ParseQueryString(string.Empty);
             foreach (KeyValuePair<string, string> kv in queryParams ?? new Dictionary<string, string>()) query[kv.Key] = kv.Value;
@@ -74,14 +74,14 @@ namespace Luna.Clients.Azure.APIM
             return versionAPIM;
         }
 
-        public string GetAPIMRESTAPIPath(string productName, string deploymentName)
+        public string GetAPIMRESTAPIPath(string productName, string versionNameFormat)
         {
-            return string.Format(PATH_FORMAT, _subscriptionId, _resourceGroupName, _apimServiceName, productName, deploymentName);
+            return string.Format(PATH_FORMAT, _subscriptionId, _resourceGroupName, _apimServiceName, productName, versionNameFormat);
         }
 
         public async Task CreateAsync(string type, APIVersion version)
         {
-            Uri requestUri = GetProductAPIMRequestURI(version.ProductName, version.DeploymentName);
+            Uri requestUri = GetProductAPIMRequestURI(version.ProductName, version.GetVersionIdFormat());
             var request = new HttpRequestMessage { RequestUri = requestUri, Method = HttpMethod.Put };
 
             request.Headers.Add("Authorization", _token);
@@ -100,7 +100,7 @@ namespace Luna.Clients.Azure.APIM
 
         public async Task UpdateAsync(string type, APIVersion version)
         {
-            Uri requestUri = GetProductAPIMRequestURI(version.ProductName, version.DeploymentName);
+            Uri requestUri = GetProductAPIMRequestURI(version.ProductName, version.GetVersionIdFormat());
             var request = new HttpRequestMessage { RequestUri = requestUri, Method = HttpMethod.Put };
 
             request.Headers.Add("Authorization", _token);
@@ -119,7 +119,7 @@ namespace Luna.Clients.Azure.APIM
 
         public async Task DeleteAsync(string type, APIVersion version)
         {
-            Uri requestUri = GetProductAPIMRequestURI(version.ProductName, version.DeploymentName);
+            Uri requestUri = GetProductAPIMRequestURI(version.ProductName, version.GetVersionIdFormat());
             var request = new HttpRequestMessage { RequestUri = requestUri, Method = HttpMethod.Delete };
 
             request.Headers.Add("Authorization", _token);

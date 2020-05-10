@@ -108,17 +108,17 @@ namespace Luna.Services.Data.Luna.AI
             var product = await _productService.GetAsync(productName);
             var deployment = await _deploymentService.GetAsync(productName, deploymentName);
 
-            // Set the FK to offer
+            // Set the FK to apiVersion
             version.ProductName = product.ProductName;
             version.DeploymentName = deployment.DeploymentName;
             version.DeploymentId = deployment.Id;
 
-            // Add deployment to APIM
+            // Add apiVersion to APIM
             await _apiVersionAPIM.CreateAsync(product.ProductType, version);
             await _productAPIVersionAPIM.CreateAsync(product.ProductType, version);
             await _operationAPIM.CreateAsync(product.ProductType, version);
 
-            // Add deployment to db
+            // Add apiVersion to db
             try
             {
                 _context.APIVersions.Add(version);
@@ -154,19 +154,14 @@ namespace Luna.Services.Data.Luna.AI
             var versionDb = await GetAsync(productName, deploymentName, versionName);
 
             // Copy over the changes
-            versionDb.RealTimePredictAPI = version.RealTimePredictAPI;
-            versionDb.BatchInferenceAPI = version.BatchInferenceAPI;
-            versionDb.TrainModelAPI = version.TrainModelAPI;
-            versionDb.DeployModelAPI = version.DeployModelAPI;
-            versionDb.AuthenticationType = version.AuthenticationType;
-            versionDb.AuthenticationKey = version.AuthenticationKey;
+            versionDb.Copy(version);
 
             var product = await _productService.GetAsync(productName);
 
             // Add deployment to APIM
             await _apiVersionAPIM.UpdateAsync(product.ProductType, versionDb);
             await _productAPIVersionAPIM.UpdateAsync(product.ProductType, versionDb);
-            await _operationAPIM.UpdateAsync(product.ProductType, version);
+            await _operationAPIM.UpdateAsync(product.ProductType, versionDb);
 
             // Update offerParameterDb values and save changes in db
             _context.APIVersions.Update(versionDb);
