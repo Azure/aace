@@ -30,21 +30,22 @@ namespace Luna.Clients.Controller
             var requestUri = new Uri(version.RealTimePredictAPI);
             var request = new HttpRequestMessage { RequestUri = requestUri, Method = HttpMethod.Post };
 
-            switch (version.AuthenticationType)
+            switch (version.AuthenticationType.ToLower())
             {
-                case "Token":
+                case "key":
                     request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", version.AuthenticationKey);
                     break;
-                case "Key":
+                case "token":
                     // TODO add an exception here
                     break;
-                case "None":
+                case "none":
                 default:
                     break;
             }
             
-            request.Content = new StringContent(body.ToString(), Encoding.UTF8, "application/json");
-            
+                request.Content = new StringContent(body.ToString());
+                request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+
             var response = await HttpClient.SendAsync(request);
 
             string responseContent = await response.Content.ReadAsStringAsync();

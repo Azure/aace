@@ -491,6 +491,7 @@ CREATE TABLE [dbo].[WebhookWebhookParameters](
 CREATE TABLE [dbo].[AMLWorkspaces](
 	[Id] [bigint] IDENTITY(1,1) NOT NULL,
 	[WorkspaceName] [nvarchar](50) NOT NULL,
+	[ResourceId] [nvarchar](max) NOT NULL,
 	[AADApplicationId] [uniqueidentifier] NOT NULL,
 	[AADApplicationSecrets] [nvarchar](128) NOT NULL,
 	PRIMARY KEY (Id)
@@ -553,6 +554,6 @@ CREATE TABLE [dbo].[APISubscriptions](
 	[CreatedTime] [datetime2](7) NOT NULL,
 	[LastUpdatedTime] [datetime2](7) NOT NULL,
 	PRIMARY KEY (SubscriptionId),
-	-- CONSTRAINT FK_deploymentId_APISubscriptions FOREIGN KEY (DeploymentId) REFERENCES Deployments(Id)
+	CONSTRAINT FK_deploymentId_APISubscriptions FOREIGN KEY (DeploymentId) REFERENCES Deployments(Id)
 ) ON [PRIMARY]
 GO

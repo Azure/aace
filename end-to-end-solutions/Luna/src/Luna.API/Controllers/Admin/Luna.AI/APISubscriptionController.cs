@@ -103,37 +103,45 @@ namespace Luna.API.Controllers.Admin
             return Ok(apiSubscription);
         }
 
+        [HttpPost("apiSubscriptions/CreateWithId")]
+        [AllowAnonymous]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        public async Task<ActionResult> CreateAsync([FromQuery] string subscriptionName, 
+            [FromQuery] Guid subscriptionId,
+            [FromQuery] string productName,
+            [FromQuery] string deploymentName,
+            [FromQuery] string userId)
+        {
+            APISubscription apiSubscription = new APISubscription()
+            {
+                SubscriptionName = subscriptionName,
+                SubscriptionId = subscriptionId,
+                ProductName = productName,
+                DeploymentName = deploymentName,
+                UserId = userId
+            };
+
+            return await CreateInternal(apiSubscription);
+        }
+
         [HttpPost("apiSubscriptions/Create")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         public async Task<ActionResult> CreateAsync([FromBody] APISubscription apiSubscription)
         {
-            // If request body is not specified, try to compose the payload from query parameters
             if (apiSubscription == null)
             {
-                if (Request.Query.ContainsKey("SubscriptionName") &&
-                    Request.Query.ContainsKey("SubscriptionId") &&
-                    Request.Query.ContainsKey("ProductName") &&
-                    Request.Query.ContainsKey("DeploymentName") &&
-                    Request.Query.ContainsKey("UserId"))
-                {
-                    apiSubscription = new APISubscription()
-                    {
-                        SubscriptionName = Request.Query["SubscriptionName"].ToString(),
-                        SubscriptionId = Guid.Parse(Request.Query["SubscriptionId"].ToString()),
-                        ProductName = Request.Query["ProductName"].ToString(),
-                        DeploymentName = Request.Query["DeploymentName"].ToString(),
-                        UserId = Request.Query["UserId"].ToString()
-                    };
-                }
-                else
-                {
-                    throw new LunaBadRequestUserException(LoggingUtils.ComposePayloadNotProvidedErrorMessage(nameof(apiSubscription)), UserErrorCode.PayloadNotProvided);
-                }
+                throw new LunaBadRequestUserException(LoggingUtils.ComposePayloadNotProvidedErrorMessage(nameof(apiSubscription)), UserErrorCode.PayloadNotProvided);
             }
 
+            AADAuthHelper.VerifyUserAccess(this.HttpContext, _logger, false, apiSubscription.UserId);
+
+            return await CreateInternal(apiSubscription);
+        }
+
+        private async Task<ActionResult> CreateInternal(APISubscription apiSubscription)
+        {
             _logger.LogInformation($"Create apiSubscription {apiSubscription.SubscriptionName} with payload {JsonSerializer.Serialize(apiSubscription)}.");
             // Create a new apiSubscription
-            AADAuthHelper.VerifyUserAccess(this.HttpContext, _logger, false, apiSubscription.UserId);
             await _apiSubscriptionService.CreateAsync(apiSubscription);
             return CreatedAtRoute(nameof(GetAsync) + nameof(APISubscription), new
             {
@@ -149,7 +157,7 @@ namespace Luna.API.Controllers.Admin
         /// <returns>The apiSubscription info</returns>
         [HttpPut("apiSubscriptions/{apiSubscriptionId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult> CreateOrUpdateAsync(Guid apiSubscriptionId, [FromBody] APISubscription apiSubscription)
+        public async Task<ActionResult> UpdateAsync(Guid apiSubscriptionId, [FromBody] APISubscription apiSubscription)
         {
             if (apiSubscription == null)
             {

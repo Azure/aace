@@ -24,6 +24,9 @@ namespace Luna.Data.Entities
         /// <param name="workspace">The object to be copied.</param>
         public void Copy(AMLWorkspace workspace)
         {
+            ResourceId = workspace.ResourceId;
+            AADApplicationId = workspace.AADApplicationId;
+            AADApplicationSecrets = workspace.AADApplicationSecrets;
         }
     
         [Key]

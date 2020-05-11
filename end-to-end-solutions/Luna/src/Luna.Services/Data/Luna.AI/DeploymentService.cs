@@ -46,6 +46,12 @@ namespace Luna.Services.Data.Luna.AI
 
             // Get all offerParameters with a FK to the offer
             var deployments = await _context.Deployments.Where(d => d.ProductId.Equals(product.Id)).ToListAsync();
+
+            foreach(var deployment in deployments)
+            {
+                deployment.ProductName = product.ProductName;
+            }
+
             _logger.LogInformation(LoggingUtils.ComposeReturnCountMessage(typeof(Deployment).Name, deployments.Count()));
 
             return deployments;
@@ -68,6 +74,8 @@ namespace Luna.Services.Data.Luna.AI
             // Find the offerParameter that matches the parameterName provided
             var deployment = await _context.Deployments
                 .SingleOrDefaultAsync(a => (a.ProductId == product.Id) && (a.DeploymentName == deploymentName));
+
+            deployment.ProductName = product.ProductName;
             _logger.LogInformation(LoggingUtils.ComposeReturnValueMessage(typeof(Deployment).Name,
                 deploymentName,
                 JsonSerializer.Serialize(deployment)));

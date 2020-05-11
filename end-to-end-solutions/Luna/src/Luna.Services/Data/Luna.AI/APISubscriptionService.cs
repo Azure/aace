@@ -45,6 +45,15 @@ namespace Luna.Services.Data.Luna.AI
 
             // Get all apiSubscriptions
             var apiSubscriptions = await _context.APISubscriptions.ToListAsync();
+
+            foreach(var apiSubscription in apiSubscriptions)
+            {
+                var deployment = await _context.Deployments.FindAsync(apiSubscription.DeploymentId);
+                var product = await _context.Products.FindAsync(deployment.ProductId);
+
+                apiSubscription.ProductName = product.ProductName;
+                apiSubscription.DeploymentName = deployment.DeploymentName;
+            }
             _logger.LogInformation(LoggingUtils.ComposeReturnCountMessage(typeof(APISubscription).Name, apiSubscriptions.Count()));
 
             return apiSubscriptions;
@@ -104,6 +113,13 @@ namespace Luna.Services.Data.Luna.AI
                         apiSubscription.SubscriptionId.ToString()));
             }
             _logger.LogInformation(LoggingUtils.ComposeCreateResourceMessage(typeof(APISubscription).Name, apiSubscription.SubscriptionId.ToString(), payload: JsonSerializer.Serialize(apiSubscription)));
+
+            apiSubscription.Status = "Subscribed";
+
+            if (apiSubscription.SubscriptionId == null)
+            {
+                apiSubscription.SubscriptionId = Guid.NewGuid();
+            }
 
             var deployment = await _deploymentService.GetAsync(apiSubscription.ProductName, apiSubscription.DeploymentName);
             // Check if deployment exists

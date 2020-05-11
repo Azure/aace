@@ -83,12 +83,43 @@ namespace Luna.Services.Data.Luna.AI
 
         public async Task<AMLWorkspace> DeleteAsync(string workspaceName)
         {
-            throw new NotImplementedException();
+            _logger.LogInformation(LoggingUtils.ComposeDeleteResourceMessage(typeof(AMLWorkspace).Name, workspaceName));
+
+            var workspace = await GetAsync(workspaceName);
+
+            // Remove the product from the db
+            _context.AMLWorkspaces.Remove(workspace);
+            await _context._SaveChangesAsync();
+            _logger.LogInformation(LoggingUtils.ComposeResourceDeletedMessage(typeof(AMLWorkspace).Name, workspaceName));
+
+            return workspace;
         }
 
         public async Task<bool> ExistsAsync(string workspaceName)
         {
-            throw new NotImplementedException();
+            _logger.LogInformation(LoggingUtils.ComposeCheckResourceExistsMessage(typeof(AMLWorkspace).Name, workspaceName));
+
+            // Check that only one offer with this offerName exists and has not been deleted
+            var count = await _context.AMLWorkspaces
+                .CountAsync(p => (p.WorkspaceName == workspaceName));
+
+            // More than one instance of an object with the same name exists, this should not happen
+            if (count > 1)
+            {
+                throw new NotSupportedException(LoggingUtils.ComposeFoundDuplicatesErrorMessage(typeof(AMLWorkspace).Name, workspaceName));
+
+            }
+            else if (count == 0)
+            {
+                _logger.LogInformation(LoggingUtils.ComposeResourceExistsOrNotMessage(typeof(AMLWorkspace).Name, workspaceName, false));
+                return false;
+            }
+            else
+            {
+                _logger.LogInformation(LoggingUtils.ComposeResourceExistsOrNotMessage(typeof(AMLWorkspace).Name, workspaceName, true));
+                // count = 1
+                return true;
+            }
         }
 
         

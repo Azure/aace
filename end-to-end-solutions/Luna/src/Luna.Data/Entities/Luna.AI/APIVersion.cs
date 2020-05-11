@@ -63,13 +63,13 @@ namespace Luna.Data.Entities
 
         public string AuthenticationKey { get; set; }
 
-        //[JsonIgnore]
-        //public long AMLWorkspaceId { get; set; }
+        [JsonIgnore]
+        public long AMLWorkspaceId { get; set; }
 
-        //[NotMapped]
-        //public string AMLWorkspaceName { get; set; }
+        [NotMapped]
+        public string AMLWorkspaceName { get; set; }
 
-        //public string AdvancedSettings { get; set; }
+        public string AdvancedSettings { get; set; }
 
         public DateTime CreatedTime { get; set; }
 

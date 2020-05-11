@@ -51,9 +51,18 @@ namespace Luna.Services.Data.Luna.AI
 
             // Get the offer associated with the offerName provided
             var deployment = await _deploymentService.GetAsync(productName, deploymentName);
+            var product = await _productService.GetAsync(productName);
 
             // Get all offerParameters with a FK to the offer
             var apiVersions = await _context.APIVersions.Where(v => v.DeploymentId == deployment.Id).ToListAsync();
+
+            foreach (var apiVersion in apiVersions)
+            {
+                apiVersion.DeploymentName = deployment.DeploymentName;
+
+                apiVersion.ProductName = product.ProductName;
+            }
+
             _logger.LogInformation(LoggingUtils.ComposeReturnCountMessage(typeof(APIVersion).Name, apiVersions.Count()));
 
             return apiVersions;
@@ -76,6 +85,13 @@ namespace Luna.Services.Data.Luna.AI
             // Find the offerParameter that matches the parameterName provided
             var apiVersion = await _context.APIVersions
                 .SingleOrDefaultAsync(v => (v.DeploymentId == deployment.Id) && (v.VersionName == versionName));
+
+            apiVersion.DeploymentName = deployment.DeploymentName;
+
+            var product = await _productService.GetAsync(productName);
+
+            apiVersion.ProductName = product.ProductName;
+
             _logger.LogInformation(LoggingUtils.ComposeReturnValueMessage(typeof(APIVersion).Name,
                 versionName,
                 JsonSerializer.Serialize(apiVersion)));
