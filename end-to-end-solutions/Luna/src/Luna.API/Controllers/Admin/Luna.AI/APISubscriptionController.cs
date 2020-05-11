@@ -29,25 +29,17 @@ namespace Luna.API.Controllers.Admin
     public class APISubscriptionController : ControllerBase
     {
         private readonly IAPISubscriptionService _apiSubscriptionService;
-        private readonly IFulfillmentManager _fulfillmentManager;
-        private readonly IProvisioningService _provisioningService;
-        private readonly ICustomMeterEventService _customMeterEventService;
         private readonly ILogger<APISubscriptionController> _logger;
 
         /// <summary>
         /// .ctor
         /// </summary>
         /// <param name="apiSubscriptionService">The apiSubscription service instance</param>
-        /// <param name="fulfillmentManager">The fulfillmentManager instance</param>
-        /// <param name="provisioningService">The provisioning service instance</param>
         /// <param name="logger">The logger.</param>
-        public APISubscriptionController(IAPISubscriptionService apiSubscriptionService, IFulfillmentManager fulfillmentManager,
-            IProvisioningService provisioningService, ICustomMeterEventService customMeterEventService, ILogger<APISubscriptionController> logger)
+        public APISubscriptionController(IAPISubscriptionService apiSubscriptionService, 
+            ILogger<APISubscriptionController> logger)
         {
             _apiSubscriptionService = apiSubscriptionService ?? throw new ArgumentNullException(nameof(apiSubscriptionService));
-            _fulfillmentManager = fulfillmentManager ?? throw new ArgumentNullException(nameof(fulfillmentManager));
-            _provisioningService = provisioningService ?? throw new ArgumentNullException(nameof(provisioningService));
-            _customMeterEventService = customMeterEventService ?? throw new ArgumentNullException(nameof(customMeterEventService));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
@@ -107,7 +99,6 @@ namespace Luna.API.Controllers.Admin
         {
             _logger.LogInformation($"Get apiSubscription {apiSubscriptionId}.");
             var apiSubscription = await _apiSubscriptionService.GetAsync(apiSubscriptionId);
-
             AADAuthHelper.VerifyUserAccess(this.HttpContext, _logger, false, apiSubscription.UserId);
             return Ok(apiSubscription);
         }
@@ -172,17 +163,6 @@ namespace Luna.API.Controllers.Admin
             }
             _logger.LogInformation($"Update apiSubscription {apiSubscriptionId} with payload {JsonSerializer.Serialize(apiSubscription)}.");
             AADAuthHelper.VerifyUserAccess(this.HttpContext, _logger, false, apiSubscription.UserId);
-            /*if (!sub.ProductName.Equals(apiSubscription.ProductName, StringComparison.InvariantCultureIgnoreCase))
-            {
-                throw new LunaBadRequestUserException("Product name of an existing apiSubscription can not be changed.", UserErrorCode.InvalidParameter);
-            }*/
-
-            
-
-            /*if (sub.DeploymentName.Equals(apiSubscription.DeploymentName, StringComparison.InvariantCultureIgnoreCase))
-            {
-                throw new LunaConflictUserException($"The apiSubscription {apiSubscription.SubscriptionId} is already in plan {apiSubscription.DeploymentName}.");
-            }*/
 
             await _apiSubscriptionService.UpdateAsync(apiSubscriptionId, apiSubscription);
             return Ok(await _apiSubscriptionService.GetAsync(apiSubscriptionId));

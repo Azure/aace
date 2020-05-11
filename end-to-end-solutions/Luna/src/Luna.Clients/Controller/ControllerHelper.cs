@@ -42,9 +42,9 @@ namespace Luna.Clients.Controller
                 default:
                     break;
             }
-
-            request.Content = new StringContent(JsonConvert.SerializeObject(body), Encoding.UTF8, "application/json");
-
+            
+            request.Content = new StringContent(body.ToString(), Encoding.UTF8, "application/json");
+            
             var response = await HttpClient.SendAsync(request);
 
             string responseContent = await response.Content.ReadAsStringAsync();
@@ -52,7 +52,7 @@ namespace Luna.Clients.Controller
             {
                 throw new LunaServerException($"Query failed with response {responseContent}");
             }
-            return responseContent;
+            return responseContent.ToString();
         }
     }
 }

@@ -17,19 +17,26 @@ namespace Luna.Services.Data.Luna.AI
     public class APISubscriptionService : IAPISubscriptionService
     {
         private readonly ISqlDbContext _context;
+        private readonly IProductService _productService;
+        private readonly IDeploymentService _deploymentService;
         private readonly ILogger<APISubscriptionService> _logger;
         private readonly IAPISubscriptionAPIM _apiSubscriptionAPIM;
+        private readonly IUserAPIM _userAPIM;
 
         /// <summary>
         /// Constructor that uses dependency injection.
         /// </summary>
         /// <param name="sqlDbContext">The context to be injected.</param>
         /// <param name="logger">The logger.</param>
-        public APISubscriptionService(ISqlDbContext sqlDbContext, ILogger<APISubscriptionService> logger, IAPISubscriptionAPIM apiSubscriptionAPIM)
+        public APISubscriptionService(ISqlDbContext sqlDbContext, IProductService productService, IDeploymentService deploymentService, 
+            ILogger<APISubscriptionService> logger, IAPISubscriptionAPIM apiSubscriptionAPIM, IUserAPIM userAPIM)
         {
             _context = sqlDbContext ?? throw new ArgumentNullException(nameof(sqlDbContext));
+            _productService = productService ?? throw new ArgumentNullException(nameof(productService));
+            _deploymentService = deploymentService ?? throw new ArgumentNullException(nameof(deploymentService));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _apiSubscriptionAPIM = apiSubscriptionAPIM ?? throw new ArgumentNullException(nameof(apiSubscriptionAPIM)); ;
+            _apiSubscriptionAPIM = apiSubscriptionAPIM ?? throw new ArgumentNullException(nameof(apiSubscriptionAPIM));
+            _userAPIM = userAPIM ?? throw new ArgumentNullException(nameof(userAPIM));
         }
 
         public async Task<List<APISubscription>> GetAllAsync(string[] status = null, string owner = "")
@@ -45,18 +52,39 @@ namespace Luna.Services.Data.Luna.AI
 
         public async Task<APISubscription> GetAsync(Guid apiSubscriptionId)
         {
-            if (!await ExistsAsync(apiSubscriptionId))
+            _logger.LogInformation(LoggingUtils.ComposeGetSingleResourceMessage(typeof(APISubscription).Name, apiSubscriptionId.ToString()));
+
+            // Find the subscription that matches the subscriptionId provided
+            var apiSubscription = await _context.APISubscriptions.SingleOrDefaultAsync(o => (o.SubscriptionId.Equals(apiSubscriptionId)));
+
+            // Check if subscription exists
+            if (apiSubscription is null)
             {
                 throw new LunaNotFoundUserException(LoggingUtils.ComposeNotFoundErrorMessage(typeof(APISubscription).Name,
                     apiSubscriptionId.ToString()));
             }
-            _logger.LogInformation(LoggingUtils.ComposeGetSingleResourceMessage(typeof(APISubscription).Name, apiSubscriptionId.ToString()));
 
-            // Get the product that matches the provided productName
-            var apiSubscription = await _context.APISubscriptions.SingleOrDefaultAsync(o => (o.SubscriptionId.Equals(apiSubscriptionId)));
+            var deployment = await _context.Deployments.FindAsync(apiSubscription.DeploymentId);
+            // Check if deployment exists
+            if (deployment is null)
+            {
+                throw new LunaNotFoundUserException(LoggingUtils.ComposeNotFoundErrorMessage(typeof(APISubscription).Name,
+                    apiSubscriptionId.ToString()));
+            }
+            apiSubscription.DeploymentName = deployment.DeploymentName;
+
+            var product = await _context.Products.FindAsync(deployment.ProductId);
+            // Check if product exists
+            if (product is null)
+            {
+                throw new LunaNotFoundUserException(LoggingUtils.ComposeNotFoundErrorMessage(typeof(APISubscription).Name,
+                    apiSubscriptionId.ToString()));
+            }
+            apiSubscription.ProductName = product.ProductName;
+
             _logger.LogInformation(LoggingUtils.ComposeReturnValueMessage(typeof(APISubscription).Name,
-               apiSubscriptionId.ToString(),
-               JsonSerializer.Serialize(apiSubscription)));
+                apiSubscriptionId.ToString(),
+                JsonSerializer.Serialize(apiSubscription)));
 
             return apiSubscription;
         }
@@ -77,6 +105,25 @@ namespace Luna.Services.Data.Luna.AI
             }
             _logger.LogInformation(LoggingUtils.ComposeCreateResourceMessage(typeof(APISubscription).Name, apiSubscription.SubscriptionId.ToString(), payload: JsonSerializer.Serialize(apiSubscription)));
 
+            var deployment = await _deploymentService.GetAsync(apiSubscription.ProductName, apiSubscription.DeploymentName);
+            // Check if deployment exists
+            if (deployment is null)
+            {
+                throw new LunaNotFoundUserException(LoggingUtils.ComposeNotFoundErrorMessage(typeof(APISubscription).Name,
+                    apiSubscription.SubscriptionId.ToString()));
+            }
+            apiSubscription.DeploymentName = deployment.DeploymentName;
+            apiSubscription.DeploymentId = deployment.Id;
+
+            var product = await _productService.GetAsync(apiSubscription.ProductName);
+            // Check if product exists
+            if (product is null || product.Id != deployment.ProductId)
+            {
+                throw new LunaNotFoundUserException(LoggingUtils.ComposeNotFoundErrorMessage(typeof(APISubscription).Name,
+                    apiSubscription.SubscriptionId.ToString()));
+            }
+            apiSubscription.ProductName = product.ProductName;
+
             // Update the product created time
             apiSubscription.CreatedTime = DateTime.UtcNow;
 
@@ -84,7 +131,9 @@ namespace Luna.Services.Data.Luna.AI
             apiSubscription.LastUpdatedTime = apiSubscription.CreatedTime;
 
             // Update productDb values and save changes in APIM
+            await _userAPIM.CreateAsync(apiSubscription.UserId);
             var apiSubscriptionAPIM = await _apiSubscriptionAPIM.CreateAsync(apiSubscription);
+            
 
             // Update the offer last updated time
             apiSubscription.PrimaryKey = apiSubscriptionAPIM.properties.primaryKey;
@@ -130,6 +179,7 @@ namespace Luna.Services.Data.Luna.AI
             apiSubscriptionDb.LastUpdatedTime = DateTime.UtcNow;
 
             // Update productDb values and save changes in APIM
+            await _userAPIM.CreateAsync(apiSubscription.UserId);
             var apiSubscriptionAPIM = await _apiSubscriptionAPIM.UpdateAsync(apiSubscriptionDb);
 
             // Update the offer last updated time

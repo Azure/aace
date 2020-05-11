@@ -73,6 +73,21 @@ namespace Luna.Clients.Azure.APIM
             return api;
         }
 
+        private Models.Azure.APIVersion GetOriginAPIVersion(Deployment deployment)
+        {
+            Models.Azure.APIVersion api = new Models.Azure.APIVersion();
+            api.name = deployment.DeploymentName;
+            api.properties.displayName = deployment.DeploymentName;
+            api.properties.apiVersion = deployment.DeploymentName;
+
+            api.properties.serviceUrl = "";
+            api.properties.path = GetAPIMPath(deployment.ProductName, deployment.DeploymentName);
+            api.properties.apiVersionSetId = _apiVersionSetAPIM.GetAPIMRESTAPIPath(deployment.DeploymentName);
+
+            return api;
+        }
+
+
         public string GetAPIMPath(string productName, string deploymentName)
         {
             return string.Format("{0}/{1}", productName, deploymentName);
@@ -82,8 +97,6 @@ namespace Luna.Clients.Azure.APIM
         {
             return string.Format(PATH_FORMAT, _subscriptionId, _resourceGroupName, _apimServiceName, versionName);
         }
-
-
 
         public async Task CreateAsync(string type, APIVersion version)
         {
@@ -132,6 +145,63 @@ namespace Luna.Clients.Azure.APIM
             request.Headers.Add("If-Match", "*");
 
             request.Content = new StringContent(JsonConvert.SerializeObject(GetAPIVersion(type, version)), Encoding.UTF8, "application/json");
+
+            var response = await _httpClient.SendAsync(request);
+
+            string responseContent = await response.Content.ReadAsStringAsync();
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new LunaServerException($"Query failed with response {responseContent}");
+            }
+        }
+
+        public async Task CreateAsync(Deployment deployment)
+        {
+            Uri requestUri = GetAPIVersionAPIMRequestURI(deployment.DeploymentName);
+            var request = new HttpRequestMessage { RequestUri = requestUri, Method = HttpMethod.Put };
+
+            request.Headers.Add("Authorization", _token);
+            request.Headers.Add("If-Match", "*");
+
+            request.Content = new StringContent(JsonConvert.SerializeObject(GetOriginAPIVersion(deployment)), Encoding.UTF8, "application/json");
+
+            var response = await _httpClient.SendAsync(request);
+
+            string responseContent = await response.Content.ReadAsStringAsync();
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new LunaServerException($"Query failed with response {responseContent}");
+            }
+        }
+
+        public async Task UpdateAsync(Deployment deployment)
+        {
+            Uri requestUri = GetAPIVersionAPIMRequestURI(deployment.DeploymentName);
+            var request = new HttpRequestMessage { RequestUri = requestUri, Method = HttpMethod.Put };
+
+            request.Headers.Add("Authorization", _token);
+            request.Headers.Add("If-Match", "*");
+
+            request.Content = new StringContent(JsonConvert.SerializeObject(GetOriginAPIVersion(deployment)), Encoding.UTF8, "application/json");
+
+            var response = await _httpClient.SendAsync(request);
+
+            string responseContent = await response.Content.ReadAsStringAsync();
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new LunaServerException($"Query failed with response {responseContent}");
+            }
+        }
+
+        public async Task DeleteAsync(Deployment deployment)
+        {
+            Uri requestUri = GetAPIVersionAPIMRequestURI(deployment.DeploymentName);
+            var request = new HttpRequestMessage { RequestUri = requestUri, Method = HttpMethod.Delete };
+
+            request.Headers.Add("Authorization", _token);
+            request.Headers.Add("If-Match", "*");
+
+            request.Content = new StringContent(JsonConvert.SerializeObject(GetOriginAPIVersion(deployment)), Encoding.UTF8, "application/json");
 
             var response = await _httpClient.SendAsync(request);
 

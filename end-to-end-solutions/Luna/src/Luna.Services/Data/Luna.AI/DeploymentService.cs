@@ -21,6 +21,7 @@ namespace Luna.Services.Data.Luna.AI
         private readonly IProductService _productService;
         private readonly ILogger<DeploymentService> _logger;
         private readonly IAPIVersionSetAPIM _apiVersionSetAPIM;
+        private readonly IAPIVersionAPIM _apiVersionAPIM;
 
         /// <summary>
         /// Constructor that uses dependency injection.
@@ -28,12 +29,13 @@ namespace Luna.Services.Data.Luna.AI
         /// <param name="sqlDbContext">The context to be injected.</param>
         /// <param name="logger">The logger.</param>
         public DeploymentService(ISqlDbContext sqlDbContext, IProductService productService, ILogger<DeploymentService> logger,
-            IAPIVersionSetAPIM apiVersionSetAPIM)
+            IAPIVersionSetAPIM apiVersionSetAPIM, IAPIVersionAPIM apiVersionAPIM)
         {
             _context = sqlDbContext ?? throw new ArgumentNullException(nameof(sqlDbContext));
             _productService = productService ?? throw new ArgumentNullException(nameof(productService));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _apiVersionSetAPIM = apiVersionSetAPIM ?? throw new ArgumentNullException(nameof(apiVersionSetAPIM));
+            _apiVersionAPIM = apiVersionAPIM ?? throw new ArgumentNullException(nameof(apiVersionAPIM));
         }
         public async Task<List<Deployment>> GetAllAsync(string productName)
         {
@@ -108,6 +110,7 @@ namespace Luna.Services.Data.Luna.AI
             deployment.LastUpdatedTime = deployment.CreatedTime;
 
             await _apiVersionSetAPIM.CreateAsync(deployment);
+            await _apiVersionAPIM.CreateAsync(deployment);
 
             // Add offerParameter to db
             _context.Deployments.Add(deployment);
@@ -145,6 +148,7 @@ namespace Luna.Services.Data.Luna.AI
             deploymentDB.LastUpdatedTime = DateTime.UtcNow;
 
             await _apiVersionSetAPIM.UpdateAsync(deploymentDB);
+            await _apiVersionAPIM.UpdateAsync(deployment);
 
             // Update offerParameterDb values and save changes in db
             _context.Deployments.Update(deploymentDB);
@@ -161,7 +165,7 @@ namespace Luna.Services.Data.Luna.AI
             // Get the offerParameter that matches the parameterName provided
             var deployment = await GetAsync(productName, deploymentName);
 
-            await _apiVersionSetAPIM.DeleteAsync(deployment);
+            await _apiVersionAPIM.DeleteAsync(deployment);
 
             // Remove the offerParameter from the db
             _context.Deployments.Remove(deployment);

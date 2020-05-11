@@ -35,8 +35,8 @@ namespace Luna.Data.Entities
 
         public string SubscriptionName { get; set; }
 
-        //[JsonIgnore]
-        //public long DeploymentId { get; set; }
+        [JsonIgnore]
+        public long DeploymentId { get; set; }
 
         [NotMapped]
         public string ProductName { get; set; }
@@ -50,10 +50,8 @@ namespace Luna.Data.Entities
 
         public string BaseUrl { get; set; }
 
-        [NotMapped]
         public string PrimaryKey { get; set; }
 
-        [NotMapped]
         public string SecondaryKey { get; set; }
 
         public DateTime CreatedTime { get; set; }

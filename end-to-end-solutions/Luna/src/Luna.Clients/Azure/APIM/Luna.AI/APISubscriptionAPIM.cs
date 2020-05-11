@@ -83,7 +83,8 @@ namespace Luna.Clients.Azure.APIM
             request.Headers.Add("Authorization", _token);
             request.Headers.Add("If-Match", "*");
 
-            request.Content = new StringContent(JsonConvert.SerializeObject(GetSubscription(subscription)), Encoding.UTF8, "application/json");
+            var body = JsonConvert.SerializeObject(GetSubscription(subscription));
+            request.Content = new StringContent(body, Encoding.UTF8, "application/json");
 
             var response = await _httpClient.SendAsync(request);
 
