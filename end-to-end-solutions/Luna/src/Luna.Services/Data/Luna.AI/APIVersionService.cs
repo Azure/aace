@@ -178,6 +178,8 @@ namespace Luna.Services.Data.Luna.AI
             // Get the offerParameter that matches the parameterName provided
             var product = await _productService.GetAsync(productName);
             var version = await GetAsync(productName, deploymentName, versionName);
+            version.ProductName = productName;
+            version.DeploymentName = deploymentName;
 
             // Add version to APIM
             await _operationAPIM.DeleteAsync(product.ProductType, version);

@@ -19,7 +19,6 @@ namespace Luna.Services.Data.Luna.AI
         private readonly ISqlDbContext _context;
         private readonly ILogger<ProductService> _logger;
         private readonly IProductAPIM _productAPIM;
-        private readonly IUserAPIM _userAPIM;
 
         /// <summary>
         /// Constructor that uses dependency injection.
@@ -32,7 +31,6 @@ namespace Luna.Services.Data.Luna.AI
             _context = sqlDbContext ?? throw new ArgumentNullException(nameof(sqlDbContext));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _productAPIM = productAPIM ?? throw new ArgumentNullException(nameof(productAPIM));
-            _userAPIM = userAPIM ?? throw new ArgumentNullException(nameof(userAPIM));
         }
         public async Task<List<Product>> GetAllAsync()
         {
@@ -86,7 +84,6 @@ namespace Luna.Services.Data.Luna.AI
             product.LastUpdatedTime = product.CreatedTime;
 
             await _productAPIM.CreateAsync(product);
-            await _userAPIM.CreateAsync(product);
 
             // Add product to db
             _context.Products.Add(product);
@@ -124,7 +121,6 @@ namespace Luna.Services.Data.Luna.AI
 
             // Update productDb values and save changes in APIM
             await _productAPIM.UpdateAsync(productDb);
-            await _userAPIM.CreateAsync(productDb);
 
             // Update productDb values and save changes in db
             _context.Products.Update(productDb);

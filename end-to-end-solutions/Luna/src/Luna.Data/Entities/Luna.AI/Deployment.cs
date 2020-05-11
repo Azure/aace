@@ -24,6 +24,8 @@ namespace Luna.Data.Entities
         /// <param name="deployment">The object to be copied.</param>
         public void Copy(Deployment deployment)
         {
+            this.ProductName = deployment.ProductName;
+            this.Description = deployment.Description;
         }
 
         [Key]

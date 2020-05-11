@@ -47,7 +47,6 @@ namespace Luna.API.Controllers.Admin
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> Predict(string productName, string deploymentName, [FromQuery(Name = "api-version")] string versionName, [FromBody] object body)
         {
-            AADAuthHelper.VerifyUserAccess(this.HttpContext, _logger, true);
             _logger.LogInformation($"Get all apiVersions in deployment {deploymentName} in product {productName}.");
             var version = await _apiVersionService.GetAsync(productName, deploymentName, versionName);
             return Ok(await ControllerHelper.Predict(version, body));

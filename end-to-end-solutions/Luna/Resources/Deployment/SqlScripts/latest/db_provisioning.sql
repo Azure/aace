@@ -548,9 +548,11 @@ CREATE TABLE [dbo].[APISubscriptions](
 	[userId] [nvarchar](512) NOT NULL,
 	[Status] [nvarchar](32) NULL,
 	[BaseUrl] [nvarchar](max) NULL,
+	[PrimaryKey] [nvarchar](64) NULL,
+	[SecondaryKey] [nvarchar](64) NULL,
 	[CreatedTime] [datetime2](7) NOT NULL,
 	[LastUpdatedTime] [datetime2](7) NOT NULL,
 	PRIMARY KEY (SubscriptionId),
-	CONSTRAINT FK_deploymentId_APISubscriptions FOREIGN KEY (DeploymentId) REFERENCES Deployments(Id)
+	-- CONSTRAINT FK_deploymentId_APISubscriptions FOREIGN KEY (DeploymentId) REFERENCES Deployments(Id)
 ) ON [PRIMARY]
 GO

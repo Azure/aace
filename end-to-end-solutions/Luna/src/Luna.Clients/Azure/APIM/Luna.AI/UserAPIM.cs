@@ -47,8 +47,7 @@ namespace Luna.Clients.Azure.APIM
 
         private Uri GetUserAPIMRequestURI(string owner, IDictionary<string, string> queryParams = null)
         {
-            var userName = GetUserName(owner);
-            var builder = new UriBuilder(REQUEST_BASE_URL + GetAPIMRESTAPIPath(userName));
+            var builder = new UriBuilder(REQUEST_BASE_URL + GetAPIMRESTAPIPath(owner));
 
             var query = HttpUtility.ParseQueryString(string.Empty);
             foreach (KeyValuePair<string, string> kv in queryParams ?? new Dictionary<string, string>()) query[kv.Key] = kv.Value;
@@ -60,33 +59,34 @@ namespace Luna.Clients.Azure.APIM
             return new Uri(builder.ToString());
         }
 
-        private Models.Azure.User GetUser(Product product)
+        private Models.Azure.User GetUser(string owner)
         {
-            string[] names = product.Owner.Split('@');
-            if (names.Length != 2) throw new InvalidOperationException($"user email format is invalid. email: {product.Owner}");
+            string[] names = owner.Split('@');
+            if (names.Length != 2) throw new InvalidOperationException($"user email format is invalid. email: {owner}");
 
             Models.Azure.User user = new Models.Azure.User();
-            user.name = GetUserName(product.Owner);
-            user.properties.email = product.Owner;
+            user.name = GetUserName(owner);
+            user.properties.email = owner;
             user.properties.firstName = names[0] ?? user.properties.firstName;
             user.properties.lastName = names[1] ?? user.properties.lastName;
 
             return user;
         }
 
-        public string GetAPIMRESTAPIPath(string userName)
+        public string GetAPIMRESTAPIPath(string owner)
         {
+            string userName = GetUserName(owner);
             return string.Format(PATH_FORMAT, _subscriptionId, _resourceGroupName, _apimServiceName, userName);
         }
-        public async Task CreateAsync(Product product)
+        public async Task CreateAsync(string owner)
         {
-            Uri requestUri = GetUserAPIMRequestURI(product.Owner);
+            Uri requestUri = GetUserAPIMRequestURI(owner);
             var request = new HttpRequestMessage { RequestUri = requestUri, Method = HttpMethod.Put };
 
             request.Headers.Add("Authorization", _token);
             request.Headers.Add("If-Match", "*");
 
-            request.Content = new StringContent(JsonConvert.SerializeObject(GetUser(product)), Encoding.UTF8, "application/json");
+            request.Content = new StringContent(JsonConvert.SerializeObject(GetUser(owner)), Encoding.UTF8, "application/json");
 
             var response = await _httpClient.SendAsync(request);
 
@@ -97,15 +97,15 @@ namespace Luna.Clients.Azure.APIM
             }
         }
 
-        public async Task UpdateAsync(Product product)
+        public async Task UpdateAsync(string owner)
         {
-            Uri requestUri = GetUserAPIMRequestURI(product.Owner);
+            Uri requestUri = GetUserAPIMRequestURI(owner);
             var request = new HttpRequestMessage { RequestUri = requestUri, Method = HttpMethod.Put };
 
             request.Headers.Add("Authorization", _token);
             request.Headers.Add("If-Match", "*");
 
-            request.Content = new StringContent(JsonConvert.SerializeObject(GetUser(product)), Encoding.UTF8, "application/json");
+            request.Content = new StringContent(JsonConvert.SerializeObject(GetUser(owner)), Encoding.UTF8, "application/json");
 
             var response = await _httpClient.SendAsync(request);
 
@@ -116,15 +116,15 @@ namespace Luna.Clients.Azure.APIM
             }
         }
 
-        public async Task DeleteAsync(Product product)
+        public async Task DeleteAsync(string owner)
         {
-            Uri requestUri = GetUserAPIMRequestURI(product.Owner);
+            Uri requestUri = GetUserAPIMRequestURI(owner);
             var request = new HttpRequestMessage { RequestUri = requestUri, Method = HttpMethod.Delete };
 
             request.Headers.Add("Authorization", _token);
             request.Headers.Add("If-Match", "*");
 
-            request.Content = new StringContent(JsonConvert.SerializeObject(GetUser(product)), Encoding.UTF8, "application/json");
+            request.Content = new StringContent(JsonConvert.SerializeObject(GetUser(owner)), Encoding.UTF8, "application/json");
 
             var response = await _httpClient.SendAsync(request);
 

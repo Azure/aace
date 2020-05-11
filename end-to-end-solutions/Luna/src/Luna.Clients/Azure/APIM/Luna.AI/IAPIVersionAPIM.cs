@@ -13,6 +13,11 @@ namespace Luna.Clients.Azure.APIM
         public Task UpdateAsync(string type, APIVersion version);
 
         public Task DeleteAsync(string type, APIVersion version);
+
+        public Task CreateAsync(Deployment deployment);
+
+        public Task UpdateAsync(Deployment deployment);
         
+        public Task DeleteAsync(Deployment deployment);
     }
 }
