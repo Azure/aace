@@ -43,8 +43,8 @@ namespace Luna.Clients.Controller
                     break;
             }
             
-                request.Content = new StringContent(body.ToString());
-                request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+            request.Content = new StringContent(body.ToString());
+            request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
 
             var response = await HttpClient.SendAsync(request);
 
@@ -53,7 +53,7 @@ namespace Luna.Clients.Controller
             {
                 throw new LunaServerException($"Query failed with response {responseContent}");
             }
-            return responseContent.ToString();
+            return responseContent;
         }
     }
 }

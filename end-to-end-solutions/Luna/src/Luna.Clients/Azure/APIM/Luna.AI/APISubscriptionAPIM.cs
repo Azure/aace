@@ -86,6 +86,30 @@ namespace Luna.Clients.Azure.APIM
             return string.Format(PATH_FORMAT, _subscriptionId, _resourceGroupName, _apimServiceName, subscriptionId.ToString());
         }
 
+        public async Task<bool> ExistsAsync(APISubscription subscription)
+        {
+            Uri requestUri = GetSubscriptionAPIMRequestURI(subscription.SubscriptionId);
+            var request = new HttpRequestMessage { RequestUri = requestUri, Method = HttpMethod.Get };
+
+            request.Headers.Add("Authorization", _token);
+            request.Headers.Add("If-Match", "*");
+
+            var body = JsonConvert.SerializeObject(GetSubscription(subscription));
+            request.Content = new StringContent(body, Encoding.UTF8, "application/json");
+
+            var response = await _httpClient.SendAsync(request);
+
+            string responseContent = await response.Content.ReadAsStringAsync();
+            if (!response.IsSuccessStatusCode) return false;
+
+            Models.Azure.APISubscription apiSubcriptionAPIM = (Models.Azure.APISubscription)System.Text.Json.JsonSerializer.Deserialize(responseContent, typeof(Models.Azure.APISubscription));
+            if (apiSubcriptionAPIM == null)
+            {
+                throw new LunaServerException($"Query result in bad format. The response is {responseContent}.");
+            }
+            return true;
+        }
+
         public async Task<Models.Azure.APISubscription> CreateAsync(APISubscription subscription)
         {
             Uri requestUri = GetSubscriptionAPIMRequestURI(subscription.SubscriptionId);
@@ -152,6 +176,8 @@ namespace Luna.Clients.Azure.APIM
 
         public async Task DeleteAsync(Data.Entities.APISubscription subscription)
         {
+            if (!(await ExistsAsync(subscription))) return;
+
             Uri requestUri = GetSubscriptionAPIMRequestURI(subscription.SubscriptionId);
             var request = new HttpRequestMessage { RequestUri = requestUri, Method = HttpMethod.Delete };
 

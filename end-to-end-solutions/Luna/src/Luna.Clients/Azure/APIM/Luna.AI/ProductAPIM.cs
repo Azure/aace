@@ -71,6 +71,29 @@ namespace Luna.Clients.Azure.APIM
             return string.Format(PATH_FORMAT, _subscriptionId, _resourceGroupName, _apimServiceName, productName);
         }
 
+        public async Task<bool> ExistsAsync(Product product)
+        {
+            Uri requestUri = GetProductAPIMRequestURI(product.ProductName);
+            var request = new HttpRequestMessage { RequestUri = requestUri, Method = HttpMethod.Get };
+
+            request.Headers.Add("Authorization", _token);
+            request.Headers.Add("If-Match", "*");
+
+            request.Content = new StringContent(JsonConvert.SerializeObject(GetProduct(product)), Encoding.UTF8, "application/json");
+
+            var response = await _httpClient.SendAsync(request);
+
+            string responseContent = await response.Content.ReadAsStringAsync();
+            if (!response.IsSuccessStatusCode) return false;
+
+            Models.Azure.Product productAPIM = (Models.Azure.Product)System.Text.Json.JsonSerializer.Deserialize(responseContent, typeof(Models.Azure.Product));
+            if (productAPIM == null)
+            {
+                throw new LunaServerException($"Query result in bad format. The response is {responseContent}.");
+            }
+            return true;
+        }
+
         public async Task CreateAsync(Product product)
         {
             Uri requestUri = GetProductAPIMRequestURI(product.ProductName);
@@ -111,6 +134,8 @@ namespace Luna.Clients.Azure.APIM
 
         public async Task DeleteAsync(Product product)
         {
+            if (!(await ExistsAsync(product))) return;
+
             Uri requestUri = GetProductAPIMRequestURI(product.ProductName, DELETE_QUERY_PARAMS);
             var request = new HttpRequestMessage { RequestUri = requestUri, Method = HttpMethod.Delete };
 
