@@ -16,7 +16,8 @@ namespace Luna.Clients.Azure.APIM
 {
     public class APISubscriptionAPIM : IAPISubscriptionAPIM
     {
-        private string REQUEST_BASE_URL = "https://lunav2.management.azure-api.net";
+        private const string REQUEST_BASE_URL_FORMAT = "https://{0}.management.azure-api.net";
+        private const string BASE_URL_FORMAT = "https://{0}.azure-api.net";
         private string PATH_FORMAT = "/subscriptions/{0}/resourceGroups/{1}/providers/Microsoft.ApiManagement/service/{2}/subscriptions/{3}";
         private Guid _subscriptionId;
         private string _resourceGroupName;
@@ -26,6 +27,9 @@ namespace Luna.Clients.Azure.APIM
         private HttpClient _httpClient;
         private IProductAPIM _productAPIM;
         private IUserAPIM _userAPIM;
+
+        private string _baseUrl;
+        private string _requestBaseUrl;
 
         [ActivatorUtilitiesConstructor]
         public APISubscriptionAPIM(IOptionsMonitor<APIMConfigurationOption> options,
@@ -42,6 +46,8 @@ namespace Luna.Clients.Azure.APIM
             _apimServiceName = options.CurrentValue.Config.APIMServiceName;
             _token = options.CurrentValue.Config.Token;
             _apiVersion = options.CurrentValue.Config.APIVersion;
+            _baseUrl = string.Format(BASE_URL_FORMAT, _apimServiceName);
+            _requestBaseUrl = string.Format(REQUEST_BASE_URL_FORMAT, _apimServiceName);
             _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
             _productAPIM = productAPIM;
             _userAPIM = userAPIM;
@@ -49,7 +55,7 @@ namespace Luna.Clients.Azure.APIM
 
         private Uri GetSubscriptionAPIMRequestURI(Guid subscriptionId, string path = "")
         {
-            var builder = new UriBuilder(REQUEST_BASE_URL + GETAPIMRESTAPIPath(subscriptionId) + path);
+            var builder = new UriBuilder(_requestBaseUrl + GETAPIMRESTAPIPath(subscriptionId) + path);
 
             var query = HttpUtility.ParseQueryString(string.Empty);
             query["api-version"] = _apiVersion;
@@ -68,6 +74,11 @@ namespace Luna.Clients.Azure.APIM
             subscriptionAPIM.properties.ownerId = _userAPIM.GetAPIMRESTAPIPath(subscription.UserId);
             subscriptionAPIM.properties.state = Models.Azure.SubscriptionStatus.GetState(subscription.Status);
             return subscriptionAPIM;
+        }
+
+        public string GetBaseUrl(string productName, string deploymentName)
+        {
+            return string.Format("{0}/{1}/{2}", _baseUrl, productName, deploymentName);
         }
 
         public string GETAPIMRESTAPIPath(Guid subscriptionId)

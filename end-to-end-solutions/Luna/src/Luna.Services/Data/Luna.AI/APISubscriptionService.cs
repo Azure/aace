@@ -121,6 +121,8 @@ namespace Luna.Services.Data.Luna.AI
                 apiSubscription.SubscriptionId = Guid.NewGuid();
             }
 
+            apiSubscription.BaseUrl = _apiSubscriptionAPIM.GetBaseUrl(apiSubscription.ProductName, apiSubscription.DeploymentName);
+
             var deployment = await _deploymentService.GetAsync(apiSubscription.ProductName, apiSubscription.DeploymentName);
             // Check if deployment exists
             if (deployment is null)
