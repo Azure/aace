@@ -68,6 +68,29 @@ namespace Luna.Clients.Azure.APIM
             return string.Format(PATH_FORMAT, _subscriptionId, _resourceGroupName, _apimServiceName, deploymentName);
         }
 
+        public async Task<bool> ExistsAsync(Deployment deployment)
+        {
+            Uri requestUri = GetDeploymentAPIMRequestURI(deployment.DeploymentName);
+            var request = new HttpRequestMessage { RequestUri = requestUri, Method = HttpMethod.Get };
+
+            request.Headers.Add("Authorization", _token);
+            request.Headers.Add("If-Match", "*");
+
+            request.Content = new StringContent(JsonConvert.SerializeObject(GetAPIVersionSet(deployment)), Encoding.UTF8, "application/json");
+
+            var response = await _httpClient.SendAsync(request);
+
+            string responseContent = await response.Content.ReadAsStringAsync();
+            if (!response.IsSuccessStatusCode) return false;
+
+            Models.Azure.APIVersionSet apiVersionSetAPIM = (Models.Azure.APIVersionSet)System.Text.Json.JsonSerializer.Deserialize(responseContent, typeof(Models.Azure.APIVersionSet));
+            if (apiVersionSetAPIM == null)
+            {
+                throw new LunaServerException($"Query result in bad format. The response is {responseContent}.");
+            }
+            return true;
+        }
+
         public async Task CreateAsync(Deployment deployment)
         {
             Uri requestUri = GetDeploymentAPIMRequestURI(deployment.DeploymentName);
@@ -108,6 +131,8 @@ namespace Luna.Clients.Azure.APIM
 
         public async Task DeleteAsync(Deployment deployment)
         {
+            if (!(await ExistsAsync(deployment))) return;
+
             Uri requestUri = GetDeploymentAPIMRequestURI(deployment.DeploymentName);
             var request = new HttpRequestMessage { RequestUri = requestUri, Method = HttpMethod.Delete };
 

@@ -125,6 +125,7 @@ namespace Luna.Services.Data.Luna.AI
             // Update productDb values and save changes in db
             _context.Products.Update(productDb);
             await _context._SaveChangesAsync();
+            
             _logger.LogInformation(LoggingUtils.ComposeResourceUpdatedMessage(typeof(Product).Name, product.ProductName));
 
             return productDb;
@@ -143,6 +144,7 @@ namespace Luna.Services.Data.Luna.AI
             // Remove the product from the db
             _context.Products.Remove(product);
             await _context._SaveChangesAsync();
+            
             _logger.LogInformation(LoggingUtils.ComposeResourceDeletedMessage(typeof(Product).Name, productName));
 
             return product;
