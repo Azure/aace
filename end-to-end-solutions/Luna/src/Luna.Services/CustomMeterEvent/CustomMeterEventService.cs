@@ -98,6 +98,12 @@ namespace Luna.Services.CustomMeterEvent
                     continue;
                 }
 
+                if (!await _subscriptionCustomMeterUsageService.ExistsAsync(subscriptionId, meter.MeterName))
+                {
+                    _logger.LogWarning($"The subscription usage record with {subscriptionId} and meter name {meter.MeterName} doesn't exist. Will not report the meter event {meterEvent.Dimension}.");
+                    continue;
+                }
+
                 var subscription = await _subscriptionService.GetAsync(subscriptionId);
                 var meterUsage = await _subscriptionCustomMeterUsageService.GetAsync(subscriptionId, meter.MeterName);
 
