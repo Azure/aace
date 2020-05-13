@@ -200,10 +200,12 @@ namespace Luna.API.Controllers.Admin
         [AllowAnonymous]
         public async Task<ActionResult> DeleteByPostAsync()
         {
-            Guid subscriptionId;
-            if (Request.Query.ContainsKey("SubscriptionId") && Guid.TryParse(Request.Query["SubscriptionId"].ToString(), out subscriptionId))
+            Guid apiSubscriptionId;
+            if (Request.Query.ContainsKey("SubscriptionId") && Guid.TryParse(Request.Query["SubscriptionId"].ToString(), out apiSubscriptionId))
             {
-                return await DeleteAsync(subscriptionId);
+                _logger.LogInformation($"Delete apiSubscription {apiSubscriptionId}.");
+                await _apiSubscriptionService.DeleteAsync(apiSubscriptionId);
+                return NoContent();
             }
             else
             {
