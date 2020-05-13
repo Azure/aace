@@ -33,7 +33,7 @@ namespace Luna.Clients.Controller
 
         public string GetBaseUrl()
         {
-            return "https://lunamgmtprod.azurewebsites.net";
+            return "https://lunaaitest-apiapp.azurewebsites.net";
         }
     }
 }
