@@ -44,9 +44,13 @@ namespace Luna.Services.Data.Luna.AI
             _logger.LogInformation(LoggingUtils.ComposeGetAllResourcesMessage(typeof(APISubscription).Name));
 
             // Get all apiSubscriptions
-            var apiSubscriptions = await _context.APISubscriptions.ToListAsync();
+            var subscriptionList = await _context.APISubscriptions.ToListAsync();
 
-            foreach(var apiSubscription in apiSubscriptions)
+            List<APISubscription> apiSubscriptions = subscriptionList.Where(s => (status == null || status.Contains(s.Status)) &&
+        (string.IsNullOrEmpty(owner) || s.UserId.Equals(owner, StringComparison.InvariantCultureIgnoreCase))).ToList();
+
+
+            foreach (var apiSubscription in apiSubscriptions)
             {
                 var deployment = await _context.Deployments.FindAsync(apiSubscription.DeploymentId);
                 var product = await _context.Products.FindAsync(deployment.ProductId);

@@ -273,7 +273,7 @@ namespace Luna.API
             services.AddOptions<APIMConfigurationOption>().Configure(
                 options =>
                 {
-                    this.configuration.Bind("APIM", options);
+                    this.configuration.Bind("SecuredCredentials:APIM", options);
                 });
 
             services.AddHttpClient<IProductAPIM, ProductAPIM>();

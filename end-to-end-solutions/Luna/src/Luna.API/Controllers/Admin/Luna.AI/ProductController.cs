@@ -1,8 +1,10 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Luna.Clients.Azure.Auth;
 using Luna.Clients.Exceptions;
 using Luna.Clients.Logging;
+using Luna.Data.DataContracts.Luna.AI;
 using Luna.Data.Entities;
 using Luna.Services.Data;
 using Microsoft.AspNetCore.Authorization;
@@ -64,6 +66,33 @@ namespace Luna.API.Controllers.Admin
             AADAuthHelper.VerifyUserAccess(this.HttpContext, _logger, true);
             _logger.LogInformation($"Get product {productName}");
             return Ok(await _productService.GetAsync(productName));
+        }
+
+        [HttpGet("productTypes")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<ActionResult> GetProductTypes()
+        {
+            List<ProductType> productTypeList = new List<ProductType>();
+
+            productTypeList.Add(new ProductType() { DisplayName = "Real-time Prediction", Id = "RTP" });
+            productTypeList.Add(new ProductType() { DisplayName = "Batch Inference", Id = "BI" });
+            productTypeList.Add(new ProductType() { DisplayName = "Train Your Own Model", Id = "TYOM" });
+
+            return Ok(productTypeList);
+
+        }
+
+        [HttpGet("hostTypes")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<ActionResult> GetHostTypes()
+        {
+            List<ProductType> productTypeList = new List<ProductType>();
+
+            productTypeList.Add(new ProductType() { DisplayName = "SaaS", Id = "SaaS" });
+            productTypeList.Add(new ProductType() { DisplayName = "Bring Your Own Compute", Id = "BYOC" });
+
+            return Ok(productTypeList);
+
         }
 
         /// <summary>

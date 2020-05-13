@@ -3,11 +3,14 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using System.Web;
 using Luna.Clients.Exceptions;
 using Luna.Data.Entities;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Luna.Clients.Controller
 {
@@ -25,7 +28,7 @@ namespace Luna.Clients.Controller
             return ControllerMap[type];
         }
 
-        public static async Task<object> Predict(APIVersion version, object body)
+        public static async Task<string> Predict(APIVersion version, object body)
         {
             var requestUri = new Uri(version.RealTimePredictAPI);
             var request = new HttpRequestMessage { RequestUri = requestUri, Method = HttpMethod.Post };

@@ -5,6 +5,7 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web;
+using Luna.Clients.Azure.Auth;
 using Luna.Clients.Exceptions;
 using Luna.Data.Entities;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,7 +16,7 @@ namespace Luna.Clients.Azure.APIM
 {
     public class ProductAPIM : IProductAPIM
     {
-        private string REQUEST_BASE_URL = "https://lunav2.management.azure-api.net";
+        private string REQUEST_BASE_URL = "https://lunaai.management.azure-api.net";
         private string PATH_FORMAT = "/subscriptions/{0}/resourceGroups/{1}/providers/Microsoft.ApiManagement/service/{2}/products/{3}";
         private static IDictionary<string, string> DELETE_QUERY_PARAMS = new Dictionary<string, string>
                 {
@@ -24,13 +25,14 @@ namespace Luna.Clients.Azure.APIM
         private Guid _subscriptionId;
         private string _resourceGroupName;
         private string _apimServiceName;
-        private string _sharedAccessSignature;
+        private string _token;
         private string _apiVersion;
         private HttpClient _httpClient;
 
         [ActivatorUtilitiesConstructor]
         public ProductAPIM(IOptionsMonitor<APIMConfigurationOption> options,
-                           HttpClient httpClient)
+                           HttpClient httpClient,
+                           IKeyVaultHelper keyVaultHelper)
         {
             if (options == null)
             {
@@ -39,7 +41,7 @@ namespace Luna.Clients.Azure.APIM
             _subscriptionId = options.CurrentValue.Config.SubscriptionId;
             _resourceGroupName = options.CurrentValue.Config.ResourceGroupname;
             _apimServiceName = options.CurrentValue.Config.APIMServiceName;
-            _sharedAccessSignature = APIMAuthHelper.CreateSharedAccessToken(options.CurrentValue.Config.PrimaryKey, options.CurrentValue.Config.SecondaryKey);
+            _token = keyVaultHelper.GetSecretAsync(options.CurrentValue.Config.VaultName, options.CurrentValue.Config.Token).Result;
             _apiVersion = options.CurrentValue.Config.APIVersion;
             _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
         }
@@ -76,7 +78,7 @@ namespace Luna.Clients.Azure.APIM
             Uri requestUri = GetProductAPIMRequestURI(product.ProductName);
             var request = new HttpRequestMessage { RequestUri = requestUri, Method = HttpMethod.Get };
 
-            request.Headers.Authorization = new AuthenticationHeaderValue("SharedAccessSignature", _sharedAccessSignature);
+            request.Headers.Add("Authorization", _token);
             request.Headers.Add("If-Match", "*");
 
             request.Content = new StringContent(JsonConvert.SerializeObject(GetProduct(product)), Encoding.UTF8, "application/json");
@@ -99,7 +101,7 @@ namespace Luna.Clients.Azure.APIM
             Uri requestUri = GetProductAPIMRequestURI(product.ProductName);
             var request = new HttpRequestMessage { RequestUri = requestUri, Method = HttpMethod.Put };
 
-            request.Headers.Authorization = new AuthenticationHeaderValue("SharedAccessSignature", _sharedAccessSignature);
+            request.Headers.Add("Authorization", _token);
             request.Headers.Add("If-Match", "*");
 
             request.Content = new StringContent(JsonConvert.SerializeObject(GetProduct(product)), Encoding.UTF8, "application/json");
@@ -118,7 +120,7 @@ namespace Luna.Clients.Azure.APIM
             Uri requestUri = GetProductAPIMRequestURI(product.ProductName);
             var request = new HttpRequestMessage { RequestUri = requestUri, Method = HttpMethod.Put };
 
-            request.Headers.Authorization = new AuthenticationHeaderValue("SharedAccessSignature", _sharedAccessSignature);
+            request.Headers.Add("Authorization", _token);
             request.Headers.Add("If-Match", "*");
 
             request.Content = new StringContent(JsonConvert.SerializeObject(GetProduct(product)), Encoding.UTF8, "application/json");
@@ -139,7 +141,7 @@ namespace Luna.Clients.Azure.APIM
             Uri requestUri = GetProductAPIMRequestURI(product.ProductName, DELETE_QUERY_PARAMS);
             var request = new HttpRequestMessage { RequestUri = requestUri, Method = HttpMethod.Delete };
 
-            request.Headers.Authorization = new AuthenticationHeaderValue("SharedAccessSignature", _sharedAccessSignature);
+            request.Headers.Add("Authorization", _token);
             request.Headers.Add("If-Match", "*");
 
             request.Content = new StringContent(JsonConvert.SerializeObject(GetProduct(product)), Encoding.UTF8, "application/json");

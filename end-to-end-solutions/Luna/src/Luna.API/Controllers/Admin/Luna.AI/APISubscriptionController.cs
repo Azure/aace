@@ -197,6 +197,7 @@ namespace Luna.API.Controllers.Admin
 
         [HttpPost("apiSubscriptions/Delete")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [AllowAnonymous]
         public async Task<ActionResult> DeleteByPostAsync()
         {
             Guid subscriptionId;

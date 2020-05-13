@@ -6,6 +6,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using System.Web;
+using Luna.Clients.Azure.Auth;
 using Luna.Clients.Exceptions;
 using Luna.Data.Entities;
 using Microsoft.Extensions.DependencyInjection;
@@ -22,7 +23,7 @@ namespace Luna.Clients.Azure.APIM
         private Guid _subscriptionId;
         private string _resourceGroupName;
         private string _apimServiceName;
-        private string _sharedAccessSignature;
+        private string _token;
         private string _apiVersion;
         private HttpClient _httpClient;
         private IProductAPIM _productAPIM;
@@ -35,7 +36,8 @@ namespace Luna.Clients.Azure.APIM
         public APISubscriptionAPIM(IOptionsMonitor<APIMConfigurationOption> options,
                            HttpClient httpClient,
                            IProductAPIM productAPIM,
-                           IUserAPIM userAPIM)
+                           IUserAPIM userAPIM,
+                           IKeyVaultHelper keyVaultHelper)
         {
             if (options == null)
             {
@@ -44,7 +46,7 @@ namespace Luna.Clients.Azure.APIM
             _subscriptionId = options.CurrentValue.Config.SubscriptionId;
             _resourceGroupName = options.CurrentValue.Config.ResourceGroupname;
             _apimServiceName = options.CurrentValue.Config.APIMServiceName;
-            _sharedAccessSignature = APIMAuthHelper.CreateSharedAccessToken(options.CurrentValue.Config.PrimaryKey, options.CurrentValue.Config.SecondaryKey);
+            _token = keyVaultHelper.GetSecretAsync(options.CurrentValue.Config.VaultName, options.CurrentValue.Config.Token).Result;
             _apiVersion = options.CurrentValue.Config.APIVersion;
             _baseUrl = string.Format(BASE_URL_FORMAT, _apimServiceName);
             _requestBaseUrl = string.Format(REQUEST_BASE_URL_FORMAT, _apimServiceName);
@@ -91,7 +93,7 @@ namespace Luna.Clients.Azure.APIM
             Uri requestUri = GetSubscriptionAPIMRequestURI(subscription.SubscriptionId);
             var request = new HttpRequestMessage { RequestUri = requestUri, Method = HttpMethod.Get };
 
-            request.Headers.Authorization = new AuthenticationHeaderValue("SharedAccessSignature", _sharedAccessSignature);
+            request.Headers.Add("Authorization", _token);
             request.Headers.Add("If-Match", "*");
 
             var body = JsonConvert.SerializeObject(GetSubscription(subscription));
@@ -115,7 +117,7 @@ namespace Luna.Clients.Azure.APIM
             Uri requestUri = GetSubscriptionAPIMRequestURI(subscription.SubscriptionId);
             var request = new HttpRequestMessage { RequestUri = requestUri, Method = HttpMethod.Put };
 
-            request.Headers.Authorization = new AuthenticationHeaderValue("SharedAccessSignature", _sharedAccessSignature);
+            request.Headers.Add("Authorization", _token);
             request.Headers.Add("If-Match", "*");
 
             var body = JsonConvert.SerializeObject(GetSubscription(subscription));
@@ -147,7 +149,7 @@ namespace Luna.Clients.Azure.APIM
             Uri requestUri = GetSubscriptionAPIMRequestURI(subscription.SubscriptionId);
             var request = new HttpRequestMessage { RequestUri = requestUri, Method = HttpMethod.Put };
 
-            request.Headers.Authorization = new AuthenticationHeaderValue("SharedAccessSignature", _sharedAccessSignature);
+            request.Headers.Add("Authorization", _token);
             request.Headers.Add("If-Match", "*");
 
             var body = JsonConvert.SerializeObject(GetSubscription(subscription));
@@ -181,7 +183,7 @@ namespace Luna.Clients.Azure.APIM
             Uri requestUri = GetSubscriptionAPIMRequestURI(subscription.SubscriptionId);
             var request = new HttpRequestMessage { RequestUri = requestUri, Method = HttpMethod.Delete };
 
-            request.Headers.Authorization = new AuthenticationHeaderValue("SharedAccessSignature", _sharedAccessSignature);
+            request.Headers.Add("Authorization", _token);
             request.Headers.Add("If-Match", "*");
 
             request.Content = new StringContent(JsonConvert.SerializeObject(GetSubscription(subscription)), Encoding.UTF8, "application/json");
@@ -200,7 +202,7 @@ namespace Luna.Clients.Azure.APIM
             Uri requestUri = GetSubscriptionAPIMRequestURI(subscriptionId, "/listSecrets");
             var request = new HttpRequestMessage { RequestUri = requestUri, Method = HttpMethod.Post };
 
-            request.Headers.Authorization = new AuthenticationHeaderValue("SharedAccessSignature", _sharedAccessSignature);
+            request.Headers.Add("Authorization", _token);
             request.Headers.Add("If-Match", "*");
 
             var response = await _httpClient.SendAsync(request);
@@ -229,7 +231,7 @@ namespace Luna.Clients.Azure.APIM
             Uri requestUri = GetSubscriptionAPIMRequestURI(subscriptionId, "/regenerate" + keyName);
             var request = new HttpRequestMessage { RequestUri = requestUri, Method = HttpMethod.Post };
 
-            request.Headers.Authorization = new AuthenticationHeaderValue("SharedAccessSignature", _sharedAccessSignature);
+            request.Headers.Add("Authorization", _token);
             request.Headers.Add("If-Match", "*");
 
             var response = await _httpClient.SendAsync(request);

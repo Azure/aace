@@ -5,6 +5,7 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web;
+using Luna.Clients.Azure.Auth;
 using Luna.Clients.Exceptions;
 using Luna.Data.Entities;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,18 +16,19 @@ namespace Luna.Clients.Azure.APIM
 {
     public class UserAPIM : IUserAPIM
     {
-        private string REQUEST_BASE_URL = "https://lunav2.management.azure-api.net";
+        private string REQUEST_BASE_URL = "https://lunaai.management.azure-api.net";
         private string PATH_FORMAT = "/subscriptions/{0}/resourceGroups/{1}/providers/Microsoft.ApiManagement/service/{2}/users/{3}";
         private Guid _subscriptionId;
         private string _resourceGroupName;
         private string _apimServiceName;
-        private string _sharedAccessSignature;
+        private string _token;
         private string _apiVersion;
         private HttpClient _httpClient;
 
         [ActivatorUtilitiesConstructor]
         public UserAPIM(IOptionsMonitor<APIMConfigurationOption> options,
-                           HttpClient httpClient)
+                           HttpClient httpClient,
+                           IKeyVaultHelper keyVaultHelper)
         {
             if (options == null)
             {
@@ -35,7 +37,7 @@ namespace Luna.Clients.Azure.APIM
             _subscriptionId = options.CurrentValue.Config.SubscriptionId;
             _resourceGroupName = options.CurrentValue.Config.ResourceGroupname;
             _apimServiceName = options.CurrentValue.Config.APIMServiceName;
-            _sharedAccessSignature = APIMAuthHelper.CreateSharedAccessToken(options.CurrentValue.Config.PrimaryKey, options.CurrentValue.Config.SecondaryKey);
+            _token = keyVaultHelper.GetSecretAsync(options.CurrentValue.Config.VaultName, options.CurrentValue.Config.Token).Result;
             _apiVersion = options.CurrentValue.Config.APIVersion;
             _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
         }
@@ -84,7 +86,7 @@ namespace Luna.Clients.Azure.APIM
             Uri requestUri = GetUserAPIMRequestURI(owner);
             var request = new HttpRequestMessage { RequestUri = requestUri, Method = HttpMethod.Put };
 
-            request.Headers.Authorization = new AuthenticationHeaderValue("SharedAccessSignature", _sharedAccessSignature);
+            request.Headers.Add("Authorization", _token);
             request.Headers.Add("If-Match", "*");
 
             request.Content = new StringContent(JsonConvert.SerializeObject(GetUser(owner)), Encoding.UTF8, "application/json");
@@ -110,7 +112,7 @@ namespace Luna.Clients.Azure.APIM
             Uri requestUri = GetUserAPIMRequestURI(owner);
             var request = new HttpRequestMessage { RequestUri = requestUri, Method = HttpMethod.Put };
 
-            request.Headers.Authorization = new AuthenticationHeaderValue("SharedAccessSignature", _sharedAccessSignature);
+            request.Headers.Add("Authorization", _token);
             request.Headers.Add("If-Match", "*");
 
             request.Content = new StringContent(JsonConvert.SerializeObject(GetUser(owner)), Encoding.UTF8, "application/json");
@@ -129,7 +131,7 @@ namespace Luna.Clients.Azure.APIM
             Uri requestUri = GetUserAPIMRequestURI(owner);
             var request = new HttpRequestMessage { RequestUri = requestUri, Method = HttpMethod.Put };
 
-            request.Headers.Authorization = new AuthenticationHeaderValue("SharedAccessSignature", _sharedAccessSignature);
+            request.Headers.Add("Authorization", _token);
             request.Headers.Add("If-Match", "*");
 
             request.Content = new StringContent(JsonConvert.SerializeObject(GetUser(owner)), Encoding.UTF8, "application/json");
@@ -150,7 +152,7 @@ namespace Luna.Clients.Azure.APIM
             Uri requestUri = GetUserAPIMRequestURI(owner);
             var request = new HttpRequestMessage { RequestUri = requestUri, Method = HttpMethod.Delete };
 
-            request.Headers.Authorization = new AuthenticationHeaderValue("SharedAccessSignature", _sharedAccessSignature);
+            request.Headers.Add("Authorization", _token);
             request.Headers.Add("If-Match", "*");
 
             request.Content = new StringContent(JsonConvert.SerializeObject(GetUser(owner)), Encoding.UTF8, "application/json");
