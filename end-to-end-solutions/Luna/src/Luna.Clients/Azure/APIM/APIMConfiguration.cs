@@ -13,6 +13,8 @@ namespace Luna.Clients.Azure.APIM
         public string ResourceGroupname { get; set; }
         public string APIMServiceName { get; set; }
         public string Token { get; set; }
+        public string PrimaryKey { get; set; }
+        public string SecondaryKey { get; set; }
         public string APIVersion { get; set; }
     }
 }
