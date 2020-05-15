@@ -27,7 +27,10 @@ namespace Luna.Services.Data.Luna.AI
         /// Constructor that uses dependency injection.
         /// </summary>
         /// <param name="sqlDbContext">The context to be injected.</param>
+        /// <param name="productService">The service to be injected.</param>
         /// <param name="logger">The logger.</param>
+        /// <param name="apiVersionSetAPIM">The apim service.</param>
+        /// <param name="apiVersionAPIM">The apim service.</param>
         public DeploymentService(ISqlDbContext sqlDbContext, IProductService productService, ILogger<DeploymentService> logger,
             IAPIVersionSetAPIM apiVersionSetAPIM, IAPIVersionAPIM apiVersionAPIM)
         {
@@ -37,14 +40,20 @@ namespace Luna.Services.Data.Luna.AI
             _apiVersionSetAPIM = apiVersionSetAPIM ?? throw new ArgumentNullException(nameof(apiVersionSetAPIM));
             _apiVersionAPIM = apiVersionAPIM ?? throw new ArgumentNullException(nameof(apiVersionAPIM));
         }
+
+        /// <summary>
+        /// Gets all deployments within an product.
+        /// </summary>
+        /// <param name="offerName">The name of the product.</param>
+        /// <returns>A list of deployments.</returns>
         public async Task<List<Deployment>> GetAllAsync(string productName)
         {
             _logger.LogInformation(LoggingUtils.ComposeGetAllResourcesMessage(typeof(Deployment).Name));
 
-            // Get the offer associated with the productName provided
+            // Get the product associated with the productName provided
             var product = await _productService.GetAsync(productName);
 
-            // Get all offerParameters with a FK to the offer
+            // Get all deployments with a FK to the product
             var deployments = await _context.Deployments.Where(d => d.ProductId.Equals(product.Id)).ToListAsync();
 
             foreach(var deployment in deployments)
@@ -57,9 +66,15 @@ namespace Luna.Services.Data.Luna.AI
             return deployments;
         }
 
+        /// <summary>
+        /// Gets an deployment within an product.
+        /// </summary>
+        /// <param name="productName">The name of the product.</param>
+        /// <param name="deploymentName">The name of the deployment to get.</param>
+        /// <returns>The deployment.</returns>
         public async Task<Deployment> GetAsync(string productName, string deploymentName)
         {
-            // Check that an offerParameter with the provided parameterName exists within the given offer
+            // Check that an deployment with the provided deploymentName exists within the given product
             if (!(await ExistsAsync(productName, deploymentName)))
             {
                 throw new LunaNotFoundUserException(LoggingUtils.ComposeNotFoundErrorMessage(typeof(Deployment).Name,
@@ -68,10 +83,10 @@ namespace Luna.Services.Data.Luna.AI
             _logger.LogInformation(LoggingUtils.ComposeGetSingleResourceMessage(typeof(Deployment).Name, deploymentName));
 
 
-            // Get the offer associated with the offerName provided
+            // Get the product associated with the productName provided
             var product = await _productService.GetAsync(productName);
 
-            // Find the offerParameter that matches the parameterName provided
+            // Find the deployment that matches the deploymentName provided
             var deployment = await _context.Deployments
                 .SingleOrDefaultAsync(a => (a.ProductId == product.Id) && (a.DeploymentName == deploymentName));
 
@@ -83,6 +98,12 @@ namespace Luna.Services.Data.Luna.AI
             return deployment;
         }
 
+        /// <summary>
+        /// Creates an deployment within an product.
+        /// </summary>
+        /// <param name="productName">The name of the product.</param>
+        /// <param name="deployment">The deployment to create.</param>
+        /// <returns>The created deployment.</returns>
         public async Task<Deployment> CreateAsync(string productName, Deployment deployment)
         {
             if (deployment is null)
@@ -91,7 +112,7 @@ namespace Luna.Services.Data.Luna.AI
                     UserErrorCode.PayloadNotProvided);
             }
 
-            // Check that the offer does not already have an offerParameter with the same parameterName
+            // Check that the deployment does not already have an DeploymentName with the same productName
             if (await ExistsAsync(productName, deployment.DeploymentName))
             {
                 throw new LunaConflictUserException(LoggingUtils.ComposeAlreadyExistsErrorMessage(typeof(Deployment).Name,
@@ -104,10 +125,10 @@ namespace Luna.Services.Data.Luna.AI
             }
             _logger.LogInformation(LoggingUtils.ComposeCreateResourceMessage(typeof(Deployment).Name, deployment.DeploymentName, payload: JsonSerializer.Serialize(deployment)));
 
-            // Get the deployment associated with the deploymentName provided
+            // Get the product associated with the productName provided
             var product = await _productService.GetAsync(productName);
 
-            // Set the FK to deployment
+            // Set the FK to product
             deployment.ProductId = product.Id;
             deployment.ProductName = product.ProductName;
 
@@ -116,11 +137,12 @@ namespace Luna.Services.Data.Luna.AI
 
             // Update the deployment last updated time
             deployment.LastUpdatedTime = deployment.CreatedTime;
-
+            
+            // Add deployment to APIM
             await _apiVersionSetAPIM.CreateAsync(deployment);
             await _apiVersionAPIM.CreateAsync(deployment);
 
-            // Add offerParameter to db
+            // Add deployment to db
             _context.Deployments.Add(deployment);
             await _context._SaveChangesAsync();
             _logger.LogInformation(LoggingUtils.ComposeResourceCreatedMessage(typeof(Deployment).Name, deployment.DeploymentName));
@@ -128,6 +150,13 @@ namespace Luna.Services.Data.Luna.AI
             return deployment;
         }
 
+        /// <summary>
+        /// Updates an deployment within an product.
+        /// </summary>
+        /// <param name="productName">The name of the product.</param>
+        /// <param name="deploymentName">The name of the deployment to update.</param>
+        /// <param name="deployment">The updated deployment.</param>
+        /// <returns>The updated deployment.</returns>
         public async Task<Deployment> UpdateAsync(string productName, string deploymentName, Deployment deployment)
         {
             if (deployment is null)
@@ -136,8 +165,8 @@ namespace Luna.Services.Data.Luna.AI
                     UserErrorCode.PayloadNotProvided);
             }
 
-            // Check if (the parameterName has been updated) && 
-            //          (an offerParameter with the same new parameterName does not already exist)
+            // Check if (the deploymentName has been updated) && 
+            //          (an deployment with the same new productName and deploymentName does not already exist)
             if ((deploymentName != deployment.DeploymentName) && (await ExistsAsync(productName, deployment.DeploymentName)))
             {
                 throw new LunaBadRequestUserException(LoggingUtils.ComposeNameMismatchErrorMessage(typeof(Deployment).Name),
@@ -146,19 +175,20 @@ namespace Luna.Services.Data.Luna.AI
 
             _logger.LogInformation(LoggingUtils.ComposeUpdateResourceMessage(typeof(Deployment).Name, deploymentName, payload: JsonSerializer.Serialize(deployment)));
 
-            // Get the offerParameter that matches the parameterName provided
+            // Get the deployment that matches the productName and deploymentName provided
             var deploymentDB = await GetAsync(productName, deploymentName);
 
             // Copy over the changes
             deploymentDB.Copy(deployment);
 
-            // Update the product last updated time
+            // Update the deployment last updated time
             deploymentDB.LastUpdatedTime = DateTime.UtcNow;
 
+            // Update deployment values and save changes in APIM
             await _apiVersionSetAPIM.UpdateAsync(deploymentDB);
             await _apiVersionAPIM.UpdateAsync(deployment);
 
-            // Update offerParameterDb values and save changes in db
+            // Update deployment values and save changes in db
             _context.Deployments.Update(deploymentDB);
             await _context._SaveChangesAsync();
             _logger.LogInformation(LoggingUtils.ComposeResourceUpdatedMessage(typeof(Deployment).Name, deploymentName));
@@ -166,16 +196,23 @@ namespace Luna.Services.Data.Luna.AI
             return deploymentDB;
         }
 
+        /// <summary>
+        /// Deletes an deployment within an product.
+        /// </summary>
+        /// <param name="productName">The name of the product.</param>
+        /// <param name="deploymentName">The name of the deployment to delete.</param>
+        /// <returns>The deleted deployment.</returns>
         public async Task<Deployment> DeleteAsync(string productName, string deploymentName)
         {
             _logger.LogInformation(LoggingUtils.ComposeDeleteResourceMessage(typeof(Deployment).Name, deploymentName));
 
-            // Get the offerParameter that matches the parameterName provided
+            // Get the deployment that matches the productName and deploymentName provided
             var deployment = await GetAsync(productName, deploymentName);
 
+            // Remove the deployment from the APIM
             await _apiVersionAPIM.DeleteAsync(deployment);
 
-            // Remove the offerParameter from the db
+            // Remove the deployment from the db
             _context.Deployments.Remove(deployment);
             await _context._SaveChangesAsync();
             _logger.LogInformation(LoggingUtils.ComposeResourceDeletedMessage(typeof(Deployment).Name, deploymentName));
@@ -183,14 +220,20 @@ namespace Luna.Services.Data.Luna.AI
             return deployment;
         }
 
+        /// <summary>
+        /// Checks if an deployment exists within an product.
+        /// </summary>
+        /// <param name="productName">The name of the product.</param>
+        /// <param name="deploymentName">The name of the deployment to check exists.</param>
+        /// <returns>True if exists, false otherwise.</returns>
         public async Task<bool> ExistsAsync(string productName, string deploymentName)
         {
             _logger.LogInformation(LoggingUtils.ComposeCheckResourceExistsMessage(typeof(Deployment).Name, deploymentName));
 
-            //Get the offer associated with the offerName provided
+            //Get the product associated with the productName provided
             var product = await _productService.GetAsync(productName);
 
-            // Check that only one offerParameter with this parameterName exists within the offer
+            // Check that only one deployment with this deploymentName exists within the product
             var count = await _context.Deployments
                 .CountAsync(d => (d.ProductId == product.Id) && (d.DeploymentName == deploymentName));
 

@@ -16,7 +16,7 @@ namespace Luna.Clients.Azure.APIM
 {
     public class ProductAPIM : IProductAPIM
     {
-        private string REQUEST_BASE_URL = "https://lunaai.management.azure-api.net";
+        private const string REQUEST_BASE_URL_FORMAT = "https://{0}.management.azure-api.net";
         private string PATH_FORMAT = "/subscriptions/{0}/resourceGroups/{1}/providers/Microsoft.ApiManagement/service/{2}/products/{3}";
         private static IDictionary<string, string> DELETE_QUERY_PARAMS = new Dictionary<string, string>
                 {
@@ -27,7 +27,10 @@ namespace Luna.Clients.Azure.APIM
         private string _apimServiceName;
         private string _token;
         private string _apiVersion;
+        private APIMAuthHelper _apimAuthHelper;
         private HttpClient _httpClient;
+
+        private string _requestBaseUrl;
 
         [ActivatorUtilitiesConstructor]
         public ProductAPIM(IOptionsMonitor<APIMConfigurationOption> options,
@@ -42,13 +45,15 @@ namespace Luna.Clients.Azure.APIM
             _resourceGroupName = options.CurrentValue.Config.ResourceGroupname;
             _apimServiceName = options.CurrentValue.Config.APIMServiceName;
             _token = keyVaultHelper.GetSecretAsync(options.CurrentValue.Config.VaultName, options.CurrentValue.Config.Token).Result;
+            _apimAuthHelper = new APIMAuthHelper(options.CurrentValue.Config.UId, keyVaultHelper.GetSecretAsync(options.CurrentValue.Config.VaultName, options.CurrentValue.Config.Key).Result);
             _apiVersion = options.CurrentValue.Config.APIVersion;
+            _requestBaseUrl = string.Format(REQUEST_BASE_URL_FORMAT, _apimServiceName);
             _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
         }
 
         private Uri GetProductAPIMRequestURI(string productName, IDictionary<string, string> queryParams = null)
         {
-            var builder = new UriBuilder(REQUEST_BASE_URL + GetAPIMRESTAPIPath(productName));
+            var builder = new UriBuilder(_requestBaseUrl + GetAPIMRESTAPIPath(productName));
 
             var query = HttpUtility.ParseQueryString(string.Empty);
             foreach (KeyValuePair<string, string> kv in queryParams ?? new Dictionary<string, string>()) query[kv.Key] = kv.Value;
@@ -78,7 +83,7 @@ namespace Luna.Clients.Azure.APIM
             Uri requestUri = GetProductAPIMRequestURI(product.ProductName);
             var request = new HttpRequestMessage { RequestUri = requestUri, Method = HttpMethod.Get };
 
-            request.Headers.Add("Authorization", _token);
+            request.Headers.Authorization = new AuthenticationHeaderValue("SharedAccessSignature", _apimAuthHelper.GetSharedAccessToken());
             request.Headers.Add("If-Match", "*");
 
             request.Content = new StringContent(JsonConvert.SerializeObject(GetProduct(product)), Encoding.UTF8, "application/json");
@@ -101,7 +106,7 @@ namespace Luna.Clients.Azure.APIM
             Uri requestUri = GetProductAPIMRequestURI(product.ProductName);
             var request = new HttpRequestMessage { RequestUri = requestUri, Method = HttpMethod.Put };
 
-            request.Headers.Add("Authorization", _token);
+            request.Headers.Authorization = new AuthenticationHeaderValue("SharedAccessSignature", _apimAuthHelper.GetSharedAccessToken());
             request.Headers.Add("If-Match", "*");
 
             request.Content = new StringContent(JsonConvert.SerializeObject(GetProduct(product)), Encoding.UTF8, "application/json");
@@ -120,7 +125,7 @@ namespace Luna.Clients.Azure.APIM
             Uri requestUri = GetProductAPIMRequestURI(product.ProductName);
             var request = new HttpRequestMessage { RequestUri = requestUri, Method = HttpMethod.Put };
 
-            request.Headers.Add("Authorization", _token);
+            request.Headers.Authorization = new AuthenticationHeaderValue("SharedAccessSignature", _apimAuthHelper.GetSharedAccessToken());
             request.Headers.Add("If-Match", "*");
 
             request.Content = new StringContent(JsonConvert.SerializeObject(GetProduct(product)), Encoding.UTF8, "application/json");
@@ -141,7 +146,7 @@ namespace Luna.Clients.Azure.APIM
             Uri requestUri = GetProductAPIMRequestURI(product.ProductName, DELETE_QUERY_PARAMS);
             var request = new HttpRequestMessage { RequestUri = requestUri, Method = HttpMethod.Delete };
 
-            request.Headers.Add("Authorization", _token);
+            request.Headers.Authorization = new AuthenticationHeaderValue("SharedAccessSignature", _apimAuthHelper.GetSharedAccessToken());
             request.Headers.Add("If-Match", "*");
 
             request.Content = new StringContent(JsonConvert.SerializeObject(GetProduct(product)), Encoding.UTF8, "application/json");

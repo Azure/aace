@@ -39,7 +39,6 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Identity.Web.Resource;
-using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Polly;
 using Polly.Extensions.Http;

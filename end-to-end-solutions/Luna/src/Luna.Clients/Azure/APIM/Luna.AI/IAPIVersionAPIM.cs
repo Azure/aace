@@ -5,19 +5,16 @@ namespace Luna.Clients.Azure.APIM
 {
     public interface IAPIVersionAPIM
     {
-        public string GetAPIMPath(string productName, string deploymentName);
-        public string GetAPIMRESTAPIPath(string versionName);
-
-        public Task CreateAsync(string type, APIVersion version);
-
-        public Task UpdateAsync(string type, APIVersion version);
-
-        public Task DeleteAsync(string type, APIVersion version);
-
-        public Task CreateAsync(Deployment deployment);
-
-        public Task UpdateAsync(Deployment deployment);
-        
-        public Task DeleteAsync(Deployment deployment);
+        string GetAPIMPath(string productName, string deploymentName);
+        string GetOriginAPIMRESTAPIPath(string productName, string deploymentName);
+        string GetAPIMRESTAPIPath(string productName, string deploymentName, string versionName);
+        Task<bool> ExistsAsync(string type, APIVersion version);
+        Task CreateAsync(string type, APIVersion version);
+        Task UpdateAsync(string type, APIVersion version);
+        Task DeleteAsync(string type, APIVersion version);
+        Task CreateAsync(Deployment deployment);
+        Task UpdateAsync(Deployment deployment);
+        Task DeleteAsync(Deployment deployment);
+       
     }
 }
