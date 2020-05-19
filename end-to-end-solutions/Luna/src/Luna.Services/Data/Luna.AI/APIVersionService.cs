@@ -31,7 +31,12 @@ namespace Luna.Services.Data.Luna.AI
         /// Constructor that uses dependency injection.
         /// </summary>
         /// <param name="sqlDbContext">The context to be injected.</param>
+        /// <param name="productService">The service to be injected.</param>
+        /// <param name="deploymentService">The service to be injected.</param>
         /// <param name="logger">The logger.</param>
+        /// <param name="apiVersionAPIM">The apim service.</param>
+        /// <param name="productAPIVersionAPIM">The apim service.</param>
+        /// <param name="operationAPIM">The apim service.</param>
         public APIVersionService(ISqlDbContext sqlDbContext, IProductService productService, IDeploymentService deploymentService, 
             ILogger<APIVersionService> logger, 
             IAPIVersionAPIM apiVersionAPIM, IProductAPIVersionAPIM productAPIVersionAPIM, IOperationAPIM operationAPIM)
@@ -45,21 +50,26 @@ namespace Luna.Services.Data.Luna.AI
             _operationAPIM = operationAPIM ?? throw new ArgumentNullException(nameof(operationAPIM));
         }
 
+        /// <summary>
+        /// Gets all apiVersions within a product and a deployment.
+        /// </summary>
+        /// <param name="productName">The name of the product.</param>
+        /// <param name="deploymentName">The name of the deployment.</param>
+        /// <returns>A list of apiVersions.</returns>
         public async Task<List<APIVersion>> GetAllAsync(string productName, string deploymentName)
         {
             _logger.LogInformation(LoggingUtils.ComposeGetAllResourcesMessage(typeof(APIVersion).Name));
 
-            // Get the offer associated with the offerName provided
+            // Get the offer associated with the productName and deploymentName provided
             var deployment = await _deploymentService.GetAsync(productName, deploymentName);
             var product = await _productService.GetAsync(productName);
 
-            // Get all offerParameters with a FK to the offer
+            // Get all apiVersions with a FK to the deployment
             var apiVersions = await _context.APIVersions.Where(v => v.DeploymentId == deployment.Id).ToListAsync();
 
             foreach (var apiVersion in apiVersions)
             {
                 apiVersion.DeploymentName = deployment.DeploymentName;
-
                 apiVersion.ProductName = product.ProductName;
             }
 
@@ -68,9 +78,16 @@ namespace Luna.Services.Data.Luna.AI
             return apiVersions;
         }
 
+        /// <summary>
+        /// Gets an apiVersion within a product and a deployment.
+        /// </summary>
+        /// <param name="productName">The name of the product.</param>
+        /// <param name="deploymentName">The name of the deployment to get.</param>
+        /// <param name="versionName">The name of the apiVersion to get.</param>
+        /// <returns>The apiVersion.</returns>
         public async Task<APIVersion> GetAsync(string productName, string deploymentName, string versionName)
         {
-            // Check that an offerParameter with the provided parameterName exists within the given offer
+            // Check that an apiVersion with the provided versionName exists within the given product and deployment
             if (!(await ExistsAsync(productName, deploymentName, versionName)))
             {
                 throw new LunaNotFoundUserException(LoggingUtils.ComposeNotFoundErrorMessage(typeof(APIVersion).Name,
@@ -78,16 +95,16 @@ namespace Luna.Services.Data.Luna.AI
             }
             _logger.LogInformation(LoggingUtils.ComposeGetSingleResourceMessage(typeof(APIVersion).Name, versionName));
 
-
-            // Get the offer associated with the offerName provided
+            // Get the deployment associated with the productName and deploymentName provided
             var deployment = await _deploymentService.GetAsync(productName, deploymentName);
 
-            // Find the offerParameter that matches the parameterName provided
+            // Find the apiVersion that matches the productName and deploymentName provided
             var apiVersion = await _context.APIVersions
                 .SingleOrDefaultAsync(v => (v.DeploymentId == deployment.Id) && (v.VersionName == versionName));
 
             apiVersion.DeploymentName = deployment.DeploymentName;
 
+            // Get the product associated with the productName provided
             var product = await _productService.GetAsync(productName);
 
             apiVersion.ProductName = product.ProductName;
@@ -99,6 +116,13 @@ namespace Luna.Services.Data.Luna.AI
             return apiVersion;
         }
 
+        /// <summary>
+        /// Creates an apiVersion within a product and a deployment.
+        /// </summary>
+        /// <param name="productName">The name of the product.</param>
+        /// <param name="deploymentName">The name of the deployment.</param>
+        /// <param name="version">The apiVersion to create.</param>
+        /// <returns>The created apiVersion.</returns>
         public async Task<APIVersion> CreateAsync(string productName, string deploymentName, APIVersion version)
         {
             if (version is null)
@@ -107,7 +131,7 @@ namespace Luna.Services.Data.Luna.AI
                     UserErrorCode.PayloadNotProvided);
             }
 
-            // Check that the offer does not already have an offerParameter with the same parameterName
+            // Check that the product and the deployment does not already have an apiVersion with the same versionName
             if (await ExistsAsync(productName, deploymentName, version.VersionName))
             {
                 throw new LunaConflictUserException(LoggingUtils.ComposeAlreadyExistsErrorMessage(typeof(APIVersion).Name,
@@ -120,8 +144,10 @@ namespace Luna.Services.Data.Luna.AI
             }
             _logger.LogInformation(LoggingUtils.ComposeCreateResourceMessage(typeof(APIVersion).Name, version.VersionName, payload: JsonSerializer.Serialize(version)));
 
-            // Get the offer associated with the offerName provided
+            // Get the product associated with the productName provided
             var product = await _productService.GetAsync(productName);
+
+            // Get the deployment associated with the productName and the deploymentName provided
             var deployment = await _deploymentService.GetAsync(productName, deploymentName);
 
             // Set the FK to apiVersion
@@ -129,25 +155,33 @@ namespace Luna.Services.Data.Luna.AI
             version.DeploymentName = deployment.DeploymentName;
             version.DeploymentId = deployment.Id;
 
+            // Update the apiVersion created time
+            version.CreatedTime = DateTime.UtcNow;
+
+            // Update the apiVersion last updated time
+            version.LastUpdatedTime = version.CreatedTime;
+
             // Add apiVersion to APIM
             await _apiVersionAPIM.CreateAsync(product.ProductType, version);
             await _productAPIVersionAPIM.CreateAsync(product.ProductType, version);
             await _operationAPIM.CreateAsync(product.ProductType, version);
 
             // Add apiVersion to db
-            try
-            {
-                _context.APIVersions.Add(version);
-                await _context._SaveChangesAsync();
-            }
-            catch (Exception ex)
-            { 
-            }
+            _context.APIVersions.Add(version);
+            await _context._SaveChangesAsync();
             _logger.LogInformation(LoggingUtils.ComposeResourceCreatedMessage(typeof(APIVersion).Name, version.VersionName));
 
             return version;
         }
 
+        /// <summary>
+        /// Updates an apiVersion within a product and a deployment.
+        /// </summary>
+        /// <param name="productName">The name of the product.</param>
+        /// <param name="deploymentName">The name of the deployment to update.</param>
+        /// <param name="versionName">The name of the apiVersion to update.</param>
+        /// <param name="version">The updated apiVersion.</param>
+        /// <returns>The updated apiVersion.</returns>
         public async Task<APIVersion> UpdateAsync(string productName, string deploymentName, string versionName, APIVersion version)
         {
             if (version is null)
@@ -156,8 +190,8 @@ namespace Luna.Services.Data.Luna.AI
                     UserErrorCode.PayloadNotProvided);
             }
 
-            // Check if (the parameterName has been updated) && 
-            //          (an offerParameter with the same new parameterName does not already exist)
+            // Check if (the versionName has been updated) && 
+            //          (an APIVersion with the same new versionName does not already exist)
             if ((versionName != version.VersionName) && (await ExistsAsync(productName, deploymentName, version.VersionName)))
             {
                 throw new LunaBadRequestUserException(LoggingUtils.ComposeNameMismatchErrorMessage(typeof(APIVersion).Name),
@@ -166,20 +200,22 @@ namespace Luna.Services.Data.Luna.AI
 
             _logger.LogInformation(LoggingUtils.ComposeUpdateResourceMessage(typeof(APIVersion).Name, versionName, payload: JsonSerializer.Serialize(version)));
 
-            // Get the offerParameter that matches the parameterName provided
+            // Get the apiVersion that matches the productName, deploymentName and versionName provided
             var versionDb = await GetAsync(productName, deploymentName, versionName);
 
             // Copy over the changes
             versionDb.Copy(version);
 
+            versionDb.LastUpdatedTime = DateTime.UtcNow;
+
             var product = await _productService.GetAsync(productName);
 
-            // Add deployment to APIM
+            // Update apiVersion values and save changes in APIM
             await _apiVersionAPIM.UpdateAsync(product.ProductType, versionDb);
             await _productAPIVersionAPIM.UpdateAsync(product.ProductType, versionDb);
             await _operationAPIM.UpdateAsync(product.ProductType, versionDb);
 
-            // Update offerParameterDb values and save changes in db
+            // Update version values and save changes in db
             _context.APIVersions.Update(versionDb);
             await _context._SaveChangesAsync();
             _logger.LogInformation(LoggingUtils.ComposeResourceUpdatedMessage(typeof(APIVersion).Name, versionName));
@@ -187,22 +223,31 @@ namespace Luna.Services.Data.Luna.AI
             return versionDb;
         }
 
+        /// <summary>
+        /// Deletes an apiVersion within a product and a deployment.
+        /// </summary>
+        /// <param name="productName">The name of the product.</param>
+        /// <param name="deploymentName">The name of the deployment.</param>
+        /// <param name="versionName">The name of the apiVersion to delete.</param>
+        /// <returns>The deleted apiVersion.</returns>
         public async Task<APIVersion> DeleteAsync(string productName, string deploymentName, string versionName)
         {
             _logger.LogInformation(LoggingUtils.ComposeDeleteResourceMessage(typeof(APIVersion).Name, versionName));
 
-            // Get the offerParameter that matches the parameterName provided
+            // Get the product that matches the productName provided
             var product = await _productService.GetAsync(productName);
+
+            // Get the apiVersion that matches the productName, the deploymentName and the versionName provided
             var version = await GetAsync(productName, deploymentName, versionName);
             version.ProductName = productName;
             version.DeploymentName = deploymentName;
 
-            // Add version to APIM
+            // Remove the apiVersion from the APIM
             await _operationAPIM.DeleteAsync(product.ProductType, version);
             await _productAPIVersionAPIM.DeleteAsync(product.ProductType, version);
             await _apiVersionAPIM.DeleteAsync(product.ProductType, version);
 
-            // Remove the offerParameter from the db
+            // Remove the apiVersion from the db
             _context.APIVersions.Remove(version);
             await _context._SaveChangesAsync();
             _logger.LogInformation(LoggingUtils.ComposeResourceDeletedMessage(typeof(APIVersion).Name, versionName));
@@ -210,14 +255,21 @@ namespace Luna.Services.Data.Luna.AI
             return version;
         }
 
+        /// <summary>
+        /// Checks if an apiVersion exists within a product and a deployment.
+        /// </summary>
+        /// <param name="productName">The name of the product.</param>
+        /// <param name="deploymentName">The name of the deployment to check exists.</param>
+        /// <param name="versionName">The name of the apiVersion to check exists.</param>
+        /// <returns>True if exists, false otherwise.</returns>
         public async Task<bool> ExistsAsync(string productName, string deploymentName, string versionName)
         {
             _logger.LogInformation(LoggingUtils.ComposeCheckResourceExistsMessage(typeof(APIVersion).Name, versionName));
 
-            //Get the offer associated with the offerName provided
+            //Get the deployment associated with the productName and the deploymentName provided
             var deployment = await _deploymentService.GetAsync(productName, deploymentName);
 
-            // Check that only one offerParameter with this parameterName exists within the offer
+            // Check that only one apiVersion with this versionName exists within the deployment
             var count = await _context.APIVersions
                 .CountAsync(a => (a.DeploymentId.Equals(deployment.Id)) && (a.VersionName == versionName));
 

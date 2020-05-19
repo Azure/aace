@@ -24,7 +24,6 @@ namespace Luna.Clients.Models.Azure
             this.properties.path = "";
             this.properties.protocols = new List<string>(new string[]
             {
-                "http",
                 "https"
             });
         }

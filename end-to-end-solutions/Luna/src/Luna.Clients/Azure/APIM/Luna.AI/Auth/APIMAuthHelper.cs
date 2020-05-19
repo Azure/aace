@@ -7,17 +7,26 @@ namespace Luna.Clients.Azure.APIM
 {
     public class APIMAuthHelper
     {
-        public static string CreateSharedAccessToken(string primaryKey, string secondaryKey)
+        private string _id;
+        private string _key;
+        private DateTime expireTime;
+        public APIMAuthHelper(string id, string key)
         {
-            var id = "integration";
-            var key = string.Format("{0}/{1}", primaryKey, secondaryKey);
-            var expiry = DateTime.UtcNow.AddDays(10);
+            _id = id;
+            _key = key;
+            expireTime = DateTime.Now;
+        }
+        public string GetSharedAccessToken()
+        {
+            var key = string.Format("{0}", _key);
+            if (expireTime.Subtract(DateTime.Now).TotalDays < 1) expireTime = DateTime.UtcNow.AddDays(30);
+            var expiry = expireTime;
             using (var encoder = new HMACSHA512(Encoding.UTF8.GetBytes(key)))
             {
-                var dataToSign = id + "\n" + expiry.ToString("O", CultureInfo.InvariantCulture);
+                var dataToSign = _id + "\n" + expiry.ToString("O", CultureInfo.InvariantCulture);
                 var hash = encoder.ComputeHash(Encoding.UTF8.GetBytes(dataToSign));
                 var signature = Convert.ToBase64String(hash);
-                var encodedToken = string.Format("SharedAccessSignature {0}&{1:o}&{2}", id, expiry, signature);
+                var encodedToken = string.Format("uid={0}&ex={1:o}&sn={2}", _id, expiry, signature);
                 return encodedToken;
             }
         }

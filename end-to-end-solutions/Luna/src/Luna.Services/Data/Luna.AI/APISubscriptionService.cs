@@ -8,7 +8,6 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 
@@ -27,7 +26,11 @@ namespace Luna.Services.Data.Luna.AI
         /// Constructor that uses dependency injection.
         /// </summary>
         /// <param name="sqlDbContext">The context to be injected.</param>
+        /// <param name="productService">The service to be injected.</param>
+        /// <param name="deploymentService">The service to be injected.</param>
         /// <param name="logger">The logger.</param>
+        /// <param name="apiSubscriptionAPIM">The apim service.</param>
+        /// <param name="userAPIM">The apim service.</param>
         public APISubscriptionService(ISqlDbContext sqlDbContext, IProductService productService, IDeploymentService deploymentService, 
             ILogger<APISubscriptionService> logger, IAPISubscriptionAPIM apiSubscriptionAPIM, IUserAPIM userAPIM)
         {
@@ -39,6 +42,12 @@ namespace Luna.Services.Data.Luna.AI
             _userAPIM = userAPIM ?? throw new ArgumentNullException(nameof(userAPIM));
         }
 
+        /// <summary>
+        /// Gets all apiSubscriptions.
+        /// </summary>
+        /// <param name="status">The list of status of the apiSubscriptions.</param>
+        /// <param name="owner">The owner of the apiSubscriptions.</param>
+        /// <returns>A list of all apiSubscriptions.</returns>
         public async Task<List<APISubscription>> GetAllAsync(string[] status = null, string owner = "")
         {
             _logger.LogInformation(LoggingUtils.ComposeGetAllResourcesMessage(typeof(APISubscription).Name));
@@ -63,14 +72,19 @@ namespace Luna.Services.Data.Luna.AI
             return apiSubscriptions;
         }
 
+        /// <summary>
+        /// Get all active apiSubscription by Id
+        /// </summary>
+        /// <param name="apiSubscriptionId">The apiSubscription Id</param>
+        /// <returns>The list of apiSubscription</returns>
         public async Task<APISubscription> GetAsync(Guid apiSubscriptionId)
         {
             _logger.LogInformation(LoggingUtils.ComposeGetSingleResourceMessage(typeof(APISubscription).Name, apiSubscriptionId.ToString()));
 
-            // Find the subscription that matches the subscriptionId provided
+            // Find the apiSubscription that matches the subscriptionId provided
             var apiSubscription = await _context.APISubscriptions.SingleOrDefaultAsync(o => (o.SubscriptionId.Equals(apiSubscriptionId)));
 
-            // Check if subscription exists
+            // Check if apiSubscription exists
             if (apiSubscription is null)
             {
                 throw new LunaNotFoundUserException(LoggingUtils.ComposeNotFoundErrorMessage(typeof(APISubscription).Name,
@@ -102,6 +116,11 @@ namespace Luna.Services.Data.Luna.AI
             return apiSubscription;
         }
 
+        /// <summary>
+        /// Creates a apiSubscription within a product and a deployment.
+        /// </summary>
+        /// <param name="apiSubscription">The apiSubscription to create.</param>
+        /// <returns>The created apiSubscription.</returns>
         public async Task<APISubscription> CreateAsync(APISubscription apiSubscription)
         {
             if (apiSubscription is null)
@@ -110,7 +129,7 @@ namespace Luna.Services.Data.Luna.AI
                     UserErrorCode.PayloadNotProvided);
             }
 
-            // Check that an offer with the same name does not already exist
+            // Check that an apiSubscription with the same Id does not already exist
             if (await ExistsAsync(apiSubscription.SubscriptionId))
             {
                 throw new LunaConflictUserException(LoggingUtils.ComposeAlreadyExistsErrorMessage(typeof(APISubscription).Name,
@@ -135,7 +154,6 @@ namespace Luna.Services.Data.Luna.AI
                     apiSubscription.SubscriptionId.ToString()));
             }
             apiSubscription.DeploymentName = deployment.DeploymentName;
-            apiSubscription.DeploymentId = deployment.Id;
 
             var product = await _productService.GetAsync(apiSubscription.ProductName);
             // Check if product exists
@@ -146,24 +164,21 @@ namespace Luna.Services.Data.Luna.AI
             }
             apiSubscription.ProductName = product.ProductName;
 
-            // Update the product created time
+            // Update the apiSubscription created time
             apiSubscription.CreatedTime = DateTime.UtcNow;
 
-            // Update the product last updated time
+            // Update the apiSubscription last updated time
             apiSubscription.LastUpdatedTime = apiSubscription.CreatedTime;
 
-            // Update productDb values and save changes in APIM
+            // Add apiSubscription to APIM
             await _userAPIM.CreateAsync(apiSubscription.UserId);
             var apiSubscriptionAPIM = await _apiSubscriptionAPIM.CreateAsync(apiSubscription);
-            
 
-            // Update the offer last updated time
+            // Update the apiSubscription primary key and secondary key
             apiSubscription.PrimaryKey = apiSubscriptionAPIM.properties.primaryKey;
-
-            // Update the offer last updated time
             apiSubscription.SecondaryKey = apiSubscriptionAPIM.properties.secondaryKey;
 
-            // Add product to db
+            // Add apiSubscription to db
             _context.APISubscriptions.Add(apiSubscription);
             await _context._SaveChangesAsync();
             _logger.LogInformation(LoggingUtils.ComposeResourceCreatedMessage(typeof(APISubscription).Name, apiSubscription.SubscriptionId.ToString()));
@@ -171,6 +186,12 @@ namespace Luna.Services.Data.Luna.AI
             return apiSubscription;
         }
 
+        /// <summary>
+        /// Updates a apiSubscription.
+        /// </summary>
+        /// <param name="apiSubscriptionId">The id of the apiSubscription to delete.</param>
+        /// <param name="apiSubscription">The updated apiSubscription.</param>
+        /// <returns>The updated apiSubscriptionId.</returns>
         public async Task<APISubscription> UpdateAsync(Guid apiSubscriptionId, APISubscription apiSubscription)
         {
             if (apiSubscription is null)
@@ -180,14 +201,14 @@ namespace Luna.Services.Data.Luna.AI
             }
             _logger.LogInformation(LoggingUtils.ComposeUpdateResourceMessage(typeof(APISubscription).Name, apiSubscription.SubscriptionId.ToString(), payload: JsonSerializer.Serialize(apiSubscription)));
 
-            // Get the offer that matches the offerName provided
+            // Get the apiSubscription that matches the apiSubscriptionId provided
             var apiSubscriptionDb = await GetAsync(apiSubscriptionId);
             if (!string.IsNullOrEmpty(apiSubscription.UserId) && !apiSubscriptionDb.UserId.Equals(apiSubscription.UserId, StringComparison.InvariantCultureIgnoreCase))
             {
                 throw new LunaBadRequestUserException("Owner name of an existing apiSubscription can not be changed.", UserErrorCode.InvalidParameter);
             }
-            // Check if (the offerName has been updated) && 
-            //          (an offer with the same new name does not already exist)
+            // Check if (the apiSubscription has been updated) && 
+            //          (an apiSubscription with the same new Id does not already exist)
             if ((!apiSubscriptionId.Equals(apiSubscription.SubscriptionId)) && (await ExistsAsync(apiSubscription.SubscriptionId)))
             {
                 throw new LunaBadRequestUserException(LoggingUtils.ComposeNameMismatchErrorMessage(typeof(APISubscription).Name),
@@ -197,20 +218,18 @@ namespace Luna.Services.Data.Luna.AI
             // Copy over the changes
             apiSubscriptionDb.Copy(apiSubscription);
 
-            // Update the offer last updated time
+            // Update the apiSubscription last updated time
             apiSubscriptionDb.LastUpdatedTime = DateTime.UtcNow;
 
-            // Update productDb values and save changes in APIM
+            // Update apiSubscription values and save changes in APIM
             await _userAPIM.CreateAsync(apiSubscription.UserId);
             var apiSubscriptionAPIM = await _apiSubscriptionAPIM.UpdateAsync(apiSubscriptionDb);
 
-            // Update the offer last updated time
+            // Update the apiSubscription primary key and secondry key
             apiSubscriptionDb.PrimaryKey = apiSubscriptionAPIM.properties.primaryKey;
-
-            // Update the offer last updated time
             apiSubscriptionDb.SecondaryKey = apiSubscriptionAPIM.properties.secondaryKey;
 
-            // Update productDb values and save changes in db
+            // Update apiSubscription values and save changes in db
             _context.APISubscriptions.Update(apiSubscriptionDb);
             await _context._SaveChangesAsync();
             _logger.LogInformation(LoggingUtils.ComposeResourceUpdatedMessage(typeof(APISubscription).Name, apiSubscription.SubscriptionId.ToString()));
@@ -218,6 +237,11 @@ namespace Luna.Services.Data.Luna.AI
             return apiSubscriptionDb;
         }
 
+        /// <summary>
+        /// Delete a apiSubscription.
+        /// </summary>
+        /// <param name="apiSubscriptionId">The id of the apiSubscription to delete.</param>
+        /// <returns>The subscription.</returns>
         public async Task<APISubscription> DeleteAsync(Guid apiSubscriptionId)
         {
             _logger.LogInformation(LoggingUtils.ComposeDeleteResourceMessage(typeof(Product).Name, apiSubscriptionId.ToString()));
@@ -237,11 +261,11 @@ namespace Luna.Services.Data.Luna.AI
         }
 
         /// <summary>
-        /// Regenerate key for the subscription
+        /// Regenerate key for the apiSubscription
         /// </summary>
-        /// <param name="apiSubscriptionId">subscription id</param>
+        /// <param name="apiSubscriptionId">apiSubscription id</param>
         /// <param name="keyName">The key name</param>
-        /// <returns>The subscription with regenerated key</returns>
+        /// <returns>The apiSubscription with regenerated key</returns>
         public async Task<APISubscription> RegenerateKey(Guid apiSubscriptionId, string keyName)
         {
             if (!await ExistsAsync(apiSubscriptionId))
@@ -251,17 +275,18 @@ namespace Luna.Services.Data.Luna.AI
             }
             _logger.LogInformation(LoggingUtils.ComposeGetSingleResourceMessage(typeof(APISubscription).Name, apiSubscriptionId.ToString()));
 
-            // Get the product that matches the provided productName
+            // Get the apiSubscription that matches the provided apiSubscriptionId
             var apiSubscription = await _context.APISubscriptions.SingleOrDefaultAsync(o => (o.SubscriptionId.Equals(apiSubscriptionId)));
             _logger.LogInformation(LoggingUtils.ComposeReturnValueMessage(typeof(APISubscription).Name,
                apiSubscriptionId.ToString(),
                JsonSerializer.Serialize(apiSubscription)));
 
+            // Update apiSubscription primary key and secondary key and save changes in APIM
             var apiSubscriptionProperties = await _apiSubscriptionAPIM.RegenerateKey(apiSubscriptionId, keyName);
             apiSubscription.PrimaryKey = apiSubscriptionProperties.primaryKey;
             apiSubscription.SecondaryKey = apiSubscriptionProperties.secondaryKey;
 
-            // Update productDb values and save changes in db
+            // Update apiSubscription primary key and secondary key and save changes in db
             _context.APISubscriptions.Update(apiSubscription);
             await _context._SaveChangesAsync();
             _logger.LogInformation(LoggingUtils.ComposeResourceUpdatedMessage(typeof(APISubscription).Name, apiSubscription.SubscriptionId.ToString()));
@@ -273,7 +298,7 @@ namespace Luna.Services.Data.Luna.AI
         {
             _logger.LogInformation(LoggingUtils.ComposeCheckResourceExistsMessage(typeof(APISubscription).Name, apiSubscriptionId.ToString()));
 
-            // Check that only one offer with this offerName exists and has not been deleted
+            // Check that only one apiSubscription with this apiSubscriptionId exists and has not been deleted
             var count = await _context.APISubscriptions
                 .CountAsync(s => (s.SubscriptionId.Equals(apiSubscriptionId)));
 

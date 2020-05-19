@@ -5,9 +5,9 @@ namespace Luna.Clients.Azure.APIM
 {
     public interface IUserAPIM
     {
-        public string GetAPIMRESTAPIPath(string owner);
-        public Task CreateAsync(string owner);
-        public Task UpdateAsync(string owner);
-        public Task DeleteAsync(string owner);
+        string GetAPIMRESTAPIPath(string owner);
+        Task CreateAsync(string owner);
+        Task UpdateAsync(string owner);
+        Task DeleteAsync(string owner);
     }
 }

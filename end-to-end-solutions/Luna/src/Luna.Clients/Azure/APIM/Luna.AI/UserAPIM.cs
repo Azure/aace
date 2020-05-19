@@ -16,14 +16,17 @@ namespace Luna.Clients.Azure.APIM
 {
     public class UserAPIM : IUserAPIM
     {
-        private string REQUEST_BASE_URL = "https://lunaai.management.azure-api.net";
+        private const string REQUEST_BASE_URL_FORMAT = "https://{0}.management.azure-api.net";
         private string PATH_FORMAT = "/subscriptions/{0}/resourceGroups/{1}/providers/Microsoft.ApiManagement/service/{2}/users/{3}";
         private Guid _subscriptionId;
         private string _resourceGroupName;
         private string _apimServiceName;
         private string _token;
         private string _apiVersion;
+        private APIMAuthHelper _apimAuthHelper;
         private HttpClient _httpClient;
+
+        private string _requestBaseUrl;
 
         [ActivatorUtilitiesConstructor]
         public UserAPIM(IOptionsMonitor<APIMConfigurationOption> options,
@@ -39,6 +42,8 @@ namespace Luna.Clients.Azure.APIM
             _apimServiceName = options.CurrentValue.Config.APIMServiceName;
             _token = keyVaultHelper.GetSecretAsync(options.CurrentValue.Config.VaultName, options.CurrentValue.Config.Token).Result;
             _apiVersion = options.CurrentValue.Config.APIVersion;
+            _requestBaseUrl = string.Format(REQUEST_BASE_URL_FORMAT, _apimServiceName);
+            _apimAuthHelper = new APIMAuthHelper(options.CurrentValue.Config.UId, keyVaultHelper.GetSecretAsync(options.CurrentValue.Config.VaultName, options.CurrentValue.Config.Key).Result);
             _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
         }
 
@@ -49,7 +54,7 @@ namespace Luna.Clients.Azure.APIM
 
         private Uri GetUserAPIMRequestURI(string owner, IDictionary<string, string> queryParams = null)
         {
-            var builder = new UriBuilder(REQUEST_BASE_URL + GetAPIMRESTAPIPath(owner));
+            var builder = new UriBuilder(_requestBaseUrl + GetAPIMRESTAPIPath(owner));
 
             var query = HttpUtility.ParseQueryString(string.Empty);
             foreach (KeyValuePair<string, string> kv in queryParams ?? new Dictionary<string, string>()) query[kv.Key] = kv.Value;
@@ -86,7 +91,7 @@ namespace Luna.Clients.Azure.APIM
             Uri requestUri = GetUserAPIMRequestURI(owner);
             var request = new HttpRequestMessage { RequestUri = requestUri, Method = HttpMethod.Put };
 
-            request.Headers.Add("Authorization", _token);
+            request.Headers.Authorization = new AuthenticationHeaderValue("SharedAccessSignature", _apimAuthHelper.GetSharedAccessToken());
             request.Headers.Add("If-Match", "*");
 
             request.Content = new StringContent(JsonConvert.SerializeObject(GetUser(owner)), Encoding.UTF8, "application/json");
@@ -112,7 +117,7 @@ namespace Luna.Clients.Azure.APIM
             Uri requestUri = GetUserAPIMRequestURI(owner);
             var request = new HttpRequestMessage { RequestUri = requestUri, Method = HttpMethod.Put };
 
-            request.Headers.Add("Authorization", _token);
+            request.Headers.Authorization = new AuthenticationHeaderValue("SharedAccessSignature", _apimAuthHelper.GetSharedAccessToken());
             request.Headers.Add("If-Match", "*");
 
             request.Content = new StringContent(JsonConvert.SerializeObject(GetUser(owner)), Encoding.UTF8, "application/json");
@@ -131,7 +136,7 @@ namespace Luna.Clients.Azure.APIM
             Uri requestUri = GetUserAPIMRequestURI(owner);
             var request = new HttpRequestMessage { RequestUri = requestUri, Method = HttpMethod.Put };
 
-            request.Headers.Add("Authorization", _token);
+            request.Headers.Authorization = new AuthenticationHeaderValue("SharedAccessSignature", _apimAuthHelper.GetSharedAccessToken());
             request.Headers.Add("If-Match", "*");
 
             request.Content = new StringContent(JsonConvert.SerializeObject(GetUser(owner)), Encoding.UTF8, "application/json");
@@ -152,7 +157,7 @@ namespace Luna.Clients.Azure.APIM
             Uri requestUri = GetUserAPIMRequestURI(owner);
             var request = new HttpRequestMessage { RequestUri = requestUri, Method = HttpMethod.Delete };
 
-            request.Headers.Add("Authorization", _token);
+            request.Headers.Authorization = new AuthenticationHeaderValue("SharedAccessSignature", _apimAuthHelper.GetSharedAccessToken());
             request.Headers.Add("If-Match", "*");
 
             request.Content = new StringContent(JsonConvert.SerializeObject(GetUser(owner)), Encoding.UTF8, "application/json");
