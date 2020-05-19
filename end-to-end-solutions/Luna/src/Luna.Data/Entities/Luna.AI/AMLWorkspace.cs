@@ -27,6 +27,7 @@ namespace Luna.Data.Entities
             ResourceId = workspace.ResourceId;
             AADApplicationId = workspace.AADApplicationId;
             AADApplicationSecrets = workspace.AADApplicationSecrets;
+            AADTenantId = workspace.AADTenantId;
         }
     
         [Key]
@@ -41,5 +42,6 @@ namespace Luna.Data.Entities
 
         public string AADApplicationSecrets { get; set; }
 
+        public Guid AADTenantId { get; set; }
     }
 }

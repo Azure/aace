@@ -493,6 +493,7 @@ CREATE TABLE [dbo].[AMLWorkspaces](
 	[WorkspaceName] [nvarchar](50) NOT NULL,
 	[ResourceId] [nvarchar](max) NOT NULL,
 	[AADApplicationId] [uniqueidentifier] NOT NULL,
+	[AADTenantId] [uniqueidentifier] NULL, -- allow null for backward compatibility
 	[AADApplicationSecrets] [nvarchar](128) NOT NULL,
 	PRIMARY KEY (Id)
 ) ON [PRIMARY]
