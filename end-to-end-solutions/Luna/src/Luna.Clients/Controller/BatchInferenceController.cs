@@ -1,24 +1,23 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using Microsoft.AspNetCore.Http;
 
 namespace Luna.Clients.Controller
 {
-    public class PredictionController : IController
+    public class BatchInferenceController : IController
     {
-        public PredictionController()
-        { 
+        public BatchInferenceController()
+        {
         }
 
         public string GetName()
         {
-            return "predict";
+            return "batchinference";
         }
 
         public string GetUrlTemplate()
         {
-            return "/predict";
+            return "/batchinference";
         }
 
         public string GetMethod()

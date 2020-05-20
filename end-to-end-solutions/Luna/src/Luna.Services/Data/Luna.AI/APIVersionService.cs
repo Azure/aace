@@ -1,5 +1,6 @@
 ﻿using Luna.Clients.Azure;
 using Luna.Clients.Azure.APIM;
+using Luna.Clients.Azure.APIM.Luna.AI;
 using Luna.Clients.Exceptions;
 using Luna.Clients.Logging;
 using Luna.Data.Entities;
@@ -22,10 +23,12 @@ namespace Luna.Services.Data.Luna.AI
         private readonly ISqlDbContext _context;
         private readonly IProductService _productService;
         private readonly IDeploymentService _deploymentService;
+        private readonly IAMLWorkspaceService _amlWorkspaceService;
         private readonly ILogger<APIVersionService> _logger;
         private readonly IAPIVersionAPIM _apiVersionAPIM;
         private readonly IProductAPIVersionAPIM _productAPIVersionAPIM;
         private readonly IOperationAPIM _operationAPIM;
+        private readonly IPolicyAPIM _policyAPIM;
 
         /// <summary>
         /// Constructor that uses dependency injection.
@@ -37,17 +40,20 @@ namespace Luna.Services.Data.Luna.AI
         /// <param name="apiVersionAPIM">The apim service.</param>
         /// <param name="productAPIVersionAPIM">The apim service.</param>
         /// <param name="operationAPIM">The apim service.</param>
-        public APIVersionService(ISqlDbContext sqlDbContext, IProductService productService, IDeploymentService deploymentService, 
+        /// <param name="policyAPIM">The apim service.</param>
+        public APIVersionService(ISqlDbContext sqlDbContext, IProductService productService, IDeploymentService deploymentService, IAMLWorkspaceService amlWorkspaceService,
             ILogger<APIVersionService> logger, 
-            IAPIVersionAPIM apiVersionAPIM, IProductAPIVersionAPIM productAPIVersionAPIM, IOperationAPIM operationAPIM)
+            IAPIVersionAPIM apiVersionAPIM, IProductAPIVersionAPIM productAPIVersionAPIM, IOperationAPIM operationAPIM, IPolicyAPIM policyAPIM)
         {
             _context = sqlDbContext ?? throw new ArgumentNullException(nameof(sqlDbContext));
             _productService = productService ?? throw new ArgumentNullException(nameof(productService));
             _deploymentService = deploymentService ?? throw new ArgumentNullException(nameof(deploymentService));
+            _amlWorkspaceService = amlWorkspaceService ?? throw new ArgumentNullException(nameof(amlWorkspaceService));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _apiVersionAPIM = apiVersionAPIM ?? throw new ArgumentNullException(nameof(apiVersionAPIM));
             _productAPIVersionAPIM = productAPIVersionAPIM ?? throw new ArgumentNullException(nameof(productAPIVersionAPIM));
             _operationAPIM = operationAPIM ?? throw new ArgumentNullException(nameof(operationAPIM));
+            _policyAPIM = policyAPIM ?? throw new ArgumentNullException(nameof(policyAPIM));
         }
 
         /// <summary>
@@ -71,6 +77,9 @@ namespace Luna.Services.Data.Luna.AI
             {
                 apiVersion.DeploymentName = deployment.DeploymentName;
                 apiVersion.ProductName = product.ProductName;
+
+                var amlWorkspace = await _context.AMLWorkspaces.FindAsync(apiVersion.AMLWorkspaceId);
+                apiVersion.AMLWorkspaceName = amlWorkspace.WorkspaceName;
             }
 
             _logger.LogInformation(LoggingUtils.ComposeReturnCountMessage(typeof(APIVersion).Name, apiVersions.Count()));
@@ -101,13 +110,15 @@ namespace Luna.Services.Data.Luna.AI
             // Find the apiVersion that matches the productName and deploymentName provided
             var apiVersion = await _context.APIVersions
                 .SingleOrDefaultAsync(v => (v.DeploymentId == deployment.Id) && (v.VersionName == versionName));
-
             apiVersion.DeploymentName = deployment.DeploymentName;
 
             // Get the product associated with the productName provided
             var product = await _productService.GetAsync(productName);
-
             apiVersion.ProductName = product.ProductName;
+
+            // Get the amlWorkspace associated with the Id provided
+            var amlWorkspace = await _context.AMLWorkspaces.FindAsync(apiVersion.AMLWorkspaceId);
+            apiVersion.AMLWorkspaceName = amlWorkspace.WorkspaceName;
 
             _logger.LogInformation(LoggingUtils.ComposeReturnValueMessage(typeof(APIVersion).Name,
                 versionName,
@@ -150,10 +161,15 @@ namespace Luna.Services.Data.Luna.AI
             // Get the deployment associated with the productName and the deploymentName provided
             var deployment = await _deploymentService.GetAsync(productName, deploymentName);
 
+            // Get the amlWorkspace associated with the AMLWorkspaceName provided
+            var amlWorkspace = await _amlWorkspaceService.GetAsync(version.AMLWorkspaceName);
+
             // Set the FK to apiVersion
             version.ProductName = product.ProductName;
             version.DeploymentName = deployment.DeploymentName;
             version.DeploymentId = deployment.Id;
+            version.AMLWorkspaceName = amlWorkspace.WorkspaceName;
+            version.AMLWorkspaceId = amlWorkspace.Id;
 
             // Update the apiVersion created time
             version.CreatedTime = DateTime.UtcNow;
@@ -165,6 +181,7 @@ namespace Luna.Services.Data.Luna.AI
             await _apiVersionAPIM.CreateAsync(product.ProductType, version);
             await _productAPIVersionAPIM.CreateAsync(product.ProductType, version);
             await _operationAPIM.CreateAsync(product.ProductType, version);
+            await _policyAPIM.CreateAsync(product.ProductType, version);
 
             // Add apiVersion to db
             _context.APIVersions.Add(version);
@@ -214,6 +231,7 @@ namespace Luna.Services.Data.Luna.AI
             await _apiVersionAPIM.UpdateAsync(product.ProductType, versionDb);
             await _productAPIVersionAPIM.UpdateAsync(product.ProductType, versionDb);
             await _operationAPIM.UpdateAsync(product.ProductType, versionDb);
+            await _policyAPIM.UpdateAsync(product.ProductType, versionDb);
 
             // Update version values and save changes in db
             _context.APIVersions.Update(versionDb);

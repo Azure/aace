@@ -5,6 +5,7 @@ using System.Reflection;
 using Luna.API.Controllers.Admin;
 using Luna.Clients;
 using Luna.Clients.Azure.APIM;
+using Luna.Clients.Azure.APIM.Luna.AI;
 using Luna.Clients.Azure.Auth;
 using Luna.Clients.Azure.Storage;
 using Luna.Clients.CustomMetering;
@@ -280,6 +281,7 @@ namespace Luna.API
             services.AddHttpClient<IAPIVersionAPIM, APIVersionAPIM>();
             services.AddHttpClient<IProductAPIVersionAPIM, ProductAPIVersionAPIM>();
             services.AddHttpClient<IOperationAPIM, OperationAPIM>();
+            services.AddHttpClient<IPolicyAPIM, PolicyAPIM>();
             services.AddHttpClient<IAPISubscriptionAPIM, APISubscriptionAPIM>();
             services.AddHttpClient<IUserAPIM, UserAPIM>();
 
