@@ -1,6 +1,4 @@
-﻿using Luna.Clients.Azure;
-using Luna.Clients.Azure.APIM;
-using Luna.Clients.Azure.APIM.Luna.AI;
+﻿using Luna.Clients.Azure.APIM;
 using Luna.Clients.Exceptions;
 using Luna.Clients.Logging;
 using Luna.Data.Entities;
@@ -11,9 +9,8 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Luna.Services.Data.Luna.AI
@@ -54,6 +51,42 @@ namespace Luna.Services.Data.Luna.AI
             _productAPIVersionAPIM = productAPIVersionAPIM ?? throw new ArgumentNullException(nameof(productAPIVersionAPIM));
             _operationAPIM = operationAPIM ?? throw new ArgumentNullException(nameof(operationAPIM));
             _policyAPIM = policyAPIM ?? throw new ArgumentNullException(nameof(policyAPIM));
+        }
+
+        private List<Clients.Models.Azure.OperationTypeEnum> GetOperationTypes(string productType)
+        {
+            switch (productType)
+            {
+                // Real Time Prediction
+                case "RTP":
+                    return new List<Clients.Models.Azure.OperationTypeEnum> {
+                        Clients.Models.Azure.OperationTypeEnum.RealTimePrediction,
+                    };
+                // Batch Inference
+                case "BI":
+                    return new List<Clients.Models.Azure.OperationTypeEnum>{
+                        Clients.Models.Azure.OperationTypeEnum.BatchInferenceWithDefaultModel,
+                        Clients.Models.Azure.OperationTypeEnum.GetABatchInferenceOperationWithDefaultModel,
+                        Clients.Models.Azure.OperationTypeEnum.GetAllBatchInferenceOperationsWithDefaultModel,
+                    };
+                // Train Your Own Model
+                case "TYOM":
+                    return new List<Clients.Models.Azure.OperationTypeEnum>{
+                        Clients.Models.Azure.OperationTypeEnum.TrainModel,
+                        Clients.Models.Azure.OperationTypeEnum.GetAModel,
+                        Clients.Models.Azure.OperationTypeEnum.GetAllModels,
+                        Clients.Models.Azure.OperationTypeEnum.BatchInference,
+                        Clients.Models.Azure.OperationTypeEnum.GetABatchInferenceOperation,
+                        Clients.Models.Azure.OperationTypeEnum.GetAllBatchInferenceOperations,
+                        Clients.Models.Azure.OperationTypeEnum.DeployRealTimePredictionEndpoint,
+                        Clients.Models.Azure.OperationTypeEnum.GetADeployedEndpoint,
+                        Clients.Models.Azure.OperationTypeEnum.GetAllDeployedEndpoints,
+                    };
+                default:
+                    throw new LunaBadRequestUserException(LoggingUtils.ComposePayloadNotProvidedErrorMessage(typeof(APIVersion).Name),
+                    UserErrorCode.PayloadNotProvided);
+
+            }
         }
 
         /// <summary>
@@ -178,10 +211,23 @@ namespace Luna.Services.Data.Luna.AI
             version.LastUpdatedTime = version.CreatedTime;
 
             // Add apiVersion to APIM
-            await _apiVersionAPIM.CreateAsync(product.ProductType, version);
-            await _productAPIVersionAPIM.CreateAsync(product.ProductType, version);
-            await _operationAPIM.CreateAsync(product.ProductType, version);
-            await _policyAPIM.CreateAsync(product.ProductType, version);
+            await _apiVersionAPIM.CreateAsync(version);
+            await _productAPIVersionAPIM.CreateAsync(version);
+            
+            var operationTypes = GetOperationTypes(product.ProductType);
+            List<Thread> workerThreads = new List<Thread>();
+            foreach (var operationType in operationTypes)
+            {
+                Thread thread = new Thread(async () => {
+                    var operation = _operationAPIM.GetOperation(operationType);
+                    await _operationAPIM.CreateAsync(version, operation);
+                    await _policyAPIM.CreateAsync(version, operation.name, operationType);
+                });
+                workerThreads.Add(thread);
+                thread.Start();
+            }
+            foreach (Thread thread in workerThreads) thread.Join();
+
 
             // Add apiVersion to db
             _context.APIVersions.Add(version);
@@ -225,14 +271,6 @@ namespace Luna.Services.Data.Luna.AI
 
             versionDb.LastUpdatedTime = DateTime.UtcNow;
 
-            var product = await _productService.GetAsync(productName);
-
-            // Update apiVersion values and save changes in APIM
-            await _apiVersionAPIM.UpdateAsync(product.ProductType, versionDb);
-            await _productAPIVersionAPIM.UpdateAsync(product.ProductType, versionDb);
-            await _operationAPIM.UpdateAsync(product.ProductType, versionDb);
-            await _policyAPIM.UpdateAsync(product.ProductType, versionDb);
-
             // Update version values and save changes in db
             _context.APIVersions.Update(versionDb);
             await _context._SaveChangesAsync();
@@ -261,9 +299,7 @@ namespace Luna.Services.Data.Luna.AI
             version.DeploymentName = deploymentName;
 
             // Remove the apiVersion from the APIM
-            await _operationAPIM.DeleteAsync(product.ProductType, version);
-            await _productAPIVersionAPIM.DeleteAsync(product.ProductType, version);
-            await _apiVersionAPIM.DeleteAsync(product.ProductType, version);
+            await _apiVersionAPIM.DeleteAsync(version);
 
             // Remove the apiVersion from the db
             _context.APIVersions.Remove(version);

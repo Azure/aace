@@ -1,14 +1,19 @@
 ﻿using System.Threading.Tasks;
 using Luna.Data.Entities;
 
-namespace Luna.Clients.Azure.APIM.Luna.AI
+namespace Luna.Clients.Azure.APIM
 {
     public interface IPolicyAPIM
     {
-        public string GetAPIMRESTAPIPath(string type, string productName, string deploymentName, string versionName);
-        public Task<bool> ExistsAsync(string type, APIVersion version);
-        public Task CreateAsync(string type, APIVersion version);
-        public Task UpdateAsync(string type, APIVersion version);
-        public Task DeleteAsync(string type, APIVersion version);
+        public string GetAPIMRESTAPIPath(string productName, string deploymentName, string versionName, string operationName);
+
+        public Task<bool> ExistsAsync(APIVersion version, string operationName, Models.Azure.OperationTypeEnum operationType);
+
+        public Task CreateAsync(APIVersion version, string operationName, Models.Azure.OperationTypeEnum operationType);
+
+        public Task UpdateAsync(APIVersion version, string operationName, Models.Azure.OperationTypeEnum operationType);
+
+        public Task DeleteAsync(APIVersion version, string operationName, Models.Azure.OperationTypeEnum operationType);
+        
     }
 }
