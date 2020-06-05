@@ -13,10 +13,18 @@ namespace Luna.Clients.Models.Azure
             public string displayName { get; set; }
             public string method { get; set; }
             public string urlTemplate { get; set; }
+            public List<templateParameter> templateParameters { get; set; }
+        }
+        public class templateParameter
+        {
+            public string name { get; set; }
         }
         public Operation()
         {
-            this.properties = new Properties();
+            this.properties = new Properties()
+            {
+                templateParameters = new List<templateParameter>()
+            };
         }
     }
 }

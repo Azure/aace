@@ -5,16 +5,14 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web;
-using System.Xml;
 using Luna.Clients.Azure.Auth;
-using Luna.Clients.Controller;
 using Luna.Clients.Exceptions;
 using Luna.Data.Entities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 
-namespace Luna.Clients.Azure.APIM.Luna.AI
+namespace Luna.Clients.Azure.APIM
 {
     public class PolicyAPIM : IPolicyAPIM
     {
@@ -29,6 +27,7 @@ namespace Luna.Clients.Azure.APIM.Luna.AI
         private HttpClient _httpClient;
 
         private string _requestBaseUrl;
+        private string _controllerBaseUrl;
 
         [ActivatorUtilitiesConstructor]
         public PolicyAPIM(IOptionsMonitor<APIMConfigurationOption> options,
@@ -45,13 +44,14 @@ namespace Luna.Clients.Azure.APIM.Luna.AI
             _token = keyVaultHelper.GetSecretAsync(options.CurrentValue.Config.VaultName, options.CurrentValue.Config.Token).Result;
             _apiVersion = options.CurrentValue.Config.APIVersion;
             _requestBaseUrl = string.Format(REQUEST_BASE_URL_FORMAT, _apimServiceName);
+            _controllerBaseUrl = options.CurrentValue.Config.ControllerBaseUrl;
             _apimAuthHelper = new APIMAuthHelper(options.CurrentValue.Config.UId, keyVaultHelper.GetSecretAsync(options.CurrentValue.Config.VaultName, options.CurrentValue.Config.Key).Result);
             _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
         }
 
-        private Uri GetPolicyAPIMRequestURI(string type, string productName, string deploymentName, string versionName, IDictionary<string, string> queryParams = null)
+        private Uri GetPolicyAPIMRequestURI(string productName, string deploymentName, string versionName, string operationName, IDictionary<string, string> queryParams = null)
         {
-            var builder = new UriBuilder(_requestBaseUrl + GetAPIMRESTAPIPath(type, productName, deploymentName, versionName));
+            var builder = new UriBuilder(_requestBaseUrl + GetAPIMRESTAPIPath(productName, deploymentName, versionName, operationName));
 
             var query = HttpUtility.ParseQueryString(string.Empty);
             foreach (KeyValuePair<string, string> kv in queryParams ?? new Dictionary<string, string>()) query[kv.Key] = kv.Value;
@@ -63,14 +63,16 @@ namespace Luna.Clients.Azure.APIM.Luna.AI
             return new Uri(builder.ToString());
         }
 
-        private Models.Azure.Policy GetPolicy()
+        private Models.Azure.Policy RealTimePrediction(APIVersion version)
         {
             Models.Azure.Policy policy = new Models.Azure.Policy();
+            string backendUrl = _controllerBaseUrl + string.Format("/api/products/{0}/deployments/{1}", version.ProductName, version.DeploymentName);
             policy.properties.value =
                 @"<policies>
                     <inbound>
-                        <base />
-                        <set-header name=""Content-Type"" exists-action=""override"" >
+                        <base />" +
+                        $"<set-backend-service base-url =\"{backendUrl}\" />" +
+                        @"<set-header name=""Content-Type"" exists-action=""override"" >
                             <value>application/json</value>
                         </set-header>
                         <set-variable name = ""subscriptionId"" value =""@(context.Subscription.Id)"" />
@@ -97,22 +99,433 @@ namespace Luna.Clients.Azure.APIM.Luna.AI
             return policy;
         }
 
-        public string GetAPIMRESTAPIPath(string type, string productName, string deploymentName, string versionName)
+        private Models.Azure.Policy BatchInterenceWithDefaultModel(APIVersion version)
         {
-            IController controller = ControllerHelper.GetController(type);
-            var operationName = controller.GetName();
+            Models.Azure.Policy policy = new Models.Azure.Policy();
+            string backendUrl = _controllerBaseUrl + string.Format("/api/products/{0}/deployments/{1}", version.ProductName, version.DeploymentName);
+            policy.properties.value =
+                @"<policies>
+                    <inbound>
+                        <base />" +
+                        $"<set-backend-service base-url =\"{backendUrl}\" />" +
+                        @"<set-header name=""Content-Type"" exists-action=""override"" >
+                            <value>application/json</value>
+                        </set-header>
+                        <set-variable name = ""subscriptionId"" value =""@(context.Subscription.Id)"" />
+                        <set-variable name = ""userId"" value =""@(context.User.Id)"" />
+                        <set-variable name = ""input"" value=""@(context.Request.Body.As&lt;string&gt;())"" />
+                        <set-body template = ""liquid"" >
+                        {
+                            ""subscriptionId"": ""{{context.Variables[""subscriptionId""]}}"",
+                            ""userId"": ""{{context.Variables[""userId""]}}"",
+                            ""input"": {{context.Variables[""input""]}}
+                        }
+                        </set-body>
+                    </inbound>
+                    <backend>
+                        <base />
+                    </backend>
+                    <outbound>
+                        <base />
+                    </outbound>
+                    <on-error>
+                        <base />
+                    </on-error>
+                </policies>";
+            return policy;
+        }
+
+        private Models.Azure.Policy GetABatchInterenceOperationWithDefaultModel(APIVersion version)
+        {
+            Models.Azure.Policy policy = new Models.Azure.Policy();
+            string backendUrl = _controllerBaseUrl + string.Format("/api/products/{0}/deployments/{1}/subscriptions/@(context.Subscription.Id)", version.ProductName, version.DeploymentName);
+            policy.properties.value =
+                @"<policies>
+                    <inbound>
+                        <base />" +
+                        $"<set-backend-service base-url =\"{backendUrl}\" />" +
+                        @"<set-header name=""Content-Type"" exists-action=""override"" >
+                            <value>application/json</value>
+                        </set-header>
+                        <set-query-parameter name=""userid"" exists-action=""override"">
+                            <value>@(context.User.Id)</value>
+                        </set-query-parameter>
+                    </inbound>
+                    <backend>
+                        <base />
+                    </backend>
+                    <outbound>
+                        <base />
+                    </outbound>
+                    <on-error>
+                        <base />
+                    </on-error>
+                </policies>";
+            return policy;
+        }
+
+        private Models.Azure.Policy GetAllBatchInterenceOperationsWithDefaultModel(APIVersion version)
+        {
+            Models.Azure.Policy policy = new Models.Azure.Policy();
+            string backendUrl = _controllerBaseUrl + string.Format("/api/products/{0}/deployments/{1}/subscriptions/@(context.Subscription.Id)", version.ProductName, version.DeploymentName);
+            policy.properties.value =
+                @"
+                <policies>
+                    <inbound>
+                        <base />" + 
+                        $"<set-backend-service base-url =\"{backendUrl}\" />" +
+                        @"<set-header name=""Content-Type"" exists-action=""override"" >
+                            <value>application/json</value>
+                        </set-header>
+                        <set-query-parameter name=""userid"" exists-action=""override"">
+                            <value>@(context.User.Id)</value>
+                        </set-query-parameter>
+                    </inbound>
+                    <backend>
+                        <base />
+                    </backend>
+                    <outbound>
+                        <base />
+                    </outbound>
+                    <on-error>
+                        <base />
+                    </on-error>
+                </policies>";
+            return policy;
+        }
+
+        private Models.Azure.Policy TrainModel(APIVersion version)
+        {
+            Models.Azure.Policy policy = new Models.Azure.Policy();
+            string backendUrl = _controllerBaseUrl + string.Format("/api/products/{0}/deployments/{1}", version.ProductName, version.DeploymentName);
+            policy.properties.value = 
+                @"
+                <policies>
+                    <inbound>
+                        <base />" + 
+                        $"<set-backend-service base-url=\"{backendUrl}\" />" +
+                        @"<set-header name=""Content-Type"" exists-action=""override"" >
+                            <value>application/json</value>
+                        </set-header>
+                        <set-variable name = ""subscriptionId"" value =""@(context.Subscription.Id)"" />
+                        <set-variable name = ""userId"" value =""@(context.User.Id)"" />
+                        <set-variable name = ""input"" value=""@(context.Request.Body.As&lt;string&gt;())"" />
+                        <set-body template = ""liquid"" >
+                        {
+                            ""subscriptionId"": ""{{context.Variables[""subscriptionId""]}}"",
+                            ""userId"": ""{{context.Variables[""userId""]}}"",
+                            ""input"": {{context.Variables[""input""]}}
+                        }
+                        </set-body>
+                    </inbound>
+                    <backend>
+                        <base />
+                    </backend>
+                    <outbound>
+                        <base />
+                    </outbound>
+                    <on-error>
+                        <base />
+                    </on-error>
+                </policies>";
+            return policy;
+        }
+
+        private Models.Azure.Policy GetAModel(APIVersion version)
+        {
+            Models.Azure.Policy policy = new Models.Azure.Policy();
+            string backendUrl = _controllerBaseUrl + string.Format("/api/products/{0}/deployments/{1}/subscriptions/@(context.Subscription.Id)", version.ProductName, version.DeploymentName);
+            policy.properties.value =
+                @"<policies>
+                    <inbound>
+                        <base />" +
+                        $"<set-backend-service base-url =\"{backendUrl}\" />" +
+                        @"<set-header name=""Content-Type"" exists-action=""override"" >
+                            <value>application/json</value>
+                        </set-header>
+                        <set-query-parameter name=""userid"" exists-action=""override"">
+                            <value>@(context.User.Id)</value>
+                        </set-query-parameter>
+                    </inbound>
+                    <backend>
+                        <base />
+                    </backend>
+                    <outbound>
+                        <base />
+                    </outbound>
+                    <on-error>
+                        <base />
+                    </on-error>
+                </policies>";
+            return policy;
+        }
+
+        private Models.Azure.Policy GetAllModels(APIVersion version)
+        {
+            Models.Azure.Policy policy = new Models.Azure.Policy();
+            string backendUrl = _controllerBaseUrl + string.Format("/api/products/{0}/deployments/{1}/subscriptions/@(context.Subscription.Id)", version.ProductName, version.DeploymentName);
+            policy.properties.value =
+                @"<policies>
+                    <inbound>
+                        <base />" +
+                        $"<set-backend-service base-url =\"{backendUrl}\" />" +
+                        @"<set-header name=""Content-Type"" exists-action=""override"" >
+                            <value>application/json</value>
+                        </set-header>
+                        <set-query-parameter name=""userid"" exists-action=""override"">
+                            <value>@(context.User.Id)</value>
+                        </set-query-parameter>
+                    </inbound>
+                    <backend>
+                        <base />
+                    </backend>
+                    <outbound>
+                        <base />
+                    </outbound>
+                    <on-error>
+                        <base />
+                    </on-error>
+                </policies>";
+            return policy;
+        }
+
+        private Models.Azure.Policy BatchInterence(APIVersion version)
+        {
+            Models.Azure.Policy policy = new Models.Azure.Policy();
+            string backendUrl = _controllerBaseUrl + string.Format("/api/products/{0}/deployments/{1}", version.ProductName, version.DeploymentName);
+            policy.properties.value =
+                @"<policies>
+                    <inbound>
+                        <base />" +
+                        $"<set-backend-service base-url =\"{backendUrl}\" />" +
+                        @"<set-header name=""Content-Type"" exists-action=""override"" >
+                            <value>application/json</value>
+                        </set-header>
+                        <set-variable name = ""subscriptionId"" value =""@(context.Subscription.Id)"" />
+                        <set-variable name = ""userId"" value =""@(context.User.Id)"" />
+                        <set-variable name = ""input"" value=""@(context.Request.Body.As&lt;string&gt;())"" />
+                        <set-body template = ""liquid"" >
+                        {
+                            ""subscriptionId"": ""{{context.Variables[""subscriptionId""]}}"",
+                            ""userId"": ""{{context.Variables[""userId""]}}"",
+                            ""input"": {{context.Variables[""input""]}}
+                        }
+                        </set-body>
+                    </inbound>
+                    <backend>
+                        <base />
+                    </backend>
+                    <outbound>
+                        <base />
+                    </outbound>
+                    <on-error>
+                        <base />
+                    </on-error>
+                </policies>";
+            return policy;
+        }
+
+        private Models.Azure.Policy GetABatchInterenceOperation(APIVersion version)
+        {
+            Models.Azure.Policy policy = new Models.Azure.Policy();
+            string backendUrl = _controllerBaseUrl + string.Format("/api/products/{0}/deployments/{1}/subscriptions/@(context.Subscription.Id)", version.ProductName, version.DeploymentName);
+            policy.properties.value =
+                @"<policies>
+                    <inbound>
+                        <base />" +
+                        $"<set-backend-service base-url =\"{backendUrl}\" />" +
+                        @"<set-header name=""Content-Type"" exists-action=""override"" >
+                            <value>application/json</value>
+                        </set-header>
+                        <set-query-parameter name=""userid"" exists-action=""override"">
+                            <value>@(context.User.Id)</value>
+                        </set-query-parameter>
+                    </inbound>
+                    <backend>
+                        <base />
+                    </backend>
+                    <outbound>
+                        <base />
+                    </outbound>
+                    <on-error>
+                        <base />
+                    </on-error>
+                </policies>";
+            return policy;
+        }
+
+        private Models.Azure.Policy GetAllBatchInterenceOperations(APIVersion version)
+        {
+            Models.Azure.Policy policy = new Models.Azure.Policy();
+            string backendUrl = _controllerBaseUrl + string.Format("/api/products/{0}/deployments/{1}/subscriptions/@(context.Subscription.Id)", version.ProductName, version.DeploymentName);
+            policy.properties.value =
+                @"<policies>
+                    <inbound>
+                        <base />" +
+                        $"<set-backend-service base-url =\"{backendUrl}\" />" +
+                        @"<set-header name=""Content-Type"" exists-action=""override"" >
+                            <value>application/json</value>
+                        </set-header>
+                        <set-query-parameter name=""userid"" exists-action=""override"">
+                            <value>@(context.User.Id)</value>
+                        </set-query-parameter>
+                    </inbound>
+                    <backend>
+                        <base />
+                    </backend>
+                    <outbound>
+                        <base />
+                    </outbound>
+                    <on-error>
+                        <base />
+                    </on-error>
+                </policies>";
+            return policy;
+        }
+
+        private Models.Azure.Policy DeployRealTimePredictionEndpoint(APIVersion version)
+        {
+            Models.Azure.Policy policy = new Models.Azure.Policy();
+            string backendUrl = _controllerBaseUrl + string.Format("/api/products/{0}/deployments/{1}", version.ProductName, version.DeploymentName);
+            policy.properties.value =
+                @"<policies>
+                    <inbound>
+                        <base />" +
+                        $"<set-backend-service base-url =\"{backendUrl}\" />" +
+                        @"<set-header name=""Content-Type"" exists-action=""override"" >
+                            <value>application/json</value>
+                        </set-header>
+                        <set-variable name = ""subscriptionId"" value =""@(context.Subscription.Id)"" />
+                        <set-variable name = ""userId"" value =""@(context.User.Id)"" />
+                        <set-variable name = ""input"" value=""@(context.Request.Body.As&lt;string&gt;())"" />
+                        <set-body template = ""liquid"" >
+                        {
+                            ""subscriptionId"": ""{{context.Variables[""subscriptionId""]}}"",
+                            ""userId"": ""{{context.Variables[""userId""]}}"",
+                            ""input"": {{context.Variables[""input""]}}
+                        }
+                        </set-body>
+                    </inbound>
+                    <backend>
+                        <base />
+                    </backend>
+                    <outbound>
+                        <base />
+                    </outbound>
+                    <on-error>
+                        <base />
+                    </on-error>
+                </policies>";
+            return policy;
+        }
+
+        private Models.Azure.Policy GetADeployedEndpoint(APIVersion version)
+        {
+            Models.Azure.Policy policy = new Models.Azure.Policy();
+            string backendUrl = _controllerBaseUrl + string.Format("/api/products/{0}/deployments/{1}/subscriptions/@(context.Subscription.Id)", version.ProductName, version.DeploymentName);
+            policy.properties.value =
+                @"<policies>
+                    <inbound>
+                        <base />" +
+                        $"<set-backend-service base-url =\"{backendUrl}\" />" +
+                        @"<set-header name=""Content-Type"" exists-action=""override"" >
+                            <value>application/json</value>
+                        </set-header>
+                        <set-query-parameter name=""userid"" exists-action=""override"">
+                            <value>@(context.User.Id)</value>
+                        </set-query-parameter>
+                    </inbound>
+                    <backend>
+                        <base />
+                    </backend>
+                    <outbound>
+                        <base />
+                    </outbound>
+                    <on-error>
+                        <base />
+                    </on-error>
+                </policies>";
+            return policy;
+        }
+
+        private Models.Azure.Policy GetAllDeployedEndpoints(APIVersion version)
+        {
+            Models.Azure.Policy policy = new Models.Azure.Policy();
+            string backendUrl = _controllerBaseUrl + string.Format("/api/products/{0}/deployments/{1}/subscriptions/@(context.Subscription.Id)", version.ProductName, version.DeploymentName);
+            policy.properties.value =
+                @"<policies>
+                    <inbound>
+                        <base />" +
+                        $"<set-backend-service base-url =\"{backendUrl}\" />" +
+                        @"<set-header name=""Content-Type"" exists-action=""override"" >
+                            <value>application/json</value>
+                        </set-header>
+                        <set-query-parameter name=""userid"" exists-action=""override"">
+                            <value>@(context.User.Id)</value>
+                        </set-query-parameter>
+                    </inbound>
+                    <backend>
+                        <base />
+                    </backend>
+                    <outbound>
+                        <base />
+                    </outbound>
+                    <on-error>
+                        <base />
+                    </on-error>
+                </policies>";
+            return policy;
+        }
+
+        private Models.Azure.Policy GetPolicy(APIVersion version, Models.Azure.OperationTypeEnum operationType)
+        {
+            switch (operationType)
+            {
+                case Models.Azure.OperationTypeEnum.RealTimePrediction:
+                    return RealTimePrediction(version);
+                case Models.Azure.OperationTypeEnum.BatchInferenceWithDefaultModel:
+                    return BatchInterenceWithDefaultModel(version);
+                case Models.Azure.OperationTypeEnum.GetABatchInferenceOperationWithDefaultModel:
+                    return GetABatchInterenceOperationWithDefaultModel(version);
+                case Models.Azure.OperationTypeEnum.GetAllBatchInferenceOperationsWithDefaultModel:
+                    return GetAllBatchInterenceOperationsWithDefaultModel(version);
+                case Models.Azure.OperationTypeEnum.TrainModel:
+                    return TrainModel(version);
+                case Models.Azure.OperationTypeEnum.GetAModel:
+                    return GetAModel(version);
+                case Models.Azure.OperationTypeEnum.GetAllModels:
+                    return GetAllModels(version);
+                case Models.Azure.OperationTypeEnum.BatchInference:
+                    return BatchInterence(version);
+                case Models.Azure.OperationTypeEnum.GetABatchInferenceOperation:
+                    return GetABatchInterenceOperation(version);
+                case Models.Azure.OperationTypeEnum.GetAllBatchInferenceOperations:
+                    return GetAllBatchInterenceOperations(version);
+                case Models.Azure.OperationTypeEnum.DeployRealTimePredictionEndpoint:
+                    return DeployRealTimePredictionEndpoint(version);
+                case Models.Azure.OperationTypeEnum.GetADeployedEndpoint:
+                    return GetADeployedEndpoint(version);
+                case Models.Azure.OperationTypeEnum.GetAllDeployedEndpoints:
+                    return GetAllDeployedEndpoints(version);
+                default:
+                    throw new LunaServerException($"Invalid operation type. The type is {nameof(operationType)}.");
+            }
+        }
+
+        public string GetAPIMRESTAPIPath(string productName, string deploymentName, string versionName, string operationName)
+        {
             return string.Format(PATH_FORMAT, _subscriptionId, _resourceGroupName, _apimServiceName, productName + deploymentName + versionName, operationName);
         }
 
-        public async Task<bool> ExistsAsync(string type, APIVersion version)
+        public async Task<bool> ExistsAsync(APIVersion version, string operationName, Models.Azure.OperationTypeEnum operationType)
         {
-            Uri requestUri = GetPolicyAPIMRequestURI(type, version.ProductName, version.DeploymentName, version.GetVersionIdFormat());
+            Uri requestUri = GetPolicyAPIMRequestURI(version.ProductName, version.DeploymentName, version.GetVersionIdFormat(), operationName);
             var request = new HttpRequestMessage { RequestUri = requestUri, Method = HttpMethod.Get };
 
             request.Headers.Authorization = new AuthenticationHeaderValue("SharedAccessSignature", _apimAuthHelper.GetSharedAccessToken());
             request.Headers.Add("If-Match", "*");
 
-            request.Content = new StringContent(JsonConvert.SerializeObject(GetPolicy()), Encoding.UTF8, "application/json");
+            request.Content = new StringContent(JsonConvert.SerializeObject(GetPolicy(version, operationType)), Encoding.UTF8, "application/json");
 
             var response = await _httpClient.SendAsync(request);
 
@@ -127,15 +540,16 @@ namespace Luna.Clients.Azure.APIM.Luna.AI
             return true;
         }
 
-        public async Task CreateAsync(string type, APIVersion version)
+        public async Task CreateAsync(APIVersion version, string operationName, Models.Azure.OperationTypeEnum operationType)
         {
-            Uri requestUri = GetPolicyAPIMRequestURI(type, version.ProductName, version.DeploymentName, version.GetVersionIdFormat());
+            Uri requestUri = GetPolicyAPIMRequestURI(version.ProductName, version.DeploymentName, version.GetVersionIdFormat(), operationName);
             var request = new HttpRequestMessage { RequestUri = requestUri, Method = HttpMethod.Put };
 
             request.Headers.Authorization = new AuthenticationHeaderValue("SharedAccessSignature", _apimAuthHelper.GetSharedAccessToken());
             request.Headers.Add("If-Match", "*");
 
-            request.Content = new StringContent(JsonConvert.SerializeObject(GetPolicy()), Encoding.UTF8, "application/json");
+            var body = JsonConvert.SerializeObject(GetPolicy(version, operationType));
+            request.Content = new StringContent(body, Encoding.UTF8, "application/json");
 
             var response = await _httpClient.SendAsync(request);
 
@@ -146,15 +560,15 @@ namespace Luna.Clients.Azure.APIM.Luna.AI
             }
         }
 
-        public async Task UpdateAsync(string type, APIVersion version)
+        public async Task UpdateAsync(APIVersion version, string operationName, Models.Azure.OperationTypeEnum operationType)
         {
-            Uri requestUri = GetPolicyAPIMRequestURI(type, version.ProductName, version.DeploymentName, version.GetVersionIdFormat());
+            Uri requestUri = GetPolicyAPIMRequestURI(version.ProductName, version.DeploymentName, version.GetVersionIdFormat(), operationName);
             var request = new HttpRequestMessage { RequestUri = requestUri, Method = HttpMethod.Put };
 
             request.Headers.Authorization = new AuthenticationHeaderValue("SharedAccessSignature", _apimAuthHelper.GetSharedAccessToken());
             request.Headers.Add("If-Match", "*");
 
-            request.Content = new StringContent(JsonConvert.SerializeObject(GetPolicy()), Encoding.UTF8, "application/json");
+            request.Content = new StringContent(JsonConvert.SerializeObject(GetPolicy(version, operationType)), Encoding.UTF8, "application/json");
 
             var response = await _httpClient.SendAsync(request);
 
@@ -165,17 +579,17 @@ namespace Luna.Clients.Azure.APIM.Luna.AI
             }
         }
 
-        public async Task DeleteAsync(string type, APIVersion version)
+        public async Task DeleteAsync(APIVersion version, string operationName, Models.Azure.OperationTypeEnum operationType)
         {
-            if (!(await ExistsAsync(type, version))) return;
+            if (!(await ExistsAsync(version, operationName, operationType))) return;
 
-            Uri requestUri = GetPolicyAPIMRequestURI(type, version.ProductName, version.DeploymentName, version.GetVersionIdFormat());
+            Uri requestUri = GetPolicyAPIMRequestURI(version.ProductName, version.DeploymentName, version.GetVersionIdFormat(), operationName);
             var request = new HttpRequestMessage { RequestUri = requestUri, Method = HttpMethod.Delete };
 
             request.Headers.Authorization = new AuthenticationHeaderValue("SharedAccessSignature", _apimAuthHelper.GetSharedAccessToken());
             request.Headers.Add("If-Match", "*");
 
-            request.Content = new StringContent(JsonConvert.SerializeObject(GetPolicy()), Encoding.UTF8, "application/json");
+            request.Content = new StringContent(JsonConvert.SerializeObject(GetPolicy(version, operationType)), Encoding.UTF8, "application/json");
 
             var response = await _httpClient.SendAsync(request);
 

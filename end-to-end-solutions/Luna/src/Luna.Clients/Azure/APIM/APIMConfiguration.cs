@@ -17,5 +17,6 @@ namespace Luna.Clients.Azure.APIM
         public string VaultName { get; set; }
         public string UId { get; set; }
         public string Key { get; set; }
+        public string ControllerBaseUrl { get; set; }
     }
 }
