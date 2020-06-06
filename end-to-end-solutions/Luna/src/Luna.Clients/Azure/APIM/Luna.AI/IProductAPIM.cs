@@ -9,6 +9,5 @@ namespace Luna.Clients.Azure.APIM
         Task CreateAsync(Product product);
         Task UpdateAsync(Product product);
         Task DeleteAsync(Product product);
-        
     }
 }

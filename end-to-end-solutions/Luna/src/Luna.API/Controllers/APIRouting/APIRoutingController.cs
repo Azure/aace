@@ -1,18 +1,15 @@
 using System;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using Luna.Clients.Azure.APIM;
-using Luna.Clients.Azure.Auth;
 using Luna.Clients.Controller;
 using Luna.Clients.Exceptions;
 using Luna.Clients.Logging;
 using Luna.Clients.Models.Controller;
-using Luna.Data.Entities;
 using Luna.Services.Data;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 
 namespace Luna.API.Controllers.Admin
 {
@@ -57,12 +54,12 @@ namespace Luna.API.Controllers.Admin
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> Predict(string productName, string deploymentName, [FromQuery(Name = "api-version")] string versionName, [FromBody] PredictRequest request)
         {
-            var apiSubcription = await _apiSubscriptionService.GetAsync(request.apiSubscriptionId);
+            var apiSubcription = await _apiSubscriptionService.GetAsync(request.subscriptionId);
             if (apiSubcription == null)
             {
                 throw new LunaBadRequestUserException(LoggingUtils.ComposePayloadNotProvidedErrorMessage(nameof(apiSubcription)), UserErrorCode.PayloadNotProvided);
             }
-            if (request.userId != apiSubcription.UserId)
+            if (request.userId != _userAPIM.GetUserName(apiSubcription.UserId))
                 throw new LunaBadRequestUserException("UserId of request is not equal to apiSubscription.", UserErrorCode.InvalidParameter);
 
             var version = await _apiVersionService.GetAsync(productName, deploymentName, versionName);
@@ -79,7 +76,7 @@ namespace Luna.API.Controllers.Admin
         /// <returns>HTTP 200 OK with apiVersion JSON objects in response body.</returns>
         [HttpPost("products/{productName}/deployments/{deploymentName}/batchinference")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult> BatchInference(string productName, string deploymentName, [FromQuery(Name = "api-version")] string versionName, [FromBody] BatchInferenceRequest request)
+        public async Task<ActionResult> BatchInferenceWithDefaultModel(string productName, string deploymentName, [FromQuery(Name = "api-version")] string versionName, [FromBody] BatchInferenceRequest request)
         {
             var apiSubcription = await _apiSubscriptionService.GetAsync(request.subscriptionId);
             if (apiSubcription == null)
@@ -92,7 +89,225 @@ namespace Luna.API.Controllers.Admin
             var version = await _apiVersionService.GetAsync(productName, deploymentName, versionName);
             var workspace = await _amlWorkspaceService.GetAsync(version.AMLWorkspaceName);
 
-            return Ok(await ControllerHelper.BatchInference(version, workspace, request.input));
+            return Ok(await ControllerHelper.BatchInferenceWithDefaultModel(version, workspace, request.input));
+        }
+
+        /// <summary>
+        /// Gets all apiVersions within a deployment within an product.
+        /// </summary>
+        /// <param name="productName">The name of the product.</param>
+        /// <param name="deploymentName">The name of the deployment.</param>
+        /// <returns>HTTP 200 OK with apiVersion JSON objects in response body.</returns>
+        [HttpPost("products/{productName}/deployments/{deploymentName}/train")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<ActionResult> TrainModel(string productName, string deploymentName, [FromQuery(Name = "api-version")] string versionName, [FromBody] TrainModelRequest request)
+        {
+            var apiSubcription = await _apiSubscriptionService.GetAsync(request.subscriptionId);
+            if (apiSubcription == null)
+            {
+                throw new LunaBadRequestUserException(LoggingUtils.ComposePayloadNotProvidedErrorMessage(nameof(apiSubcription)), UserErrorCode.PayloadNotProvided);
+            }
+            if (request.userId != _userAPIM.GetUserName(apiSubcription.UserId))
+                throw new LunaBadRequestUserException("UserId of request is not equal to apiSubscription.", UserErrorCode.InvalidParameter);
+
+            var version = await _apiVersionService.GetAsync(productName, deploymentName, versionName);
+            var workspace = await _amlWorkspaceService.GetAsync(version.AMLWorkspaceName);
+
+            return Ok(await ControllerHelper.TrainModel(version, workspace, request.input));
+        }
+
+        /// <summary>
+        /// Gets all apiVersions within a deployment within an product.
+        /// </summary>
+        /// <param name="productName">The name of the product.</param>
+        /// <param name="deploymentName">The name of the deployment.</param>
+        /// <returns>HTTP 200 OK with apiVersion JSON objects in response body.</returns>
+        [HttpGet("products/{productName}/deployments/{deploymentName}/subscriptions/{subscriptionId}/models/{modelId}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<ActionResult> GetAModel(string productName, string deploymentName, Guid subscriptionId, Guid modelId, [FromQuery(Name = "userid")] string userId, [FromQuery(Name = "api-version")] string versionName)
+        {
+            var apiSubcription = await _apiSubscriptionService.GetAsync(subscriptionId);
+            if (apiSubcription == null)
+            {
+                throw new LunaBadRequestUserException(LoggingUtils.ComposePayloadNotProvidedErrorMessage(nameof(apiSubcription)), UserErrorCode.PayloadNotProvided);
+            }
+            if (userId != _userAPIM.GetUserName(apiSubcription.UserId))
+                throw new LunaBadRequestUserException("UserId of request is not equal to apiSubscription.", UserErrorCode.InvalidParameter);
+
+            var version = await _apiVersionService.GetAsync(productName, deploymentName, versionName);
+            var workspace = await _amlWorkspaceService.GetAsync(version.AMLWorkspaceName);
+
+            return Ok(await ControllerHelper.GetAModel(workspace, modelId, userId));
+        }
+
+        /// <summary>
+        /// Gets all apiVersions within a deployment within an product.
+        /// </summary>
+        /// <param name="productName">The name of the product.</param>
+        /// <param name="deploymentName">The name of the deployment.</param>
+        /// <returns>HTTP 200 OK with apiVersion JSON objects in response body.</returns>
+        [HttpGet("products/{productName}/deployments/{deploymentName}/subscriptions/{subscriptionId}/models")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<ActionResult> GetAllModels(string productName, string deploymentName, Guid subscriptionId, [FromQuery(Name = "userid")] string userId, [FromQuery(Name = "api-version")] string versionName)
+        {
+            var apiSubcription = await _apiSubscriptionService.GetAsync(subscriptionId);
+            if (apiSubcription == null)
+            {
+                throw new LunaBadRequestUserException(LoggingUtils.ComposePayloadNotProvidedErrorMessage(nameof(apiSubcription)), UserErrorCode.PayloadNotProvided);
+            }
+            if (userId != _userAPIM.GetUserName(apiSubcription.UserId))
+                throw new LunaBadRequestUserException("UserId of request is not equal to apiSubscription.", UserErrorCode.InvalidParameter);
+
+            var version = await _apiVersionService.GetAsync(productName, deploymentName, versionName);
+            var workspace = await _amlWorkspaceService.GetAsync(version.AMLWorkspaceName);
+
+            return Ok(await ControllerHelper.GetAllModels(workspace));
+        }
+
+        /// <summary>
+        /// Gets all apiVersions within a deployment within an product.
+        /// </summary>
+        /// <param name="productName">The name of the product.</param>
+        /// <param name="deploymentName">The name of the deployment.</param>
+        /// <returns>HTTP 200 OK with apiVersion JSON objects in response body.</returns>
+        [HttpPost("products/{productName}/deployments/{deploymentName}/models/{modelId}/batchinference")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<ActionResult> BatchInference(string productName, string deploymentName, Guid modelId, [FromQuery(Name = "api-version")] string versionName, [FromBody] BatchInferenceRequest request)
+        {
+            var apiSubcription = await _apiSubscriptionService.GetAsync(request.subscriptionId);
+            if (apiSubcription == null)
+            {
+                throw new LunaBadRequestUserException(LoggingUtils.ComposePayloadNotProvidedErrorMessage(nameof(apiSubcription)), UserErrorCode.PayloadNotProvided);
+            }
+            if (request.userId != _userAPIM.GetUserName(apiSubcription.UserId))
+                throw new LunaBadRequestUserException("UserId of request is not equal to apiSubscription.", UserErrorCode.InvalidParameter);
+
+            var version = await _apiVersionService.GetAsync(productName, deploymentName, versionName);
+            var workspace = await _amlWorkspaceService.GetAsync(version.AMLWorkspaceName);
+
+            return Ok(await ControllerHelper.BatchInference(version, workspace, modelId, request.input));
+        }
+
+
+        /// <summary>
+        /// Gets all apiVersions within a deployment within an product.
+        /// </summary>
+        /// <param name="productName">The name of the product.</param>
+        /// <param name="deploymentName">The name of the deployment.</param>
+        /// <returns>HTTP 200 OK with apiVersion JSON objects in response body.</returns>
+        [HttpGet("products/{productName}/deployments/{deploymentName}/subscriptions/{subscriptionId}/operations/{operationId}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<ActionResult> GetBatchInferenceOperation(string productName, string deploymentName, Guid subscriptionId, Guid operationId, [FromQuery(Name = "userid")] string userId, [FromQuery(Name = "api-version")] string versionName)
+        {
+            var apiSubcription = await _apiSubscriptionService.GetAsync(subscriptionId);
+            if (apiSubcription == null)
+            {
+                throw new LunaBadRequestUserException(LoggingUtils.ComposePayloadNotProvidedErrorMessage(nameof(apiSubcription)), UserErrorCode.PayloadNotProvided);
+            }
+            if (userId != _userAPIM.GetUserName(apiSubcription.UserId))
+                throw new LunaBadRequestUserException("UserId of request is not equal to apiSubscription.", UserErrorCode.InvalidParameter);
+
+            var version = await _apiVersionService.GetAsync(productName, deploymentName, versionName);
+            var workspace = await _amlWorkspaceService.GetAsync(version.AMLWorkspaceName);
+
+            return this.Content((await ControllerHelper.GetABatchInferenceOperation(workspace, operationId)), "application/json");
+        }
+
+        /// <summary>
+        /// Gets all apiVersions within a deployment within an product.
+        /// </summary>
+        /// <param name="productName">The name of the product.</param>
+        /// <param name="deploymentName">The name of the deployment.</param>
+        /// <returns>HTTP 200 OK with apiVersion JSON objects in response body.</returns>
+        [HttpGet("products/{productName}/deployments/{deploymentName}/subscriptions/{subscriptionId}/operations")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<ActionResult> GetBatchInferenceOperation(string productName, string deploymentName, Guid subscriptionId, [FromQuery(Name = "userid")] string userId, [FromQuery(Name = "api-version")] string versionName)
+        {
+            var apiSubcription = await _apiSubscriptionService.GetAsync(subscriptionId);
+            if (apiSubcription == null)
+            {
+                throw new LunaBadRequestUserException(LoggingUtils.ComposePayloadNotProvidedErrorMessage(nameof(apiSubcription)), UserErrorCode.PayloadNotProvided);
+            }
+            if (userId != _userAPIM.GetUserName(apiSubcription.UserId))
+                throw new LunaBadRequestUserException("UserId of request is not equal to apiSubscription.", UserErrorCode.InvalidParameter);
+
+            var version = await _apiVersionService.GetAsync(productName, deploymentName, versionName);
+            var workspace = await _amlWorkspaceService.GetAsync(version.AMLWorkspaceName);
+
+            return this.Content((await ControllerHelper.GetAllBatchInferenceOperations(workspace)), "application/json");
+        }
+
+        /// <summary>
+        /// Gets all apiVersions within a deployment within an product.
+        /// </summary>
+        /// <param name="productName">The name of the product.</param>
+        /// <param name="deploymentName">The name of the deployment.</param>
+        /// <returns>HTTP 200 OK with apiVersion JSON objects in response body.</returns>
+        [HttpPost("products/{productName}/deployments/{deploymentName}/models/{model_id}/deploy")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<ActionResult> DeployRealTimePredictionEndpoint(string productName, string deploymentName, Guid modelId, [FromQuery(Name = "api-version")] string versionName, [FromBody] DeployRealTimePredictionEndpointRequest request)
+        {
+            var apiSubcription = await _apiSubscriptionService.GetAsync(request.subscriptionId);
+            if (apiSubcription == null)
+            {
+                throw new LunaBadRequestUserException(LoggingUtils.ComposePayloadNotProvidedErrorMessage(nameof(apiSubcription)), UserErrorCode.PayloadNotProvided);
+            }
+            if (request.userId != _userAPIM.GetUserName(apiSubcription.UserId))
+                throw new LunaBadRequestUserException("UserId of request is not equal to apiSubscription.", UserErrorCode.InvalidParameter);
+
+            var version = await _apiVersionService.GetAsync(productName, deploymentName, versionName);
+            var workspace = await _amlWorkspaceService.GetAsync(version.AMLWorkspaceName);
+
+            return Ok(await ControllerHelper.DeployRealTimePredictionEndpoint(version, workspace, modelId, request.input));
+        }
+
+
+        /// <summary>
+        /// Gets all apiVersions within a deployment within an product.
+        /// </summary>
+        /// <param name="productName">The name of the product.</param>
+        /// <param name="deploymentName">The name of the deployment.</param>
+        /// <returns>HTTP 200 OK with apiVersion JSON objects in response body.</returns>
+        [HttpGet("products/{productName}/deployments/{deploymentName}/subscriptions/{subscriptionId}/endpoints/{deploymentId}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<ActionResult> GetADeployedEndpoint(string productName, string deploymentName, Guid subscriptionId, Guid deploymentId, [FromQuery(Name = "userid")] string userId, [FromQuery(Name = "api-version")] string versionName)
+        {
+            var apiSubcription = await _apiSubscriptionService.GetAsync(subscriptionId);
+            if (apiSubcription == null)
+            {
+                throw new LunaBadRequestUserException(LoggingUtils.ComposePayloadNotProvidedErrorMessage(nameof(apiSubcription)), UserErrorCode.PayloadNotProvided);
+            }
+            if (userId != _userAPIM.GetUserName(apiSubcription.UserId))
+                throw new LunaBadRequestUserException("UserId of request is not equal to apiSubscription.", UserErrorCode.InvalidParameter);
+
+            var version = await _apiVersionService.GetAsync(productName, deploymentName, versionName);
+            var workspace = await _amlWorkspaceService.GetAsync(version.AMLWorkspaceName);
+
+            return Ok((await ControllerHelper.GetADeployedEndpoint(workspace, deploymentId)));
+        }
+
+        /// <summary>
+        /// Gets all apiVersions within a deployment within an product.
+        /// </summary>
+        /// <param name="productName">The name of the product.</param>
+        /// <param name="deploymentName">The name of the deployment.</param>
+        /// <returns>HTTP 200 OK with apiVersion JSON objects in response body.</returns>
+        [HttpGet("products/{productName}/deployments/{deploymentName}/subscriptions/{subscriptionId}/endpoints")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<ActionResult> GetAllDeployedEndpoints(string productName, string deploymentName, Guid subscriptionId, [FromQuery(Name = "userid")] string userId, [FromQuery(Name = "api-version")] string versionName)
+        {
+            var apiSubcription = await _apiSubscriptionService.GetAsync(subscriptionId);
+            if (apiSubcription == null)
+            {
+                throw new LunaBadRequestUserException(LoggingUtils.ComposePayloadNotProvidedErrorMessage(nameof(apiSubcription)), UserErrorCode.PayloadNotProvided);
+            }
+            if (userId != _userAPIM.GetUserName(apiSubcription.UserId))
+                throw new LunaBadRequestUserException("UserId of request is not equal to apiSubscription.", UserErrorCode.InvalidParameter);
+
+            var version = await _apiVersionService.GetAsync(productName, deploymentName, versionName);
+            var workspace = await _amlWorkspaceService.GetAsync(version.AMLWorkspaceName);
+
+            return this.Content((await ControllerHelper.GetAllDeployedEndpoints(workspace)), "application/json");
         }
     }
 }
