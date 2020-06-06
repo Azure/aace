@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Luna.Clients.Models.Controller
 {
-    public class TrainModelRequest
+    public class DeployRealTimePredictionEndpointRequest
     {
         public string userId { get; set; }
         public Guid subscriptionId { get; set; }

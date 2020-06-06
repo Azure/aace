@@ -6,12 +6,12 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Web;
 using Luna.Clients.Azure.Auth;
-using Luna.Clients.Controller;
 using Luna.Clients.Exceptions;
 using Luna.Data.Entities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using static Luna.Clients.Models.Azure.Operation;
 
 namespace Luna.Clients.Azure.APIM
 {
@@ -22,7 +22,6 @@ namespace Luna.Clients.Azure.APIM
         private Guid _subscriptionId;
         private string _resourceGroupName;
         private string _apimServiceName;
-        private string _token;
         private string _apiVersion;
         private APIMAuthHelper _apimAuthHelper;
         private HttpClient _httpClient;
@@ -41,16 +40,195 @@ namespace Luna.Clients.Azure.APIM
             _subscriptionId = options.CurrentValue.Config.SubscriptionId;
             _resourceGroupName = options.CurrentValue.Config.ResourceGroupname;
             _apimServiceName = options.CurrentValue.Config.APIMServiceName;
-            _token = keyVaultHelper.GetSecretAsync(options.CurrentValue.Config.VaultName, options.CurrentValue.Config.Token).Result;
             _apiVersion = options.CurrentValue.Config.APIVersion;
             _requestBaseUrl = string.Format(REQUEST_BASE_URL_FORMAT, _apimServiceName);
             _apimAuthHelper = new APIMAuthHelper(options.CurrentValue.Config.UId, keyVaultHelper.GetSecretAsync(options.CurrentValue.Config.VaultName, options.CurrentValue.Config.Key).Result);
             _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
         }
 
-        private Uri GetAPIVersionAPIMRequestURI(string type, string productName, string deploymentName, string versionName, IDictionary<string, string> queryParams = null)
+        private Models.Azure.Operation RealTimePrediction()
         {
-            var builder = new UriBuilder(_requestBaseUrl + GetAPIMRESTAPIPath(type, productName, deploymentName, versionName));
+            Models.Azure.Operation operation = new Models.Azure.Operation();
+
+            operation.name = "real-time-prediction";
+            operation.properties.displayName = "real-time-prediction";
+            operation.properties.method = "POST";
+            operation.properties.urlTemplate = "/predict";
+
+            return operation;
+        }
+
+        private Models.Azure.Operation BatchInferenceWithDefaultModel()
+        {
+            Models.Azure.Operation operation = new Models.Azure.Operation();
+
+            operation.name = "batch-inference-with-default-model";
+            operation.properties.displayName = "batch-inference-with-default-model";
+            operation.properties.method = "POST";
+            operation.properties.urlTemplate = "/batchinference";
+
+            return operation;
+        }
+
+        private Models.Azure.Operation GetABatchInferenceOperationWithDefaultModel()
+        {
+            Models.Azure.Operation operation = new Models.Azure.Operation();
+
+            operation.name = "get-a-batch-inference-operation-with-default-model";
+            operation.properties.displayName = "get-a-batch-inference-operation-with-default-model";
+            operation.properties.method = "GET";
+            operation.properties.urlTemplate = "/operations/{operationId}";
+            operation.properties.templateParameters = new List<templateParameter>(new templateParameter[]
+            {
+                new templateParameter(){ name = "operationId" }
+            });
+
+            return operation;
+        }
+
+        private Models.Azure.Operation GetAllBatchInferenceOperationsWithDefaultModel()
+        {
+            Models.Azure.Operation operation = new Models.Azure.Operation();
+
+            operation.name = "get-all-batch-inference-operations-with-default-model";
+            operation.properties.displayName = "get-all-batch-inference-operations-with-default-model";
+            operation.properties.method = "GET";
+            operation.properties.urlTemplate = "/operations";
+
+            return operation;
+        }
+
+        private Models.Azure.Operation TrainModel()
+        {
+            Models.Azure.Operation operation = new Models.Azure.Operation();
+
+            operation.name = "train-model";
+            operation.properties.displayName = "train-model";
+            operation.properties.method = "POST";
+            operation.properties.urlTemplate = "/train";
+
+            return operation;
+        }
+
+        private Models.Azure.Operation GetAModel()
+        {
+            Models.Azure.Operation operation = new Models.Azure.Operation();
+
+            operation.name = "get-a-model";
+            operation.properties.displayName = "get-a-model";
+            operation.properties.method = "GET";
+            operation.properties.urlTemplate = "/models/{modelId}";
+            operation.properties.templateParameters = new List<templateParameter>(new templateParameter[]
+            {
+                new templateParameter(){ name = "modelId" }
+            });
+
+            return operation;
+        }
+
+        private Models.Azure.Operation GetAllModels()
+        {
+            Models.Azure.Operation operation = new Models.Azure.Operation();
+
+            operation.name = "get-all-models";
+            operation.properties.displayName = "get-all-models";
+            operation.properties.method = "GET";
+            operation.properties.urlTemplate = "/models";
+
+            return operation;
+        }
+
+        private Models.Azure.Operation BatchInference()
+        {
+            Models.Azure.Operation operation = new Models.Azure.Operation();
+
+            operation.name = "batch-inference";
+            operation.properties.displayName = "batch-inference";
+            operation.properties.method = "POST";
+            operation.properties.urlTemplate = "/models/{modelId}/batchinference";
+            operation.properties.templateParameters = new List<templateParameter>(new templateParameter[]
+            {
+                new templateParameter(){ name = "modelId" }
+            });
+
+            return operation;
+        }
+
+        private Models.Azure.Operation GetABatchInferenceOperation()
+        {
+            Models.Azure.Operation operation = new Models.Azure.Operation();
+
+            operation.name = "get-a-batch-inference-operation";
+            operation.properties.displayName = "get-a-batch-inference-operation";
+            operation.properties.method = "GET";
+            operation.properties.urlTemplate = "/operations/{operationId}";
+            operation.properties.templateParameters = new List<templateParameter>(new templateParameter[]
+            {
+                new templateParameter(){ name = "operationId" }
+            });
+
+            return operation;
+        }
+
+        private Models.Azure.Operation GetAllBatchInferenceOperations()
+        {
+            Models.Azure.Operation operation = new Models.Azure.Operation();
+
+            operation.name = "get-all-batch-inference-operations";
+            operation.properties.displayName = "get-all-batch-inference-operations";
+            operation.properties.method = "GET";
+            operation.properties.urlTemplate = "/operations";
+
+            return operation;
+        }
+
+        private Models.Azure.Operation DeployRealTimePredictionEndpoint()
+        {
+            Models.Azure.Operation operation = new Models.Azure.Operation();
+
+            operation.name = "deploy-real-time-prediction-endpoint";
+            operation.properties.displayName = "deploy-real-time-prediction-endpoint";
+            operation.properties.method = "POST";
+            operation.properties.urlTemplate = "/models/{modelId}/deploy";
+            operation.properties.templateParameters = new List<templateParameter>(new templateParameter[]
+            {
+                new templateParameter(){ name = "modelId" }
+            });
+
+            return operation;
+        }
+
+        private Models.Azure.Operation GetADeployedEndpoint()
+        {
+            Models.Azure.Operation operation = new Models.Azure.Operation();
+
+            operation.name = "get-a-deployed-endpoint";
+            operation.properties.displayName = "get-a-deployed-endpoint";
+            operation.properties.method = "GET";
+            operation.properties.urlTemplate = "/endpoints/{deploymentId}";
+            operation.properties.templateParameters = new List<templateParameter>(new templateParameter[]
+            {
+                new templateParameter(){ name = "deploymentId" }
+            });
+
+            return operation;
+        }
+
+        private Models.Azure.Operation GetAllDeployedEndpoints()
+        {
+            Models.Azure.Operation operation = new Models.Azure.Operation();
+
+            operation.name = "get-all-deployed-endpoints";
+            operation.properties.displayName = "get-all-deployed-endpoints";
+            operation.properties.method = "GET";
+            operation.properties.urlTemplate = "/endpoints";
+
+            return operation;
+        }
+
+        private Uri GetAPIVersionAPIMRequestURI(string productName, string deploymentName, string versionName, string operationName, IDictionary<string, string> queryParams = null)
+        {
+            var builder = new UriBuilder(_requestBaseUrl + GetAPIMRESTAPIPath(productName, deploymentName, versionName, operationName));
 
             var query = HttpUtility.ParseQueryString(string.Empty);
             foreach (KeyValuePair<string, string> kv in queryParams ?? new Dictionary<string, string>()) query[kv.Key] = kv.Value;
@@ -62,36 +240,55 @@ namespace Luna.Clients.Azure.APIM
             return new Uri(builder.ToString());
         }
 
-        private Models.Azure.Operation GetUser(string type)
+        public string GetAPIMRESTAPIPath(string productName, string deploymentName, string versionName, string operationName)
         {
-            Models.Azure.Operation operation = new Models.Azure.Operation();
-
-            IController controller = ControllerHelper.GetController(type);
-
-            operation.name = controller.GetName();
-            operation.properties.displayName = controller.GetName();
-            operation.properties.method = controller.GetMethod();
-            operation.properties.urlTemplate = controller.GetUrlTemplate();
-
-            return operation;
-        }
-
-        public string GetAPIMRESTAPIPath(string type, string productName, string deploymentName, string versionName)
-        {
-            IController controller = ControllerHelper.GetController(type);
-            var operationName = controller.GetName();
             return string.Format(PATH_FORMAT, _subscriptionId, _resourceGroupName, _apimServiceName, productName + deploymentName + versionName, operationName);
         }
 
-        public async Task<bool> ExistsAsync(string type, APIVersion version)
+        public Models.Azure.Operation GetOperation(Models.Azure.OperationTypeEnum operationType)
         {
-            Uri requestUri = GetAPIVersionAPIMRequestURI(type, version.ProductName, version.DeploymentName, version.GetVersionIdFormat());
+            switch (operationType)
+            {
+                case Models.Azure.OperationTypeEnum.RealTimePrediction:
+                    return RealTimePrediction();
+                case Models.Azure.OperationTypeEnum.BatchInferenceWithDefaultModel:
+                    return BatchInferenceWithDefaultModel();
+                case Models.Azure.OperationTypeEnum.GetABatchInferenceOperationWithDefaultModel:
+                    return GetABatchInferenceOperationWithDefaultModel();
+                case Models.Azure.OperationTypeEnum.GetAllBatchInferenceOperationsWithDefaultModel:
+                    return GetAllBatchInferenceOperationsWithDefaultModel();
+                case Models.Azure.OperationTypeEnum.TrainModel:
+                    return TrainModel();
+                case Models.Azure.OperationTypeEnum.GetAModel:
+                    return GetAModel();
+                case Models.Azure.OperationTypeEnum.GetAllModels:
+                    return GetAllModels();
+                case Models.Azure.OperationTypeEnum.BatchInference:
+                    return BatchInference();
+                case Models.Azure.OperationTypeEnum.GetABatchInferenceOperation:
+                    return GetABatchInferenceOperation();
+                case Models.Azure.OperationTypeEnum.GetAllBatchInferenceOperations:
+                    return GetAllBatchInferenceOperations();
+                case Models.Azure.OperationTypeEnum.DeployRealTimePredictionEndpoint:
+                    return DeployRealTimePredictionEndpoint();
+                case Models.Azure.OperationTypeEnum.GetADeployedEndpoint:
+                    return GetADeployedEndpoint();
+                case Models.Azure.OperationTypeEnum.GetAllDeployedEndpoints:
+                    return GetAllDeployedEndpoints();
+                default:
+                    throw new LunaServerException($"Invalid operation type. The type is {nameof(operationType)}.");
+            }
+        }
+
+        public async Task<bool> ExistsAsync(APIVersion version, Models.Azure.Operation operation)
+        {
+            Uri requestUri = GetAPIVersionAPIMRequestURI(version.ProductName, version.DeploymentName, version.GetVersionIdFormat(), operation.name);
             var request = new HttpRequestMessage { RequestUri = requestUri, Method = HttpMethod.Get };
 
             request.Headers.Authorization = new AuthenticationHeaderValue("SharedAccessSignature", _apimAuthHelper.GetSharedAccessToken());
             request.Headers.Add("If-Match", "*");
 
-            request.Content = new StringContent(JsonConvert.SerializeObject(GetUser(type)), Encoding.UTF8, "application/json");
+            request.Content = new StringContent(JsonConvert.SerializeObject(operation), Encoding.UTF8, "application/json");
 
             var response = await _httpClient.SendAsync(request);
 
@@ -106,15 +303,34 @@ namespace Luna.Clients.Azure.APIM
             return true;
         }
 
-        public async Task CreateAsync(string type, APIVersion version)
+        public async Task CreateAsync(APIVersion version, Models.Azure.Operation operation)
         {
-            Uri requestUri = GetAPIVersionAPIMRequestURI(type, version.ProductName, version.DeploymentName, version.GetVersionIdFormat());
+            Uri requestUri = GetAPIVersionAPIMRequestURI(version.ProductName, version.DeploymentName, version.GetVersionIdFormat(), operation.name);
             var request = new HttpRequestMessage { RequestUri = requestUri, Method = HttpMethod.Put };
 
             request.Headers.Authorization = new AuthenticationHeaderValue("SharedAccessSignature", _apimAuthHelper.GetSharedAccessToken());
             request.Headers.Add("If-Match", "*");
 
-            request.Content = new StringContent(JsonConvert.SerializeObject(GetUser(type)), Encoding.UTF8, "application/json");
+            var body = JsonConvert.SerializeObject(operation);
+            request.Content = new StringContent(body, Encoding.UTF8, "application/json");
+            var response = await _httpClient.SendAsync(request);
+
+            string responseContent = await response.Content.ReadAsStringAsync();
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new LunaServerException($"Query failed with response {responseContent}");
+            }
+        }
+
+        public async Task UpdateAsync(APIVersion version, Models.Azure.Operation operation)
+        {
+            Uri requestUri = GetAPIVersionAPIMRequestURI(version.ProductName, version.DeploymentName, version.GetVersionIdFormat(), operation.name);
+            var request = new HttpRequestMessage { RequestUri = requestUri, Method = HttpMethod.Put };
+
+            request.Headers.Authorization = new AuthenticationHeaderValue("SharedAccessSignature", _apimAuthHelper.GetSharedAccessToken());
+            request.Headers.Add("If-Match", "*");
+
+            request.Content = new StringContent(JsonConvert.SerializeObject(operation), Encoding.UTF8, "application/json");
 
             var response = await _httpClient.SendAsync(request);
 
@@ -125,36 +341,17 @@ namespace Luna.Clients.Azure.APIM
             }
         }
 
-        public async Task UpdateAsync(string type, APIVersion version)
+        public async Task DeleteAsync(APIVersion version, Models.Azure.Operation operation)
         {
-            Uri requestUri = GetAPIVersionAPIMRequestURI(type, version.ProductName, version.DeploymentName, version.GetVersionIdFormat());
-            var request = new HttpRequestMessage { RequestUri = requestUri, Method = HttpMethod.Put };
+            if (!(await ExistsAsync(version, operation))) return;
 
-            request.Headers.Authorization = new AuthenticationHeaderValue("SharedAccessSignature", _apimAuthHelper.GetSharedAccessToken());
-            request.Headers.Add("If-Match", "*");
-
-            request.Content = new StringContent(JsonConvert.SerializeObject(GetUser(type)), Encoding.UTF8, "application/json");
-
-            var response = await _httpClient.SendAsync(request);
-
-            string responseContent = await response.Content.ReadAsStringAsync();
-            if (!response.IsSuccessStatusCode)
-            {
-                throw new LunaServerException($"Query failed with response {responseContent}");
-            }
-        }
-
-        public async Task DeleteAsync(string type, APIVersion version)
-        {
-            if (!(await ExistsAsync(type, version))) return;
-
-            Uri requestUri = GetAPIVersionAPIMRequestURI(type, version.ProductName, version.DeploymentName, version.GetVersionIdFormat());
+            Uri requestUri = GetAPIVersionAPIMRequestURI(version.ProductName, version.DeploymentName, version.GetVersionIdFormat(), operation.name);
             var request = new HttpRequestMessage { RequestUri = requestUri, Method = HttpMethod.Delete };
 
             request.Headers.Authorization = new AuthenticationHeaderValue("SharedAccessSignature", _apimAuthHelper.GetSharedAccessToken());
             request.Headers.Add("If-Match", "*");
 
-            request.Content = new StringContent(JsonConvert.SerializeObject(GetUser(type)), Encoding.UTF8, "application/json");
+            request.Content = new StringContent(JsonConvert.SerializeObject(operation), Encoding.UTF8, "application/json");
 
             var response = await _httpClient.SendAsync(request);
 

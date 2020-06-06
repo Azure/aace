@@ -4,11 +4,11 @@ using System.Text;
 
 namespace Luna.Clients.Models.Controller.Backend
 {
-    public class TrainModelRequest
+    public class DeployRealTimePredictionEndpointRequest
     {
         public string ExperimentName { get; set; }
         public IDictionary<string, object> ParameterAssignment { get; set; }
-        public TrainModelRequest()
+        public DeployRealTimePredictionEndpointRequest()
         {
             this.ParameterAssignment = new Dictionary<string, object>() { };
         }

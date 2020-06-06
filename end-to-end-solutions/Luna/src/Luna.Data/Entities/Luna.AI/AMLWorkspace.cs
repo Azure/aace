@@ -37,7 +37,7 @@ namespace Luna.Data.Entities
         public string WorkspaceName { get; set; }
 
         public string ResourceId { get; set; }
-
+        
         public Guid AADApplicationId { get; set; }
 
         public string AADApplicationSecrets { get; set; }

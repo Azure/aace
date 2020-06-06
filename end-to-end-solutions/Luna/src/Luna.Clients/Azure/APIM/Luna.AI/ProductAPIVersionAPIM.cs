@@ -30,6 +30,7 @@ namespace Luna.Clients.Azure.APIM
         private IAPIVersionSetAPIM _apiVersionSetAPIM;
 
         private string _requestBaseUrl;
+        private string _controllerBaseUrl;
 
         [ActivatorUtilitiesConstructor]
         public ProductAPIVersionAPIM(IOptionsMonitor<APIMConfigurationOption> options,
@@ -68,17 +69,17 @@ namespace Luna.Clients.Azure.APIM
             return new Uri(builder.ToString());
         }
 
-        private Models.Azure.APIVersion GetProduct(string type, APIVersion version)
+        private Models.Azure.APIVersion GetAPIVersion(APIVersion version)
         {
             Models.Azure.APIVersion versionAPIM = new Models.Azure.APIVersion();
             versionAPIM.name = version.GetVersionIdFormat();
             versionAPIM.properties.displayName = version.VersionName;
             versionAPIM.properties.apiVersion = version.VersionName;
 
-            IController controller = ControllerHelper.GetController(type);
-            versionAPIM.properties.serviceUrl = controller.GetBaseUrl() + controller.GetPath(version.ProductName, version.DeploymentName);
+            versionAPIM.properties.serviceUrl = _apiVersionAPIM.GetControllerBaseUrl() + _apiVersionAPIM.GetControllerPath(version.ProductName, version.DeploymentName);
             versionAPIM.properties.path = _apiVersionAPIM.GetAPIMPath(version.ProductName, version.DeploymentName);
             versionAPIM.properties.apiVersionSetId = _apiVersionSetAPIM.GetAPIMRESTAPIPath(version.ProductName, version.DeploymentName);
+
             return versionAPIM;
         }
 
@@ -87,7 +88,7 @@ namespace Luna.Clients.Azure.APIM
             return string.Format(PATH_FORMAT, _subscriptionId, _resourceGroupName, _apimServiceName, productName, productName + deploymentName + versionName);
         }
 
-        public async Task<bool> ExistsAsync(string type, APIVersion version)
+        public async Task<bool> ExistsAsync(APIVersion version)
         {
             Uri requestUri = GetProductAPIMRequestURI(version.ProductName, version.DeploymentName, version.GetVersionIdFormat());
             var request = new HttpRequestMessage { RequestUri = requestUri, Method = HttpMethod.Get };
@@ -95,7 +96,7 @@ namespace Luna.Clients.Azure.APIM
             request.Headers.Authorization = new AuthenticationHeaderValue("SharedAccessSignature", _apimAuthHelper.GetSharedAccessToken());
             request.Headers.Add("If-Match", "*");
 
-            request.Content = new StringContent(JsonConvert.SerializeObject(GetProduct(type, version)), Encoding.UTF8, "application/json");
+            request.Content = new StringContent(JsonConvert.SerializeObject(GetAPIVersion(version)), Encoding.UTF8, "application/json");
 
             var response = await _httpClient.SendAsync(request);
 
@@ -110,7 +111,7 @@ namespace Luna.Clients.Azure.APIM
             return true;
         }
 
-        public async Task CreateAsync(string type, APIVersion version)
+        public async Task CreateAsync(APIVersion version)
         {
             Uri requestUri = GetProductAPIMRequestURI(version.ProductName, version.DeploymentName, version.GetVersionIdFormat());
             var request = new HttpRequestMessage { RequestUri = requestUri, Method = HttpMethod.Put };
@@ -118,7 +119,7 @@ namespace Luna.Clients.Azure.APIM
             request.Headers.Authorization = new AuthenticationHeaderValue("SharedAccessSignature", _apimAuthHelper.GetSharedAccessToken());
             request.Headers.Add("If-Match", "*");
 
-            request.Content = new StringContent(JsonConvert.SerializeObject(GetProduct(type, version)), Encoding.UTF8, "application/json");
+            request.Content = new StringContent(JsonConvert.SerializeObject(GetAPIVersion(version)), Encoding.UTF8, "application/json");
 
             var response = await _httpClient.SendAsync(request);
 
@@ -129,7 +130,7 @@ namespace Luna.Clients.Azure.APIM
             }
         }
 
-        public async Task UpdateAsync(string type, APIVersion version)
+        public async Task UpdateAsync(APIVersion version)
         {
             Uri requestUri = GetProductAPIMRequestURI(version.ProductName, version.DeploymentName, version.GetVersionIdFormat());
             var request = new HttpRequestMessage { RequestUri = requestUri, Method = HttpMethod.Put };
@@ -137,7 +138,7 @@ namespace Luna.Clients.Azure.APIM
             request.Headers.Authorization = new AuthenticationHeaderValue("SharedAccessSignature", _apimAuthHelper.GetSharedAccessToken());
             request.Headers.Add("If-Match", "*");
 
-            request.Content = new StringContent(JsonConvert.SerializeObject(GetProduct(type, version)), Encoding.UTF8, "application/json");
+            request.Content = new StringContent(JsonConvert.SerializeObject(GetAPIVersion(version)), Encoding.UTF8, "application/json");
 
             var response = await _httpClient.SendAsync(request);
 
@@ -148,9 +149,9 @@ namespace Luna.Clients.Azure.APIM
             }
         }
 
-        public async Task DeleteAsync(string type, APIVersion version)
+        public async Task DeleteAsync(APIVersion version)
         {
-            if (!(await ExistsAsync(type, version))) return;
+            if (!(await ExistsAsync(version))) return;
 
             Uri requestUri = GetProductAPIMRequestURI(version.ProductName, version.DeploymentName, version.GetVersionIdFormat());
             var request = new HttpRequestMessage { RequestUri = requestUri, Method = HttpMethod.Delete };
@@ -158,7 +159,7 @@ namespace Luna.Clients.Azure.APIM
             request.Headers.Authorization = new AuthenticationHeaderValue("SharedAccessSignature", _apimAuthHelper.GetSharedAccessToken());
             request.Headers.Add("If-Match", "*");
 
-            request.Content = new StringContent(JsonConvert.SerializeObject(GetProduct(type, version)), Encoding.UTF8, "application/json");
+            request.Content = new StringContent(JsonConvert.SerializeObject(GetAPIVersion(version)), Encoding.UTF8, "application/json");
 
             var response = await _httpClient.SendAsync(request);
 

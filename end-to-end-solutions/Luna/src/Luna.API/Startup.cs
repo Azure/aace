@@ -5,7 +5,6 @@ using System.Reflection;
 using Luna.API.Controllers.Admin;
 using Luna.Clients;
 using Luna.Clients.Azure.APIM;
-using Luna.Clients.Azure.APIM.Luna.AI;
 using Luna.Clients.Azure.Auth;
 using Luna.Clients.Azure.Storage;
 using Luna.Clients.CustomMetering;
