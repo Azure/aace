@@ -174,6 +174,7 @@ namespace Luna.Clients.Controller
                     getAModelResponse.status = modelTrainingStatus.status;
                     getAModelResponse.startTimeUtc = modelTrainingStatus.startTimeUtc;
                     getAModelResponse.completeTimeUtc = modelTrainingStatus.endTimeUtc;
+                    getAModelResponse.error = modelTrainingStatus.error;
                     break;
                 }
                
@@ -274,7 +275,7 @@ namespace Luna.Clients.Controller
             return new BatchInferenceResponse { operationId = batchInferenceId };
         }
 
-        public static async Task<string> GetABatchInferenceOperation(AMLWorkspace workspace, Guid operationId)
+        public static async Task<GetABatchInferenceOperationResponse> GetABatchInferenceOperation(AMLWorkspace workspace, Guid operationId)
         {
             var region = await GetRegion(workspace);
 
@@ -292,14 +293,39 @@ namespace Luna.Clients.Controller
             {
                 throw new LunaServerException($"Query failed with response {responseContent}");
             }
-            return responseContent;
+
+            var result = (IDictionary<string, object>)System.Text.Json.JsonSerializer.Deserialize(responseContent, typeof(IDictionary<string, object>));
+            if (!result.ContainsKey("value"))
+            {
+                throw new LunaServerException($"Query failed with response {responseContent}");
+            }
+
+            List<OperationStatus> operationStatusList = (List<OperationStatus>)System.Text.Json.JsonSerializer.Deserialize(result["value"].ToString(), typeof(List<OperationStatus>));
+            if (operationStatusList == null)
+            {
+                throw new LunaServerException($"Query result in bad format. The response is {responseContent}.");
+            }
+            var getABatchInferenceOperationResponse = new GetABatchInferenceOperationResponse();
+            getABatchInferenceOperationResponse.operationId = operationId.ToString("N");
+            foreach (var operationStatus in operationStatusList)
+                if (operationStatus.runUuid == operationStatus.rootRunUuid)
+                {
+                    getABatchInferenceOperationResponse.status = operationStatus.status;
+                    getABatchInferenceOperationResponse.startTimeUtc = operationStatus.startTimeUtc;
+                    getABatchInferenceOperationResponse.completeTimeUtc = operationStatus.endTimeUtc;
+                    getABatchInferenceOperationResponse.description = operationStatus.description;
+                    getABatchInferenceOperationResponse.error = operationStatus.error;
+                    break;
+                }
+
+            return getABatchInferenceOperationResponse;
         }
 
-        public static async Task<string> GetAllBatchInferenceOperations(AMLWorkspace workspace)
+        public static async Task<List<Operation>> GetAllBatchInferenceOperations(AMLWorkspace workspace)
         {
             var region = await GetRegion(workspace);
 
-            var requestUrl = $"https://{region}.api.azureml.ms/modelmanagement/v1.0" + workspace.ResourceId + $"/services";
+            var requestUrl = $"https://{region}.api.azureml.ms/history/v1.0" + workspace.ResourceId + $"/experiments";
             var requestUri = new Uri(requestUrl);
             var request = new HttpRequestMessage { RequestUri = requestUri, Method = HttpMethod.Get };
 
@@ -313,7 +339,19 @@ namespace Luna.Clients.Controller
             {
                 throw new LunaServerException($"Query failed with response {responseContent}");
             }
-            return responseContent;
+            var result = (IDictionary<string, object>)System.Text.Json.JsonSerializer.Deserialize(responseContent, typeof(IDictionary<string, object>));
+            if (!result.ContainsKey("value"))
+            {
+                throw new LunaServerException($"Query failed with response {responseContent}");
+            }
+
+            List<Operation> operations = (List<Operation>)System.Text.Json.JsonSerializer.Deserialize(result["value"].ToString(), typeof(List<Operation>));
+            if (operations == null)
+            {
+                throw new LunaServerException($"Query result in bad format. The response is {responseContent}.");
+            }
+
+            return operations;
         }
 
         public static async Task<DeployRealTimePredictionEndpointResponse> DeployRealTimePredictionEndpoint(APIVersion version, AMLWorkspace workspace, Guid modelId, IDictionary<string, object> input)
@@ -423,7 +461,7 @@ namespace Luna.Clients.Controller
             return getDeployedEndpointResponse;
         }
 
-        public static async Task<string> GetAllDeployedEndpoints(AMLWorkspace workspace)
+        public static async Task<List<GetAllDeployedEndpoints>> GetAllDeployedEndpoints(AMLWorkspace workspace)
         {
             var region = await GetRegion(workspace);
 
@@ -441,7 +479,29 @@ namespace Luna.Clients.Controller
             {
                 throw new LunaServerException($"Query failed with response {responseContent}");
             }
-            return responseContent;
+
+            var result = (IDictionary<string, object>)System.Text.Json.JsonSerializer.Deserialize(responseContent, typeof(IDictionary<string, object>));
+            if (!result.ContainsKey("value"))
+            {
+                throw new LunaServerException($"Query failed with response {responseContent}");
+            }
+
+            List<Endpoint> endpoints = (List<Endpoint>)System.Text.Json.JsonSerializer.Deserialize(result["value"].ToString(), typeof(List<Endpoint>));
+            if (endpoints == null)
+            {
+                throw new LunaServerException($"Query result in bad format. The response is {responseContent}.");
+            }
+
+            List<GetAllDeployedEndpoints> results = new List<GetAllDeployedEndpoints>();
+            foreach (var endpoint in endpoints) results.Add(new GetAllDeployedEndpoints()
+            {
+                deploymentId = endpoint.id,
+                scoringUrl = endpoint.scoringUri,
+                key = endpoint.sslKey,
+                description = endpoint.description,
+            });
+            
+            return results;
         }
     }
 }

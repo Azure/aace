@@ -197,7 +197,7 @@ namespace Luna.API.Controllers.Admin
         /// <returns>HTTP 200 OK with apiVersion JSON objects in response body.</returns>
         [HttpGet("products/{productName}/deployments/{deploymentName}/subscriptions/{subscriptionId}/operations/{operationId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult> GetBatchInferenceOperation(string productName, string deploymentName, Guid subscriptionId, Guid operationId, [FromQuery(Name = "userid")] string userId, [FromQuery(Name = "api-version")] string versionName)
+        public async Task<ActionResult> GetABatchInferenceOperation(string productName, string deploymentName, Guid subscriptionId, Guid operationId, [FromQuery(Name = "userid")] string userId, [FromQuery(Name = "api-version")] string versionName)
         {
             var apiSubcription = await _apiSubscriptionService.GetAsync(subscriptionId);
             if (apiSubcription == null)
@@ -210,7 +210,7 @@ namespace Luna.API.Controllers.Admin
             var version = await _apiVersionService.GetAsync(productName, deploymentName, versionName);
             var workspace = await _amlWorkspaceService.GetAsync(version.AMLWorkspaceName);
 
-            return this.Content((await ControllerHelper.GetABatchInferenceOperation(workspace, operationId)), "application/json");
+            return Ok((await ControllerHelper.GetABatchInferenceOperation(workspace, operationId)));
         }
 
         /// <summary>
@@ -221,7 +221,7 @@ namespace Luna.API.Controllers.Admin
         /// <returns>HTTP 200 OK with apiVersion JSON objects in response body.</returns>
         [HttpGet("products/{productName}/deployments/{deploymentName}/subscriptions/{subscriptionId}/operations")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult> GetBatchInferenceOperation(string productName, string deploymentName, Guid subscriptionId, [FromQuery(Name = "userid")] string userId, [FromQuery(Name = "api-version")] string versionName)
+        public async Task<ActionResult> GetAllBatchInferenceOperations(string productName, string deploymentName, Guid subscriptionId, [FromQuery(Name = "userid")] string userId, [FromQuery(Name = "api-version")] string versionName)
         {
             var apiSubcription = await _apiSubscriptionService.GetAsync(subscriptionId);
             if (apiSubcription == null)
@@ -234,7 +234,7 @@ namespace Luna.API.Controllers.Admin
             var version = await _apiVersionService.GetAsync(productName, deploymentName, versionName);
             var workspace = await _amlWorkspaceService.GetAsync(version.AMLWorkspaceName);
 
-            return this.Content((await ControllerHelper.GetAllBatchInferenceOperations(workspace)), "application/json");
+            return Ok((await ControllerHelper.GetAllBatchInferenceOperations(workspace)));
         }
 
         /// <summary>
@@ -307,7 +307,7 @@ namespace Luna.API.Controllers.Admin
             var version = await _apiVersionService.GetAsync(productName, deploymentName, versionName);
             var workspace = await _amlWorkspaceService.GetAsync(version.AMLWorkspaceName);
 
-            return this.Content((await ControllerHelper.GetAllDeployedEndpoints(workspace)), "application/json");
+            return Ok((await ControllerHelper.GetAllDeployedEndpoints(workspace)));
         }
     }
 }
