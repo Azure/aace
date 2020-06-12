@@ -2,16 +2,15 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Luna.Clients.Models.Controller.Backend
+namespace Luna.Clients.Models.Controller
 {
-    public class Operation
+    public class GetAllTrainingOperationsByModelIdAndVerifyUserResponse
     {
-        public string operationType { get; set; }
         public string modelId { get; set; }
         public string status { get; set; }
         public string startTimeUtc { get; set; }
         public string completeTimeUtc { get; set; }
-        public string description { get; set; }
+        public String description { get; set; }
         public object error { get; set; }
     }
 }
