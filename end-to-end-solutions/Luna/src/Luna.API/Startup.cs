@@ -280,6 +280,7 @@ namespace Luna.API
             services.AddHttpClient<IAPIVersionAPIM, APIVersionAPIM>();
             services.AddHttpClient<IProductAPIVersionAPIM, ProductAPIVersionAPIM>();
             services.AddHttpClient<IOperationAPIM, OperationAPIM>();
+            services.AddHttpClient<IPolicyAPIM, PolicyAPIM>();
             services.AddHttpClient<IAPISubscriptionAPIM, APISubscriptionAPIM>();
             services.AddHttpClient<IUserAPIM, UserAPIM>();
 

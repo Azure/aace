@@ -47,7 +47,7 @@ namespace Luna.Clients.Azure.APIM
             _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
         }
 
-        private string GetUserName(string owner)
+        public string GetUserName(string owner)
         {
             return owner.Replace("@", "").Replace(".", "");
         }

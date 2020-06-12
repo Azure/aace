@@ -153,6 +153,7 @@ namespace Luna.Services.Data.Luna.AI
                 throw new LunaNotFoundUserException(LoggingUtils.ComposeNotFoundErrorMessage(typeof(APISubscription).Name,
                     apiSubscription.SubscriptionId.ToString()));
             }
+            apiSubscription.DeploymentId = deployment.Id;
             apiSubscription.DeploymentName = deployment.DeploymentName;
 
             var product = await _productService.GetAsync(apiSubscription.ProductName);
@@ -181,6 +182,7 @@ namespace Luna.Services.Data.Luna.AI
             // Add apiSubscription to db
             _context.APISubscriptions.Add(apiSubscription);
             await _context._SaveChangesAsync();
+            
             _logger.LogInformation(LoggingUtils.ComposeResourceCreatedMessage(typeof(APISubscription).Name, apiSubscription.SubscriptionId.ToString()));
 
             return apiSubscription;
