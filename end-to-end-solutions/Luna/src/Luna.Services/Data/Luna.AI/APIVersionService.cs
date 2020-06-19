@@ -67,20 +67,26 @@ namespace Luna.Services.Data.Luna.AI
                     return new List<Clients.Models.Azure.OperationTypeEnum>{
                         Clients.Models.Azure.OperationTypeEnum.BatchInferenceWithDefaultModel,
                         Clients.Models.Azure.OperationTypeEnum.GetABatchInferenceOperationWithDefaultModel,
-                        Clients.Models.Azure.OperationTypeEnum.GetAllBatchInferenceOperationsWithDefaultModel,
+                        Clients.Models.Azure.OperationTypeEnum.ListAllInferenceOperationsByUserWithDefaultModel,
                     };
                 // Train Your Own Model
                 case "TYOM":
                     return new List<Clients.Models.Azure.OperationTypeEnum>{
                         Clients.Models.Azure.OperationTypeEnum.TrainModel,
-                        Clients.Models.Azure.OperationTypeEnum.GetAModel,
-                        Clients.Models.Azure.OperationTypeEnum.GetAllModels,
+                        Clients.Models.Azure.OperationTypeEnum.ListAllTrainingOperationsByUser,
+                        Clients.Models.Azure.OperationTypeEnum.GetAllTrainingOperationsByModelIdUser,
+                        Clients.Models.Azure.OperationTypeEnum.GetAModelByModelIdUserProductDeployment,
+                        Clients.Models.Azure.OperationTypeEnum.GetAllModelsByUserProductDeployment,
+                        Clients.Models.Azure.OperationTypeEnum.DeleteAModel,
                         Clients.Models.Azure.OperationTypeEnum.BatchInference,
                         Clients.Models.Azure.OperationTypeEnum.GetABatchInferenceOperation,
-                        Clients.Models.Azure.OperationTypeEnum.GetAllBatchInferenceOperations,
+                        Clients.Models.Azure.OperationTypeEnum.ListAllInferenceOperationsByUser,
                         Clients.Models.Azure.OperationTypeEnum.DeployRealTimePredictionEndpoint,
-                        Clients.Models.Azure.OperationTypeEnum.GetADeployedEndpoint,
-                        Clients.Models.Azure.OperationTypeEnum.GetAllDeployedEndpoints,
+                        Clients.Models.Azure.OperationTypeEnum.GetAllDeployOperationsByEndpointIdUser,
+                        Clients.Models.Azure.OperationTypeEnum.ListAllDeployOperationsByUser,
+                        Clients.Models.Azure.OperationTypeEnum.GetAllRealTimeServiceEndpointsByUserProductDeployment,
+                        Clients.Models.Azure.OperationTypeEnum.GetARealTimeServiceEndpointByEndpointIdUserProductDeployment,
+                        Clients.Models.Azure.OperationTypeEnum.DeleteAEndpoint
                     };
                 default:
                     throw new LunaBadRequestUserException(LoggingUtils.ComposePayloadNotProvidedErrorMessage(typeof(APIVersion).Name),

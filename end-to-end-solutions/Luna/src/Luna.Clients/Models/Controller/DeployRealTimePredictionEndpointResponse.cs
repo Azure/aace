@@ -6,6 +6,6 @@ namespace Luna.Clients.Models.Controller
 {
     public class DeployRealTimePredictionEndpointResponse
     {
-        public string deploymentId { get; set; }
+        public string endpointId { get; set; }
     }
 }
