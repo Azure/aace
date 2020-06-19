@@ -210,16 +210,19 @@ namespace Luna.Services.Data.Luna.AI
             // Update the apiVersion last updated time
             version.LastUpdatedTime = version.CreatedTime;
 
-            // Add apiVersion to APIM
-            await _apiVersionAPIM.CreateAsync(version);
-            await _productAPIVersionAPIM.CreateAsync(version);
-            
-            var operationTypes = GetOperationTypes(product.ProductType);
-            foreach (var operationType in operationTypes)
+            if (version.VersionSourceType.Equals("amlPipeline"))
             {
-                var operation = _operationAPIM.GetOperation(operationType);
-                await _operationAPIM.CreateAsync(version, operation);
-                await _policyAPIM.CreateAsync(version, operation.name, operationType);
+                // Add apiVersion to APIM
+                await _apiVersionAPIM.CreateAsync(version);
+                await _productAPIVersionAPIM.CreateAsync(version);
+
+                var operationTypes = GetOperationTypes(product.ProductType);
+                foreach (var operationType in operationTypes)
+                {
+                    var operation = _operationAPIM.GetOperation(operationType);
+                    await _operationAPIM.CreateAsync(version, operation);
+                    await _policyAPIM.CreateAsync(version, operation.name, operationType);
+                }
             }
             /*List<Thread> workerThreads = new List<Thread>();
             foreach (var operationType in operationTypes)

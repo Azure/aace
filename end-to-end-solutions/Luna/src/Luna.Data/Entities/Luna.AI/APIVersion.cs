@@ -75,5 +75,13 @@ namespace Luna.Data.Entities
 
         public DateTime LastUpdatedTime { get; set; }
 
+        public string VersionSourceType { get; set; }
+
+        public string GitSSHUrl { get; set; }
+
+        public string GitSSHPassword { get; set; }
+
+        public string ProjectFileUrl { get; set; }
+
     }
 }
