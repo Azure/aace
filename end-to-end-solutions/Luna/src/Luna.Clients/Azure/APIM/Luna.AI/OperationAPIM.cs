@@ -86,12 +86,12 @@ namespace Luna.Clients.Azure.APIM
             return operation;
         }
 
-        private Models.Azure.Operation GetAllBatchInferenceOperationsWithDefaultModel()
+        private Models.Azure.Operation ListAllInferenceOperationsByUserWithDefaultModel()
         {
             Models.Azure.Operation operation = new Models.Azure.Operation();
 
-            operation.name = "get-all-batch-inference-operations-with-default-model";
-            operation.properties.displayName = "get-all-batch-inference-operations-with-default-model";
+            operation.name = "list-all-batch-inference-operations-by-user-with-default-model";
+            operation.properties.displayName = "list-all-batch-inference-operations-by-user-with-default-model";
             operation.properties.method = "GET";
             operation.properties.urlTemplate = "/operations";
 
@@ -110,12 +110,40 @@ namespace Luna.Clients.Azure.APIM
             return operation;
         }
 
-        private Models.Azure.Operation GetAModel()
+        private Models.Azure.Operation ListAllTrainingOperationsByUser()
         {
             Models.Azure.Operation operation = new Models.Azure.Operation();
 
-            operation.name = "get-a-model";
-            operation.properties.displayName = "get-a-model";
+            operation.name = "list-all-training-operations-by-user";
+            operation.properties.displayName = "list-all-training-operations-by-user";
+            operation.properties.method = "GET";
+            operation.properties.urlTemplate = "/operations/training";
+
+            return operation;
+        }
+
+        private Models.Azure.Operation GetAllTrainingOperationsByModelIdUser()
+        {
+            Models.Azure.Operation operation = new Models.Azure.Operation();
+
+            operation.name = "get-all-training-operations-by-modelid-user";
+            operation.properties.displayName = "get-all-training-operations-by-modelid-and-user";
+            operation.properties.method = "GET";
+            operation.properties.urlTemplate = "/operations/training/{modelId}";
+            operation.properties.templateParameters = new List<templateParameter>(new templateParameter[]
+            {
+                new templateParameter(){ name = "modelId" }
+            });
+
+            return operation;
+        }
+        
+        private Models.Azure.Operation GetAModelByModelIdUserProductDeployment()
+        {
+            Models.Azure.Operation operation = new Models.Azure.Operation();
+
+            operation.name = "get-a-model-by-modelid-product-deployment";
+            operation.properties.displayName = "get-a-model-by-modelid-product-deployment";
             operation.properties.method = "GET";
             operation.properties.urlTemplate = "/models/{modelId}";
             operation.properties.templateParameters = new List<templateParameter>(new templateParameter[]
@@ -125,15 +153,31 @@ namespace Luna.Clients.Azure.APIM
 
             return operation;
         }
-
-        private Models.Azure.Operation GetAllModels()
+        
+        private Models.Azure.Operation GetAllModelsByUserProductDeployment()
         {
             Models.Azure.Operation operation = new Models.Azure.Operation();
 
-            operation.name = "get-all-models";
-            operation.properties.displayName = "get-all-models";
+            operation.name = "get-all-models-by-user-product-deployment";
+            operation.properties.displayName = "get-all-models-by-user-product-deployment";
             operation.properties.method = "GET";
             operation.properties.urlTemplate = "/models";
+
+            return operation;
+        }
+
+        private Models.Azure.Operation DeleteAModel()
+        {
+            Models.Azure.Operation operation = new Models.Azure.Operation();
+
+            operation.name = "delete-a-model";
+            operation.properties.displayName = "delete-a-model";
+            operation.properties.method = "DELETE";
+            operation.properties.urlTemplate = "/models/{modelId}";
+            operation.properties.templateParameters = new List<templateParameter>(new templateParameter[]
+            {
+                new templateParameter(){ name = "modelId" }
+            });
 
             return operation;
         }
@@ -161,7 +205,7 @@ namespace Luna.Clients.Azure.APIM
             operation.name = "get-a-batch-inference-operation";
             operation.properties.displayName = "get-a-batch-inference-operation";
             operation.properties.method = "GET";
-            operation.properties.urlTemplate = "/operations/{operationId}";
+            operation.properties.urlTemplate = "/operations/inference/{operationId}";
             operation.properties.templateParameters = new List<templateParameter>(new templateParameter[]
             {
                 new templateParameter(){ name = "operationId" }
@@ -170,14 +214,14 @@ namespace Luna.Clients.Azure.APIM
             return operation;
         }
 
-        private Models.Azure.Operation GetAllBatchInferenceOperations()
+        private Models.Azure.Operation ListAllInferenceOperationsByUser()
         {
             Models.Azure.Operation operation = new Models.Azure.Operation();
 
-            operation.name = "get-all-batch-inference-operations";
-            operation.properties.displayName = "get-all-batch-inference-operations";
+            operation.name = "list-all-batch-inference-operations-by-user";
+            operation.properties.displayName = "list-all-batch-inference-operations-by-user";
             operation.properties.method = "GET";
-            operation.properties.urlTemplate = "/operations";
+            operation.properties.urlTemplate = "/operations/inference";
 
             return operation;
         }
@@ -198,30 +242,74 @@ namespace Luna.Clients.Azure.APIM
             return operation;
         }
 
-        private Models.Azure.Operation GetADeployedEndpoint()
+        private Models.Azure.Operation GetAllDeployOperationsByEndpointIdUser()
         {
             Models.Azure.Operation operation = new Models.Azure.Operation();
 
-            operation.name = "get-a-deployed-endpoint";
-            operation.properties.displayName = "get-a-deployed-endpoint";
+            operation.name = "get-all-deploy-operations-by-endpointid-user";
+            operation.properties.displayName = "get-all-deploy-operations-by-endpointid-user";
             operation.properties.method = "GET";
-            operation.properties.urlTemplate = "/endpoints/{deploymentId}";
+            operation.properties.urlTemplate = "/operations/deployment/{endpointId}";
             operation.properties.templateParameters = new List<templateParameter>(new templateParameter[]
             {
-                new templateParameter(){ name = "deploymentId" }
+                new templateParameter(){ name = "endpointId" }
             });
 
             return operation;
         }
 
-        private Models.Azure.Operation GetAllDeployedEndpoints()
+        private Models.Azure.Operation ListAllDeployOperationsByUser()
         {
             Models.Azure.Operation operation = new Models.Azure.Operation();
 
-            operation.name = "get-all-deployed-endpoints";
-            operation.properties.displayName = "get-all-deployed-endpoints";
+            operation.name = "list-all-deploy-operations-by-user";
+            operation.properties.displayName = "list-all-deploy-operations-by-user";
+            operation.properties.method = "GET";
+            operation.properties.urlTemplate = "/operations/deployment";
+            
+            return operation;
+        }
+
+        private Models.Azure.Operation GetAllRealTimeServiceEndpointsByUserProductDeployment()
+        {
+            Models.Azure.Operation operation = new Models.Azure.Operation();
+
+            operation.name = "get-all-real-time-service-endpoints-by-user-product-deployment";
+            operation.properties.displayName = "get-all-real-time-service-endpoints-by-user-product-deployment";
             operation.properties.method = "GET";
             operation.properties.urlTemplate = "/endpoints";
+
+            return operation;
+        }
+
+        private Models.Azure.Operation GetARealTimeServiceEndpointByEndpointIdUserProductDeployment()
+        {
+            Models.Azure.Operation operation = new Models.Azure.Operation();
+
+            operation.name = "get-a-real-time-service-endpoint-by-endpointid-user-product-deployment";
+            operation.properties.displayName = "get-a-real-time-service-endpoint-by-endpointid-user-product-deployment";
+            operation.properties.method = "GET";
+            operation.properties.urlTemplate = "/endpoints/{endpointId}";
+            operation.properties.templateParameters = new List<templateParameter>(new templateParameter[]
+            {
+                new templateParameter(){ name = "endpointId" }
+            });
+
+            return operation;
+        }
+        
+        private Models.Azure.Operation DeleteAEndpoint()
+        {
+            Models.Azure.Operation operation = new Models.Azure.Operation();
+
+            operation.name = "delete-a-endpoint";
+            operation.properties.displayName = "delete-a-endpoint";
+            operation.properties.method = "DELETE";
+            operation.properties.urlTemplate = "/endpoints/{endpointId}";
+            operation.properties.templateParameters = new List<templateParameter>(new templateParameter[]
+            {
+                new templateParameter(){ name = "endpointId" }
+            });
 
             return operation;
         }
@@ -255,26 +343,38 @@ namespace Luna.Clients.Azure.APIM
                     return BatchInferenceWithDefaultModel();
                 case Models.Azure.OperationTypeEnum.GetABatchInferenceOperationWithDefaultModel:
                     return GetABatchInferenceOperationWithDefaultModel();
-                case Models.Azure.OperationTypeEnum.GetAllBatchInferenceOperationsWithDefaultModel:
-                    return GetAllBatchInferenceOperationsWithDefaultModel();
+                case Models.Azure.OperationTypeEnum.ListAllInferenceOperationsByUserWithDefaultModel:
+                    return ListAllInferenceOperationsByUserWithDefaultModel();
                 case Models.Azure.OperationTypeEnum.TrainModel:
                     return TrainModel();
-                case Models.Azure.OperationTypeEnum.GetAModel:
-                    return GetAModel();
-                case Models.Azure.OperationTypeEnum.GetAllModels:
-                    return GetAllModels();
+                case Models.Azure.OperationTypeEnum.ListAllTrainingOperationsByUser:
+                    return ListAllTrainingOperationsByUser();
+                case Models.Azure.OperationTypeEnum.GetAllTrainingOperationsByModelIdUser:
+                    return GetAllTrainingOperationsByModelIdUser();
+                case Models.Azure.OperationTypeEnum.GetAModelByModelIdUserProductDeployment:
+                    return GetAModelByModelIdUserProductDeployment();
+                case Models.Azure.OperationTypeEnum.GetAllModelsByUserProductDeployment:
+                    return GetAllModelsByUserProductDeployment();
+                case Models.Azure.OperationTypeEnum.DeleteAModel:
+                    return DeleteAModel();
                 case Models.Azure.OperationTypeEnum.BatchInference:
                     return BatchInference();
                 case Models.Azure.OperationTypeEnum.GetABatchInferenceOperation:
                     return GetABatchInferenceOperation();
-                case Models.Azure.OperationTypeEnum.GetAllBatchInferenceOperations:
-                    return GetAllBatchInferenceOperations();
+                case Models.Azure.OperationTypeEnum.ListAllInferenceOperationsByUser:
+                    return ListAllInferenceOperationsByUser();
                 case Models.Azure.OperationTypeEnum.DeployRealTimePredictionEndpoint:
                     return DeployRealTimePredictionEndpoint();
-                case Models.Azure.OperationTypeEnum.GetADeployedEndpoint:
-                    return GetADeployedEndpoint();
-                case Models.Azure.OperationTypeEnum.GetAllDeployedEndpoints:
-                    return GetAllDeployedEndpoints();
+                case Models.Azure.OperationTypeEnum.GetAllDeployOperationsByEndpointIdUser:
+                    return GetAllDeployOperationsByEndpointIdUser();
+                case Models.Azure.OperationTypeEnum.ListAllDeployOperationsByUser:
+                    return ListAllDeployOperationsByUser();
+                case Models.Azure.OperationTypeEnum.GetAllRealTimeServiceEndpointsByUserProductDeployment:
+                    return GetAllRealTimeServiceEndpointsByUserProductDeployment();
+                case Models.Azure.OperationTypeEnum.GetARealTimeServiceEndpointByEndpointIdUserProductDeployment:
+                    return GetARealTimeServiceEndpointByEndpointIdUserProductDeployment();
+                case Models.Azure.OperationTypeEnum.DeleteAEndpoint:
+                    return DeleteAEndpoint();
                 default:
                     throw new LunaServerException($"Invalid operation type. The type is {nameof(operationType)}.");
             }

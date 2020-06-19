@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Security.Cryptography.X509Certificates;
 using System.Text;
 
 namespace Luna.Clients.Models.Controller
 {
-    public class GetABatchInferenceOperationResponse
+    public class ListAllInferenceOperationsByUserResponse
     {
         public List<Operation> operations { get; set; }
         public class Operation
@@ -16,9 +15,9 @@ namespace Luna.Clients.Models.Controller
             public string startTimeUtc { get; set; }
             public string completeTimeUtc { get; set; }
             public String description { get; set; }
-            public Object error { get; set; }
+            public object error { get; set; }
         }
-        public GetABatchInferenceOperationResponse()
+        public ListAllInferenceOperationsByUserResponse()
         {
             this.operations = new List<Operation>();
         }

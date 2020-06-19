@@ -7,6 +7,6 @@ namespace Luna.Clients.Models.Controller
     {
         public string userId { get; set; }
         public Guid subscriptionId { get; set; }
-        public IDictionary<string, object> input { get; set; }
+        public string userInput { get; set; }
     }
 }
