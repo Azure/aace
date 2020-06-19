@@ -74,18 +74,14 @@ namespace Luna.Clients.Azure.APIM
                         $"<set-backend-service base-url =\"{backendUrl}\" />" +
                         @"<set-header name=""Content-Type"" exists-action=""override"" >
                             <value>application/json</value>
-                        </set-header>
-                        <set-variable name = ""subscriptionId"" value =""@(context.Subscription.Id)"" />
-                        <set-variable name = ""userId"" value =""@(context.User.Id)"" />
-                        <set-variable name = ""input"" value=""@(context.Request.Body.As&lt;string&gt;())"" />
-                        <set-body template = ""liquid"" >
-                        {
-                            ""subscriptionId"": ""{{context.Variables[""subscriptionId""]}}"",
-                            ""userId"": ""{{context.Variables[""userId""]}}"",
-                            ""input"": {{context.Variables[""input""]}}
-                        }
-                        </set-body>
-                    </inbound>
+                        </set-header>" +
+                        @"<set-body>@{
+                            var body = context.Request.Body.As&lt;JObject&gt;();
+                            body.Add(""subscriptionId"", context.Subscription.Id);
+                            body.Add(""userId"", context.User.Id);
+                            return body.ToString();
+                        }</set-body>" +
+                    @"</inbound>
                     <backend>
                         <base />
                     </backend>
@@ -99,7 +95,7 @@ namespace Luna.Clients.Azure.APIM
             return policy;
         }
 
-        private Models.Azure.Policy BatchInterenceWithDefaultModel(APIVersion version)
+        private Models.Azure.Policy BatchInferenceWithDefaultModel(APIVersion version)
         {
             Models.Azure.Policy policy = new Models.Azure.Policy();
             string backendUrl = _controllerBaseUrl + string.Format("/api/products/{0}/deployments/{1}", version.ProductName, version.DeploymentName);
@@ -110,18 +106,14 @@ namespace Luna.Clients.Azure.APIM
                         $"<set-backend-service base-url =\"{backendUrl}\" />" +
                         @"<set-header name=""Content-Type"" exists-action=""override"" >
                             <value>application/json</value>
-                        </set-header>
-                        <set-variable name = ""subscriptionId"" value =""@(context.Subscription.Id)"" />
-                        <set-variable name = ""userId"" value =""@(context.User.Id)"" />
-                        <set-variable name = ""input"" value=""@(context.Request.Body.As&lt;string&gt;())"" />
-                        <set-body template = ""liquid"" >
-                        {
-                            ""subscriptionId"": ""{{context.Variables[""subscriptionId""]}}"",
-                            ""userId"": ""{{context.Variables[""userId""]}}"",
-                            ""input"": {{context.Variables[""input""]}}
-                        }
-                        </set-body>
-                    </inbound>
+                        </set-header>" +
+                        @"<set-body>@{
+                            var body = context.Request.Body.As&lt;JObject&gt;();
+                            body.Add(""subscriptionId"", context.Subscription.Id);
+                            body.Add(""userId"", context.User.Id);
+                            return body.ToString();
+                        }</set-body>" +
+                    @"</inbound>
                     <backend>
                         <base />
                     </backend>
@@ -135,7 +127,7 @@ namespace Luna.Clients.Azure.APIM
             return policy;
         }
 
-        private Models.Azure.Policy GetABatchInterenceOperationWithDefaultModel(APIVersion version)
+        private Models.Azure.Policy GetABatchInferenceOperationWithDefaultModel(APIVersion version)
         {
             Models.Azure.Policy policy = new Models.Azure.Policy();
             string backendUrl = _controllerBaseUrl + string.Format("/api/products/{0}/deployments/{1}", version.ProductName, version.DeploymentName) + "/subscriptions/{0}";
@@ -164,7 +156,7 @@ namespace Luna.Clients.Azure.APIM
             return policy;
         }
 
-        private Models.Azure.Policy GetAllBatchInterenceOperationsWithDefaultModel(APIVersion version)
+        private Models.Azure.Policy ListAllInferenceOperationsByUserWithDefaultModel(APIVersion version)
         {
             Models.Azure.Policy policy = new Models.Azure.Policy();
             string backendUrl = _controllerBaseUrl + string.Format("/api/products/{0}/deployments/{1}", version.ProductName, version.DeploymentName) + "/subscriptions/{0}";
@@ -204,18 +196,14 @@ namespace Luna.Clients.Azure.APIM
                         $"<set-backend-service base-url =\"{backendUrl}\" />" +
                         @"<set-header name=""Content-Type"" exists-action=""override"" >
                             <value>application/json</value>
-                        </set-header>
-                        <set-variable name = ""subscriptionId"" value =""@(context.Subscription.Id)"" />
-                        <set-variable name = ""userId"" value =""@(context.User.Id)"" />
-                        <set-variable name = ""input"" value=""@(context.Request.Body.As&lt;string&gt;())"" />
-                        <set-body template = ""liquid"" >
-                        {
-                            ""subscriptionId"": ""{{context.Variables[""subscriptionId""]}}"",
-                            ""userId"": ""{{context.Variables[""userId""]}}"",
-                            ""input"": {{context.Variables[""input""]}}
-                        }
-                        </set-body>
-                    </inbound>
+                        </set-header>" +
+                        @"<set-body>@{
+                            var body = context.Request.Body.As&lt;JObject&gt;();
+                            body.Add(""subscriptionId"", context.Subscription.Id);
+                            body.Add(""userId"", context.User.Id);
+                            return body.ToString();
+                        }</set-body>" +
+                    @"</inbound>
                     <backend>
                         <base />
                     </backend>
@@ -229,7 +217,7 @@ namespace Luna.Clients.Azure.APIM
             return policy;
         }
 
-        private Models.Azure.Policy GetAModel(APIVersion version)
+        private Models.Azure.Policy ListAllTrainingOperationsByUser(APIVersion version)
         {
             Models.Azure.Policy policy = new Models.Azure.Policy();
             string backendUrl = _controllerBaseUrl + string.Format("/api/products/{0}/deployments/{1}", version.ProductName, version.DeploymentName) + "/subscriptions/{0}";
@@ -258,7 +246,94 @@ namespace Luna.Clients.Azure.APIM
             return policy;
         }
 
-        private Models.Azure.Policy GetAllModels(APIVersion version)
+        private Models.Azure.Policy GetAllTrainingOperationsByModelIdUser(APIVersion version)
+        {
+            Models.Azure.Policy policy = new Models.Azure.Policy();
+            string backendUrl = _controllerBaseUrl + string.Format("/api/products/{0}/deployments/{1}", version.ProductName, version.DeploymentName) + "/subscriptions/{0}";
+            policy.properties.value =
+                @"<policies>
+                    <inbound>
+                        <base />" +
+                        $"<set-backend-service base-url =\"@(string.Format(&quot;{backendUrl}&quot;, context.Subscription.Id))\" />" +
+                        @"<set-header name=""Content-Type"" exists-action=""override"" >
+                            <value>application/json</value>
+                        </set-header>
+                        <set-query-parameter name=""userid"" exists-action=""override"">
+                            <value>@(context.User.Id)</value>
+                        </set-query-parameter>
+                    </inbound>
+                    <backend>
+                        <base />
+                    </backend>
+                    <outbound>
+                        <base />
+                    </outbound>
+                    <on-error>
+                        <base />
+                    </on-error>
+                </policies>";
+            return policy;
+        }
+        
+        private Models.Azure.Policy GetAModelByModelIdUserProductDeployment(APIVersion version)
+        {
+            Models.Azure.Policy policy = new Models.Azure.Policy();
+            string backendUrl = _controllerBaseUrl + string.Format("/api/products/{0}/deployments/{1}", version.ProductName, version.DeploymentName) + "/subscriptions/{0}";
+            policy.properties.value =
+                @"<policies>
+                    <inbound>
+                        <base />" +
+                        $"<set-backend-service base-url =\"@(string.Format(&quot;{backendUrl}&quot;, context.Subscription.Id))\" />" +
+                        @"<set-header name=""Content-Type"" exists-action=""override"" >
+                            <value>application/json</value>
+                        </set-header>
+                        <set-query-parameter name=""userid"" exists-action=""override"">
+                            <value>@(context.User.Id)</value>
+                        </set-query-parameter>
+                    </inbound>
+                    <backend>
+                        <base />
+                    </backend>
+                    <outbound>
+                        <base />
+                    </outbound>
+                    <on-error>
+                        <base />
+                    </on-error>
+                </policies>";
+            return policy;
+        }
+        
+        private Models.Azure.Policy GetAllModelsByUserProductDeployment(APIVersion version)
+        {
+            Models.Azure.Policy policy = new Models.Azure.Policy();
+            string backendUrl = _controllerBaseUrl + string.Format("/api/products/{0}/deployments/{1}", version.ProductName, version.DeploymentName) + "/subscriptions/{0}";
+            policy.properties.value =
+                @"<policies>
+                    <inbound>
+                        <base />" +
+                        $"<set-backend-service base-url =\"@(string.Format(&quot;{backendUrl}&quot;, context.Subscription.Id))\" />" +
+                        @"<set-header name=""Content-Type"" exists-action=""override"" >
+                            <value>application/json</value>
+                        </set-header>
+                        <set-query-parameter name=""userid"" exists-action=""override"">
+                            <value>@(context.User.Id)</value>
+                        </set-query-parameter>
+                    </inbound>
+                    <backend>
+                        <base />
+                    </backend>
+                    <outbound>
+                        <base />
+                    </outbound>
+                    <on-error>
+                        <base />
+                    </on-error>
+                </policies>";
+            return policy;
+        }
+        
+        private Models.Azure.Policy DeleteAModel(APIVersion version)
         {
             Models.Azure.Policy policy = new Models.Azure.Policy();
             string backendUrl = _controllerBaseUrl + string.Format("/api/products/{0}/deployments/{1}", version.ProductName, version.DeploymentName) + "/subscriptions/{0}";
@@ -287,7 +362,7 @@ namespace Luna.Clients.Azure.APIM
             return policy;
         }
 
-        private Models.Azure.Policy BatchInterence(APIVersion version)
+        private Models.Azure.Policy BatchInference(APIVersion version)
         {
             Models.Azure.Policy policy = new Models.Azure.Policy();
             string backendUrl = _controllerBaseUrl + string.Format("/api/products/{0}/deployments/{1}", version.ProductName, version.DeploymentName);
@@ -298,18 +373,14 @@ namespace Luna.Clients.Azure.APIM
                         $"<set-backend-service base-url =\"{backendUrl}\" />" +
                         @"<set-header name=""Content-Type"" exists-action=""override"" >
                             <value>application/json</value>
-                        </set-header>
-                        <set-variable name = ""subscriptionId"" value =""@(context.Subscription.Id)"" />
-                        <set-variable name = ""userId"" value =""@(context.User.Id)"" />
-                        <set-variable name = ""input"" value=""@(context.Request.Body.As&lt;string&gt;())"" />
-                        <set-body template = ""liquid"" >
-                        {
-                            ""subscriptionId"": ""{{context.Variables[""subscriptionId""]}}"",
-                            ""userId"": ""{{context.Variables[""userId""]}}"",
-                            ""input"": {{context.Variables[""input""]}}
-                        }
-                        </set-body>
-                    </inbound>
+                        </set-header>" +
+                        @"<set-body>@{
+                            var body = context.Request.Body.As&lt;JObject&gt;();
+                            body.Add(""subscriptionId"", context.Subscription.Id);
+                            body.Add(""userId"", context.User.Id);
+                            return body.ToString();
+                        }</set-body>" +
+                    @"</inbound>
                     <backend>
                         <base />
                     </backend>
@@ -323,7 +394,7 @@ namespace Luna.Clients.Azure.APIM
             return policy;
         }
 
-        private Models.Azure.Policy GetABatchInterenceOperation(APIVersion version)
+        private Models.Azure.Policy GetABatchInferenceOperation(APIVersion version)
         {
             Models.Azure.Policy policy = new Models.Azure.Policy();
             string backendUrl = _controllerBaseUrl + string.Format("/api/products/{0}/deployments/{1}", version.ProductName, version.DeploymentName) + "/subscriptions/{0}";
@@ -352,7 +423,7 @@ namespace Luna.Clients.Azure.APIM
             return policy;
         }
 
-        private Models.Azure.Policy GetAllBatchInterenceOperations(APIVersion version)
+        private Models.Azure.Policy ListAllInferenceOperationsByUser(APIVersion version)
         {
             Models.Azure.Policy policy = new Models.Azure.Policy();
             string backendUrl = _controllerBaseUrl + string.Format("/api/products/{0}/deployments/{1}", version.ProductName, version.DeploymentName) + "/subscriptions/{0}";
@@ -392,18 +463,14 @@ namespace Luna.Clients.Azure.APIM
                         $"<set-backend-service base-url =\"{backendUrl}\" />" +
                         @"<set-header name=""Content-Type"" exists-action=""override"" >
                             <value>application/json</value>
-                        </set-header>
-                        <set-variable name = ""subscriptionId"" value =""@(context.Subscription.Id)"" />
-                        <set-variable name = ""userId"" value =""@(context.User.Id)"" />
-                        <set-variable name = ""input"" value=""@(context.Request.Body.As&lt;string&gt;())"" />
-                        <set-body template = ""liquid"" >
-                        {
-                            ""subscriptionId"": ""{{context.Variables[""subscriptionId""]}}"",
-                            ""userId"": ""{{context.Variables[""userId""]}}"",
-                            ""input"": {{context.Variables[""input""]}}
-                        }
-                        </set-body>
-                    </inbound>
+                        </set-header>" +
+                        @"<set-body>@{
+                            var body = context.Request.Body.As&lt;JObject&gt;();
+                            body.Add(""subscriptionId"", context.Subscription.Id);
+                            body.Add(""userId"", context.User.Id);
+                            return body.ToString();
+                        }</set-body>" +
+                    @"</inbound>
                     <backend>
                         <base />
                     </backend>
@@ -417,7 +484,36 @@ namespace Luna.Clients.Azure.APIM
             return policy;
         }
 
-        private Models.Azure.Policy GetADeployedEndpoint(APIVersion version)
+        private Models.Azure.Policy GetAllDeployOperationsByEndpointIdUser(APIVersion version)
+        {
+            Models.Azure.Policy policy = new Models.Azure.Policy();
+            string backendUrl = _controllerBaseUrl + string.Format("/api/products/{0}/deployments/{1}", version.ProductName, version.DeploymentName) + "/subscriptions/{0}";
+            policy.properties.value =
+                @"<policies>
+                    <inbound>
+                        <base />" +
+                        $"<set-backend-service base-url =\"@(string.Format(&quot;{backendUrl}&quot;, context.Subscription.Id))\" />" +
+                        @"<set-header name=""Content-Type"" exists-action=""override"" >
+                            <value>application/json</value>
+                        </set-header>
+                        <set-query-parameter name=""userid"" exists-action=""override"">
+                            <value>@(context.User.Id)</value>
+                        </set-query-parameter>
+                    </inbound>
+                    <backend>
+                        <base />
+                    </backend>
+                    <outbound>
+                        <base />
+                    </outbound>
+                    <on-error>
+                        <base />
+                    </on-error>
+                </policies>";
+            return policy;
+        }
+        
+        private Models.Azure.Policy ListAllDeployOperationsByUser(APIVersion version)
         {
             Models.Azure.Policy policy = new Models.Azure.Policy();
             string backendUrl = _controllerBaseUrl + string.Format("/api/products/{0}/deployments/{1}", version.ProductName, version.DeploymentName) + "/subscriptions/{0}";
@@ -446,7 +542,65 @@ namespace Luna.Clients.Azure.APIM
             return policy;
         }
 
-        private Models.Azure.Policy GetAllDeployedEndpoints(APIVersion version)
+        private Models.Azure.Policy GetAllRealTimeServiceEndpointsByUserProductDeployment(APIVersion version)
+        {
+            Models.Azure.Policy policy = new Models.Azure.Policy();
+            string backendUrl = _controllerBaseUrl + string.Format("/api/products/{0}/deployments/{1}", version.ProductName, version.DeploymentName) + "/subscriptions/{0}";
+            policy.properties.value =
+                @"<policies>
+                    <inbound>
+                        <base />" +
+                        $"<set-backend-service base-url =\"@(string.Format(&quot;{backendUrl}&quot;, context.Subscription.Id))\" />" +
+                        @"<set-header name=""Content-Type"" exists-action=""override"" >
+                            <value>application/json</value>
+                        </set-header>
+                        <set-query-parameter name=""userid"" exists-action=""override"">
+                            <value>@(context.User.Id)</value>
+                        </set-query-parameter>
+                    </inbound>
+                    <backend>
+                        <base />
+                    </backend>
+                    <outbound>
+                        <base />
+                    </outbound>
+                    <on-error>
+                        <base />
+                    </on-error>
+                </policies>";
+            return policy;
+        }
+        
+        private Models.Azure.Policy GetARealTimeServiceEndpointByEndpointIdUserProductDeployment(APIVersion version)
+        {
+            Models.Azure.Policy policy = new Models.Azure.Policy();
+            string backendUrl = _controllerBaseUrl + string.Format("/api/products/{0}/deployments/{1}", version.ProductName, version.DeploymentName) + "/subscriptions/{0}";
+            policy.properties.value =
+                @"<policies>
+                    <inbound>
+                        <base />" +
+                        $"<set-backend-service base-url =\"@(string.Format(&quot;{backendUrl}&quot;, context.Subscription.Id))\" />" +
+                        @"<set-header name=""Content-Type"" exists-action=""override"" >
+                            <value>application/json</value>
+                        </set-header>
+                        <set-query-parameter name=""userid"" exists-action=""override"">
+                            <value>@(context.User.Id)</value>
+                        </set-query-parameter>
+                    </inbound>
+                    <backend>
+                        <base />
+                    </backend>
+                    <outbound>
+                        <base />
+                    </outbound>
+                    <on-error>
+                        <base />
+                    </on-error>
+                </policies>";
+            return policy;
+        }
+        
+        private Models.Azure.Policy DeleteAEndpoint(APIVersion version)
         {
             Models.Azure.Policy policy = new Models.Azure.Policy();
             string backendUrl = _controllerBaseUrl + string.Format("/api/products/{0}/deployments/{1}", version.ProductName, version.DeploymentName) + "/subscriptions/{0}";
@@ -482,29 +636,41 @@ namespace Luna.Clients.Azure.APIM
                 case Models.Azure.OperationTypeEnum.RealTimePrediction:
                     return RealTimePrediction(version);
                 case Models.Azure.OperationTypeEnum.BatchInferenceWithDefaultModel:
-                    return BatchInterenceWithDefaultModel(version);
+                    return BatchInferenceWithDefaultModel(version);
                 case Models.Azure.OperationTypeEnum.GetABatchInferenceOperationWithDefaultModel:
-                    return GetABatchInterenceOperationWithDefaultModel(version);
-                case Models.Azure.OperationTypeEnum.GetAllBatchInferenceOperationsWithDefaultModel:
-                    return GetAllBatchInterenceOperationsWithDefaultModel(version);
+                    return GetABatchInferenceOperationWithDefaultModel(version);
+                case Models.Azure.OperationTypeEnum.ListAllInferenceOperationsByUserWithDefaultModel:
+                    return ListAllInferenceOperationsByUserWithDefaultModel(version);
                 case Models.Azure.OperationTypeEnum.TrainModel:
                     return TrainModel(version);
-                case Models.Azure.OperationTypeEnum.GetAModel:
-                    return GetAModel(version);
-                case Models.Azure.OperationTypeEnum.GetAllModels:
-                    return GetAllModels(version);
+                case Models.Azure.OperationTypeEnum.ListAllTrainingOperationsByUser:
+                    return ListAllTrainingOperationsByUser(version);
+                case Models.Azure.OperationTypeEnum.GetAllTrainingOperationsByModelIdUser:
+                    return GetAllTrainingOperationsByModelIdUser(version);
+                case Models.Azure.OperationTypeEnum.GetAModelByModelIdUserProductDeployment:
+                    return GetAModelByModelIdUserProductDeployment(version);
+                case Models.Azure.OperationTypeEnum.GetAllModelsByUserProductDeployment:
+                    return GetAllModelsByUserProductDeployment(version);
+                case Models.Azure.OperationTypeEnum.DeleteAModel:
+                    return DeleteAModel(version);
                 case Models.Azure.OperationTypeEnum.BatchInference:
-                    return BatchInterence(version);
+                    return BatchInference(version);
                 case Models.Azure.OperationTypeEnum.GetABatchInferenceOperation:
-                    return GetABatchInterenceOperation(version);
-                case Models.Azure.OperationTypeEnum.GetAllBatchInferenceOperations:
-                    return GetAllBatchInterenceOperations(version);
+                    return GetABatchInferenceOperation(version);
+                case Models.Azure.OperationTypeEnum.ListAllInferenceOperationsByUser:
+                    return ListAllInferenceOperationsByUser(version);
                 case Models.Azure.OperationTypeEnum.DeployRealTimePredictionEndpoint:
                     return DeployRealTimePredictionEndpoint(version);
-                case Models.Azure.OperationTypeEnum.GetADeployedEndpoint:
-                    return GetADeployedEndpoint(version);
-                case Models.Azure.OperationTypeEnum.GetAllDeployedEndpoints:
-                    return GetAllDeployedEndpoints(version);
+                case Models.Azure.OperationTypeEnum.GetAllDeployOperationsByEndpointIdUser:
+                    return GetAllDeployOperationsByEndpointIdUser(version);
+                case Models.Azure.OperationTypeEnum.ListAllDeployOperationsByUser:
+                    return ListAllDeployOperationsByUser(version);
+                case Models.Azure.OperationTypeEnum.GetAllRealTimeServiceEndpointsByUserProductDeployment:
+                    return GetAllRealTimeServiceEndpointsByUserProductDeployment(version);
+                case Models.Azure.OperationTypeEnum.GetARealTimeServiceEndpointByEndpointIdUserProductDeployment:
+                    return GetARealTimeServiceEndpointByEndpointIdUserProductDeployment(version);
+                case Models.Azure.OperationTypeEnum.DeleteAEndpoint:
+                    return DeleteAEndpoint(version);
                 default:
                     throw new LunaServerException($"Invalid operation type. The type is {nameof(operationType)}.");
             }

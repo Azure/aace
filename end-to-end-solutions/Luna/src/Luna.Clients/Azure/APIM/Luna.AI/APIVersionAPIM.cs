@@ -84,7 +84,7 @@ namespace Luna.Clients.Azure.APIM
         {
             Models.Azure.APIVersion api = new Models.Azure.APIVersion();
             api.name = version.ProductName + version.DeploymentName + version.GetVersionIdFormat();
-            api.properties.displayName = version.VersionName;
+            api.properties.displayName = version.ProductName + version.DeploymentName + version.GetVersionIdFormat();
             api.properties.apiVersion = version.VersionName;
 
             api.properties.serviceUrl = _controllerBaseUrl + GetControllerPath(version.ProductName, version.DeploymentName);
@@ -99,10 +99,10 @@ namespace Luna.Clients.Azure.APIM
             Models.Azure.APIVersion api = new Models.Azure.APIVersion();
             api.name = deployment.ProductName + deployment.DeploymentName;
             api.properties.displayName = deployment.ProductName + deployment.DeploymentName;
-            api.properties.apiVersion = deployment.DeploymentName;
+            api.properties.apiVersion = deployment.ProductName + deployment.DeploymentName;
 
             api.properties.serviceUrl = "";
-            api.properties.path = "";
+            api.properties.path = deployment.ProductName + deployment.DeploymentName;
             api.properties.apiVersionSetId = _apiVersionSetAPIM.GetAPIMRESTAPIPath(deployment.ProductName, deployment.DeploymentName);
 
             return api;
