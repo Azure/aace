@@ -74,7 +74,7 @@ namespace Luna.Services.Data.Luna.AI
                     return new List<Clients.Models.Azure.OperationTypeEnum>{
                         Clients.Models.Azure.OperationTypeEnum.TrainModel,
                         Clients.Models.Azure.OperationTypeEnum.ListAllTrainingOperationsByUser,
-                        Clients.Models.Azure.OperationTypeEnum.GetAllTrainingOperationsByModelIdUser,
+                        Clients.Models.Azure.OperationTypeEnum.GetATrainingOperationsByModelIdUser,
                         Clients.Models.Azure.OperationTypeEnum.GetAModelByModelIdUserProductDeployment,
                         Clients.Models.Azure.OperationTypeEnum.GetAllModelsByUserProductDeployment,
                         Clients.Models.Azure.OperationTypeEnum.DeleteAModel,
@@ -82,7 +82,7 @@ namespace Luna.Services.Data.Luna.AI
                         Clients.Models.Azure.OperationTypeEnum.GetABatchInferenceOperation,
                         Clients.Models.Azure.OperationTypeEnum.ListAllInferenceOperationsByUser,
                         Clients.Models.Azure.OperationTypeEnum.DeployRealTimePredictionEndpoint,
-                        Clients.Models.Azure.OperationTypeEnum.GetAllDeployOperationsByEndpointIdUser,
+                        Clients.Models.Azure.OperationTypeEnum.GetADeployOperationByEndpointIdUser,
                         Clients.Models.Azure.OperationTypeEnum.ListAllDeployOperationsByUser,
                         Clients.Models.Azure.OperationTypeEnum.GetAllRealTimeServiceEndpointsByUserProductDeployment,
                         Clients.Models.Azure.OperationTypeEnum.GetARealTimeServiceEndpointByEndpointIdUserProductDeployment,

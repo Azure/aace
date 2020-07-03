@@ -15,7 +15,7 @@ namespace Luna.Clients.Models.Azure
         // TYOM
         TrainModel,
         ListAllTrainingOperationsByUser,
-        GetAllTrainingOperationsByModelIdUser,
+        GetATrainingOperationsByModelIdUser,
         GetAModelByModelIdUserProductDeployment,
         GetAllModelsByUserProductDeployment,
         DeleteAModel,
@@ -23,7 +23,7 @@ namespace Luna.Clients.Models.Azure
         GetABatchInferenceOperation,
         ListAllInferenceOperationsByUser,
         DeployRealTimePredictionEndpoint,
-        GetAllDeployOperationsByEndpointIdUser,
+        GetADeployOperationByEndpointIdUser,
         ListAllDeployOperationsByUser,
         GetAllRealTimeServiceEndpointsByUserProductDeployment,
         GetARealTimeServiceEndpointByEndpointIdUserProductDeployment,
