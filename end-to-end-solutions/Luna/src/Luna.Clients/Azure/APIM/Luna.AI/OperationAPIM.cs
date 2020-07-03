@@ -122,12 +122,12 @@ namespace Luna.Clients.Azure.APIM
             return operation;
         }
 
-        private Models.Azure.Operation GetAllTrainingOperationsByModelIdUser()
+        private Models.Azure.Operation GetATrainingOperationsByModelIdUser()
         {
             Models.Azure.Operation operation = new Models.Azure.Operation();
 
-            operation.name = "get-all-training-operations-by-modelid-user";
-            operation.properties.displayName = "get-all-training-operations-by-modelid-and-user";
+            operation.name = "get-a-training-operation-by-modelid-user";
+            operation.properties.displayName = "get-a-training-operation-by-modelid-and-user";
             operation.properties.method = "GET";
             operation.properties.urlTemplate = "/operations/training/{modelId}";
             operation.properties.templateParameters = new List<templateParameter>(new templateParameter[]
@@ -242,12 +242,12 @@ namespace Luna.Clients.Azure.APIM
             return operation;
         }
 
-        private Models.Azure.Operation GetAllDeployOperationsByEndpointIdUser()
+        private Models.Azure.Operation GetADeployOperationByEndpointIdUser()
         {
             Models.Azure.Operation operation = new Models.Azure.Operation();
 
-            operation.name = "get-all-deploy-operations-by-endpointid-user";
-            operation.properties.displayName = "get-all-deploy-operations-by-endpointid-user";
+            operation.name = "get-a-deploy-operation-by-endpointid-user";
+            operation.properties.displayName = "get-a-deploy-operation-by-endpointid-user";
             operation.properties.method = "GET";
             operation.properties.urlTemplate = "/operations/deployment/{endpointId}";
             operation.properties.templateParameters = new List<templateParameter>(new templateParameter[]
@@ -349,8 +349,8 @@ namespace Luna.Clients.Azure.APIM
                     return TrainModel();
                 case Models.Azure.OperationTypeEnum.ListAllTrainingOperationsByUser:
                     return ListAllTrainingOperationsByUser();
-                case Models.Azure.OperationTypeEnum.GetAllTrainingOperationsByModelIdUser:
-                    return GetAllTrainingOperationsByModelIdUser();
+                case Models.Azure.OperationTypeEnum.GetATrainingOperationsByModelIdUser:
+                    return GetATrainingOperationsByModelIdUser();
                 case Models.Azure.OperationTypeEnum.GetAModelByModelIdUserProductDeployment:
                     return GetAModelByModelIdUserProductDeployment();
                 case Models.Azure.OperationTypeEnum.GetAllModelsByUserProductDeployment:
@@ -365,8 +365,8 @@ namespace Luna.Clients.Azure.APIM
                     return ListAllInferenceOperationsByUser();
                 case Models.Azure.OperationTypeEnum.DeployRealTimePredictionEndpoint:
                     return DeployRealTimePredictionEndpoint();
-                case Models.Azure.OperationTypeEnum.GetAllDeployOperationsByEndpointIdUser:
-                    return GetAllDeployOperationsByEndpointIdUser();
+                case Models.Azure.OperationTypeEnum.GetADeployOperationByEndpointIdUser:
+                    return GetADeployOperationByEndpointIdUser();
                 case Models.Azure.OperationTypeEnum.ListAllDeployOperationsByUser:
                     return ListAllDeployOperationsByUser();
                 case Models.Azure.OperationTypeEnum.GetAllRealTimeServiceEndpointsByUserProductDeployment:

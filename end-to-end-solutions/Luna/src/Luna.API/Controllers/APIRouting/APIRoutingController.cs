@@ -1,13 +1,10 @@
 using System;
-using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
 using Luna.Clients.Azure.APIM;
 using Luna.Clients.Controller;
 using Luna.Clients.Exceptions;
 using Luna.Clients.Logging;
 using Luna.Clients.Models.Controller;
-using Luna.Data.Entities;
 using Luna.Services.Data;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -156,7 +153,7 @@ namespace Luna.API.Controllers.Admin
 
         [HttpGet("products/{productName}/deployments/{deploymentName}/subscriptions/{subscriptionId}/operations/training/{modelId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult> GetAllTrainingOperationsByModelIdAndUser(string productName, string deploymentName, Guid subscriptionId, Guid modelId, [FromQuery(Name = "userid")] string userId, [FromQuery(Name = "api-version")] string versionName)
+        public async Task<ActionResult> GetATrainingOperationsByModelIdUser(string productName, string deploymentName, Guid subscriptionId, Guid modelId, [FromQuery(Name = "userid")] string userId, [FromQuery(Name = "api-version")] string versionName)
         {
             var apiSubcription = await _apiSubscriptionService.GetAsync(subscriptionId);
             if (apiSubcription == null)
@@ -172,7 +169,7 @@ namespace Luna.API.Controllers.Admin
             var version = await _apiVersionService.GetAsync(productName, deploymentName, versionName);
             var workspace = await _amlWorkspaceService.GetAsync(version.AMLWorkspaceName);
 
-            return Ok(await ControllerHelper.GetAllTrainingOperationsByModelIdUser(product, deployment, version, workspace, apiSubcription, modelId));
+            return Ok(await ControllerHelper.GetATrainingOperationsByModelIdUser(product, deployment, version, workspace, apiSubcription, modelId));
         }
 
         [HttpGet("products/{productName}/deployments/{deploymentName}/subscriptions/{subscriptionId}/operations/training")]
@@ -360,7 +357,7 @@ namespace Luna.API.Controllers.Admin
         /// <returns>HTTP 200 OK with apiVersion JSON objects in response body.</returns>
         [HttpGet("products/{productName}/deployments/{deploymentName}/subscriptions/{subscriptionId}/operations/deployment/{endpointId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult> GetAllDeployOperationsByEndpointIdAndVerifyUser(string productName, string deploymentName, Guid subscriptionId, Guid endpointId, [FromQuery(Name = "userid")] string userId, [FromQuery(Name = "api-version")] string versionName)
+        public async Task<ActionResult> GetADeployOperationByEndpointIdUser(string productName, string deploymentName, Guid subscriptionId, Guid endpointId, [FromQuery(Name = "userid")] string userId, [FromQuery(Name = "api-version")] string versionName)
         {
             var apiSubcription = await _apiSubscriptionService.GetAsync(subscriptionId);
             if (apiSubcription == null)
@@ -375,7 +372,7 @@ namespace Luna.API.Controllers.Admin
             var version = await _apiVersionService.GetAsync(productName, deploymentName, versionName);
             var workspace = await _amlWorkspaceService.GetAsync(version.AMLWorkspaceName);
 
-            return Ok(await ControllerHelper.GetAllDeployOperationsByEndpointIdUser(product, deployment, version, workspace, apiSubcription, endpointId));
+            return Ok(await ControllerHelper.GetADeployOperationByEndpointIdUser(product, deployment, version, workspace, apiSubcription, endpointId));
         }
 
         /// <summary>

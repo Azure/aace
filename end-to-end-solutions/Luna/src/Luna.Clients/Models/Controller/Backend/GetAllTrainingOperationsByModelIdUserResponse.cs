@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Luna.Clients.Models.Controller.Backend
 {
-    public class ListAllTrainingOperationsByAUserResponse
+    public class GetATrainingOperationsByModelIdUserResponse
     {
         public string status { get; set; }
         public string startTimeUtc { get; set; }
@@ -17,7 +17,7 @@ namespace Luna.Clients.Models.Controller.Backend
             public string modelId { get; set; }
             public string operationType { get; set; }
         }
-        public ListAllTrainingOperationsByAUserResponse()
+        public GetATrainingOperationsByModelIdUserResponse()
         {
 
         }

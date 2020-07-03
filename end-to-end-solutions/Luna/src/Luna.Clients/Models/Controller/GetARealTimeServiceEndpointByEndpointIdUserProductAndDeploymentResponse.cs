@@ -6,18 +6,12 @@ namespace Luna.Clients.Models.Controller
 {
     public class GetARealTimeServiceEndpointByEndpointIdUserProductAndDeploymentResponse
     {
-        public List<Operation> operations { get; set; }
-        public class Operation
-        {
-            public string endpointId { get; set; }
-            public string startTimeUtc { get; set; }
-            public string completeTimeUtc { get; set; }
-            public string scoringUrl { get; set; }
-            public String description { get; set; }
-        }
-        public GetARealTimeServiceEndpointByEndpointIdUserProductAndDeploymentResponse()
-        {
-            this.operations = new List<Operation>();
-        }
+        public string endpointId { get; set; }
+        public string startTimeUtc { get; set; }
+        public string completeTimeUtc { get; set; }
+        public string scoringUrl { get; set; }
+        public string primaryKey { get; set; }
+        public string secondaryKey { get; set; }
+        public String description { get; set; }
     }
 }
