@@ -229,7 +229,7 @@ namespace Luna.Clients.Controller
             trainModelRequest.parameterAssignments.productName = product.ProductName;
             trainModelRequest.parameterAssignments.deploymentName = deployment.DeploymentName;
             trainModelRequest.parameterAssignments.apiVersion = version.VersionName;
-            trainModelRequest.parameterAssignments.subscriptionId = apiSubscription.SubscriptionId.ToString();
+            //trainModelRequest.parameterAssignments.subscriptionId = apiSubscription.SubscriptionId.ToString();
             trainModelRequest.tags.userId = apiSubscription.UserId;
             trainModelRequest.tags.productName = product.ProductName;
             trainModelRequest.tags.deploymentName = deployment.DeploymentName;

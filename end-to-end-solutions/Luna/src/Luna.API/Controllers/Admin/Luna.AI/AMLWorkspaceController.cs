@@ -72,7 +72,7 @@ namespace Luna.API.Controllers.Admin
         /// </summary>
         /// <param name="workspaceName">The name of the workspace to get.</param>
         /// <returns>HTTP 200 OK with workspace JSON object in response body.</returns>
-        [HttpGet("amlworkspaces/{workspaceName}/pipelines", Name = nameof(GetAsync) + nameof(AMLWorkspace))]
+        [HttpGet("amlworkspaces/{workspaceName}/pipelines", Name = nameof(GetAsync) + nameof(AMLWorkspace) + "pipelines")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> GetPipelinesAsync(string workspaceName)
         {

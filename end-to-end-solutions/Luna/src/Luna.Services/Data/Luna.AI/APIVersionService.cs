@@ -216,7 +216,7 @@ namespace Luna.Services.Data.Luna.AI
             // Update the apiVersion last updated time
             version.LastUpdatedTime = version.CreatedTime;
 
-            if (version.VersionSourceType.Equals("amlPipeline"))
+            if (version.VersionSourceType == null)
             {
                 // Add apiVersion to APIM
                 await _apiVersionAPIM.CreateAsync(version);

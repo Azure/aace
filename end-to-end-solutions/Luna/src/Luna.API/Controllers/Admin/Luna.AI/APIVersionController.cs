@@ -95,7 +95,7 @@ namespace Luna.API.Controllers.Admin
                     UserErrorCode.NameMismatch);
             }
 
-            if(await _apiVersionService.ExistsAsync(productName, deploymentName, versionName))
+            if (await _apiVersionService.ExistsAsync(productName, deploymentName, versionName))
             {
                 _logger.LogInformation($"Update resticted user {versionName} in deployment {deploymentName} in product {productName} with payload {JsonSerializer.Serialize(apiVersion)}.");
                 apiVersion = await _apiVersionService.UpdateAsync(productName, deploymentName, versionName, apiVersion);
@@ -141,6 +141,13 @@ namespace Luna.API.Controllers.Admin
 
             return Ok(sourcetypeList);
 
+        }
+
+        [HttpGet("products/{productName}/deployments/{deploymentName}/apiVersions/{versionName}/projectFileUrl")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<ActionResult> GetProjectFileUrl(string productName, string deploymentName, string versionName)
+        {
+            return Ok(string.Format("https://xiwutestai.blob.core.windows.net/uxtest/{0}.gz?st=2020-06-19T18%3A29%3A03Z&se=2020-07-20T18%3A29%3A00Z&sp=racwl&sv=2018-03-28&sr=c&sig=xfajL%2FNZHU5n7iQdQMD6EOWdZtiZONeO7LfmmR0LRk0%3D", Guid.NewGuid()));
         }
     }
 }

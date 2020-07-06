@@ -83,5 +83,7 @@ namespace Luna.Data.Entities
 
         public string ProjectFileUrl { get; set; }
 
+        public string GitVersion { get; set; }
+
     }
 }
