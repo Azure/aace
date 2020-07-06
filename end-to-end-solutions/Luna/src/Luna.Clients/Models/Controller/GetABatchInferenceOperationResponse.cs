@@ -7,20 +7,12 @@ namespace Luna.Clients.Models.Controller
 {
     public class GetABatchInferenceOperationResponse
     {
-        public List<Operation> operations { get; set; }
-        public class Operation
-        {
-            public string operationType { get; set; }
-            public string operationId { get; set; }
-            public string status { get; set; }
-            public string startTimeUtc { get; set; }
-            public string completeTimeUtc { get; set; }
-            public String description { get; set; }
-            public Object error { get; set; }
-        }
-        public GetABatchInferenceOperationResponse()
-        {
-            this.operations = new List<Operation>();
-        }
+        public string operationType { get; set; }
+        public string operationId { get; set; }
+        public string status { get; set; }
+        public string startTimeUtc { get; set; }
+        public string completeTimeUtc { get; set; }
+        public String description { get; set; }
+        public Object error { get; set; }
     }
 }

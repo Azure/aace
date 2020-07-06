@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Luna.Clients.Models.Controller.Backend
 {
-    public class GetAllDeployOperationsByEndpointIdAndVerifyUserRequest
+    public class GetADeployOperationByEndpointIdUserRequest
     {
         public string filter { get; set; }
     }

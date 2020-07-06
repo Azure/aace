@@ -199,9 +199,11 @@ namespace Luna.Clients.Azure.APIM
                         </set-header>" +
                         @"<set-body>@{
                             var body = context.Request.Body.As&lt;JObject&gt;();
-                            body.Add(""subscriptionId"", context.Subscription.Id);
-                            body.Add(""userId"", context.User.Id);
-                            return body.ToString();
+                            var newBody = new JObject();
+                            newBody.Add(""userInput"", body.ToString().Replace(""\r\n"", """"));
+                            newBody.Add(""subscriptionId"", context.Subscription.Id);
+                            newBody.Add(""userId"", context.User.Id);
+                            return newBody.ToString();
                         }</set-body>" +
                     @"</inbound>
                     <backend>
@@ -246,7 +248,7 @@ namespace Luna.Clients.Azure.APIM
             return policy;
         }
 
-        private Models.Azure.Policy GetAllTrainingOperationsByModelIdUser(APIVersion version)
+        private Models.Azure.Policy GetATrainingOperationsByModelIdUser(APIVersion version)
         {
             Models.Azure.Policy policy = new Models.Azure.Policy();
             string backendUrl = _controllerBaseUrl + string.Format("/api/products/{0}/deployments/{1}", version.ProductName, version.DeploymentName) + "/subscriptions/{0}";
@@ -376,9 +378,11 @@ namespace Luna.Clients.Azure.APIM
                         </set-header>" +
                         @"<set-body>@{
                             var body = context.Request.Body.As&lt;JObject&gt;();
-                            body.Add(""subscriptionId"", context.Subscription.Id);
-                            body.Add(""userId"", context.User.Id);
-                            return body.ToString();
+                            var newBody = new JObject();
+                            newBody.Add(""userInput"", body.ToString().Replace(""\r\n"", """"));
+                            newBody.Add(""subscriptionId"", context.Subscription.Id);
+                            newBody.Add(""userId"", context.User.Id);
+                            return newBody.ToString();
                         }</set-body>" +
                     @"</inbound>
                     <backend>
@@ -466,9 +470,11 @@ namespace Luna.Clients.Azure.APIM
                         </set-header>" +
                         @"<set-body>@{
                             var body = context.Request.Body.As&lt;JObject&gt;();
-                            body.Add(""subscriptionId"", context.Subscription.Id);
-                            body.Add(""userId"", context.User.Id);
-                            return body.ToString();
+                            var newBody = new JObject();
+                            newBody.Add(""userInput"", body.ToString().Replace(""\r\n"", """"));
+                            newBody.Add(""subscriptionId"", context.Subscription.Id);
+                            newBody.Add(""userId"", context.User.Id);
+                            return newBody.ToString();
                         }</set-body>" +
                     @"</inbound>
                     <backend>
@@ -645,8 +651,8 @@ namespace Luna.Clients.Azure.APIM
                     return TrainModel(version);
                 case Models.Azure.OperationTypeEnum.ListAllTrainingOperationsByUser:
                     return ListAllTrainingOperationsByUser(version);
-                case Models.Azure.OperationTypeEnum.GetAllTrainingOperationsByModelIdUser:
-                    return GetAllTrainingOperationsByModelIdUser(version);
+                case Models.Azure.OperationTypeEnum.GetATrainingOperationsByModelIdUser:
+                    return GetATrainingOperationsByModelIdUser(version);
                 case Models.Azure.OperationTypeEnum.GetAModelByModelIdUserProductDeployment:
                     return GetAModelByModelIdUserProductDeployment(version);
                 case Models.Azure.OperationTypeEnum.GetAllModelsByUserProductDeployment:
@@ -661,7 +667,7 @@ namespace Luna.Clients.Azure.APIM
                     return ListAllInferenceOperationsByUser(version);
                 case Models.Azure.OperationTypeEnum.DeployRealTimePredictionEndpoint:
                     return DeployRealTimePredictionEndpoint(version);
-                case Models.Azure.OperationTypeEnum.GetAllDeployOperationsByEndpointIdUser:
+                case Models.Azure.OperationTypeEnum.GetADeployOperationByEndpointIdUser:
                     return GetAllDeployOperationsByEndpointIdUser(version);
                 case Models.Azure.OperationTypeEnum.ListAllDeployOperationsByUser:
                     return ListAllDeployOperationsByUser(version);
