@@ -188,7 +188,7 @@ namespace Luna.Clients.Controller
             }
 
             List<Models.Controller.Backend.ListAllInferenceOperationsByUserResponse> operations = (List<Models.Controller.Backend.ListAllInferenceOperationsByUserResponse>)System.Text.Json.JsonSerializer.Deserialize(result["value"].ToString(), typeof(List<Models.Controller.Backend.ListAllInferenceOperationsByUserResponse>));
-            if (operations == null)
+            if (operations == null || operations.Count == 0)
             {
                 throw new LunaServerException($"Query result in bad format. The response is {responseContent}.");
             }
@@ -380,7 +380,7 @@ namespace Luna.Clients.Controller
             }
 
             List<Models.Controller.Backend.GetAModelByModelIdUserProductDeploymentResponse> models = (List<Models.Controller.Backend.GetAModelByModelIdUserProductDeploymentResponse>)System.Text.Json.JsonSerializer.Deserialize(result["value"].ToString(), typeof(List<Models.Controller.Backend.GetAModelByModelIdUserProductDeploymentResponse>));
-            if (models == null)
+            if (models == null || models.Count == 0)
             {
                 throw new LunaServerException($"Query result in bad format. The response is {responseContent}.");
             }
@@ -528,7 +528,7 @@ namespace Luna.Clients.Controller
             }
 
             List<Models.Controller.Backend.GetABatchInferenceOperationResponse> operations = (List<Models.Controller.Backend.GetABatchInferenceOperationResponse>)System.Text.Json.JsonSerializer.Deserialize(result["value"].ToString(), typeof(List<Models.Controller.Backend.GetABatchInferenceOperationResponse>));
-            if (operations == null)
+            if (operations == null || operations.Count == 0)
             {
                 throw new LunaServerException($"Query result in bad format. The response is {responseContent}.");
             }
@@ -849,7 +849,7 @@ namespace Luna.Clients.Controller
             }
 
             List<Models.Controller.Backend.GetARealTimeServiceEndpointByEndpointIdUserProductAndDeploymentResponse> endpoints = (List<Models.Controller.Backend.GetARealTimeServiceEndpointByEndpointIdUserProductAndDeploymentResponse>)System.Text.Json.JsonSerializer.Deserialize(result["value"].ToString(), typeof(List<Models.Controller.Backend.GetARealTimeServiceEndpointByEndpointIdUserProductAndDeploymentResponse>));
-            if (endpoints == null)
+            if (endpoints == null || endpoints.Count == 0)
             {
                 throw new LunaServerException($"Query result in bad format. The response is {responseContent}.");
             }
