@@ -21,7 +21,6 @@ namespace Luna.Clients.Azure.APIM
         private Guid _subscriptionId;
         private string _resourceGroupName;
         private string _apimServiceName;
-        private string _token;
         private string _apiVersion;
         private APIMAuthHelper _apimAuthHelper;
         private HttpClient _httpClient;
@@ -41,7 +40,6 @@ namespace Luna.Clients.Azure.APIM
             _subscriptionId = options.CurrentValue.Config.SubscriptionId;
             _resourceGroupName = options.CurrentValue.Config.ResourceGroupname;
             _apimServiceName = options.CurrentValue.Config.APIMServiceName;
-            _token = keyVaultHelper.GetSecretAsync(options.CurrentValue.Config.VaultName, options.CurrentValue.Config.Token).Result;
             _apiVersion = options.CurrentValue.Config.APIVersion;
             _requestBaseUrl = string.Format(REQUEST_BASE_URL_FORMAT, _apimServiceName);
             _controllerBaseUrl = options.CurrentValue.Config.ControllerBaseUrl;
