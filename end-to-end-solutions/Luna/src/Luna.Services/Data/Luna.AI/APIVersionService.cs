@@ -95,6 +95,24 @@ namespace Luna.Services.Data.Luna.AI
             }
         }
 
+        private string GetUrl(AMLWorkspace workspace, string pipelineId)
+        {
+            return $"https://{workspace.Region}.api.azureml.ms/pipelines/v1.0" + workspace.ResourceId + $"/PipelineRuns/PipelineSubmit/{pipelineId}";
+        }
+
+        private APIVersion UpdateUrl(APIVersion version, AMLWorkspace workspace)
+        {
+            version.BatchInferenceAPI = version.BatchInferenceId == null ? "" : GetUrl(workspace, version.BatchInferenceId);
+            version.TrainModelAPI = version.TrainModelId == null ? "" : GetUrl(workspace, version.TrainModelId);
+            version.DeployModelAPI = version.DeployModelId == null ? "" : GetUrl(workspace, version.DeployModelId);
+
+            version.BatchInferenceId = null;
+            version.TrainModelId = null;
+            version.DeployModelId = null;
+
+            return version;
+        }
+
         /// <summary>
         /// Gets all apiVersions within a product and a deployment.
         /// </summary>
@@ -216,6 +234,9 @@ namespace Luna.Services.Data.Luna.AI
             // Update the apiVersion last updated time
             version.LastUpdatedTime = version.CreatedTime;
 
+            // Update the apiVersion API
+            version = UpdateUrl(version, amlWorkspace);
+
             // Add apiVersion to APIM
             await _apiVersionAPIM.CreateAsync(version);
             await _productAPIVersionAPIM.CreateAsync(version);
@@ -227,19 +248,6 @@ namespace Luna.Services.Data.Luna.AI
                 await _operationAPIM.CreateAsync(version, operation);
                 await _policyAPIM.CreateAsync(version, operation.name, operationType);
             }
-            /*List<Thread> workerThreads = new List<Thread>();
-            foreach (var operationType in operationTypes)
-            {
-                Thread thread = new Thread(async () => {
-                    var operation = _operationAPIM.GetOperation(operationType);
-                    await _operationAPIM.CreateAsync(version, operation);
-                    await _policyAPIM.CreateAsync(version, operation.name, operationType);
-                });
-                workerThreads.Add(thread);
-                thread.Start();
-            }
-            foreach (Thread thread in workerThreads) thread.Join();*/
-
 
             // Add apiVersion to db
             _context.APIVersions.Add(version);
@@ -275,12 +283,17 @@ namespace Luna.Services.Data.Luna.AI
 
             _logger.LogInformation(LoggingUtils.ComposeUpdateResourceMessage(typeof(APIVersion).Name, versionName, payload: JsonSerializer.Serialize(version)));
 
+            // Get the amlWorkspace associated with the AMLWorkspaceName provided
+            var amlWorkspace = await _amlWorkspaceService.GetAsync(version.AMLWorkspaceName);
+
             // Get the apiVersion that matches the productName, deploymentName and versionName provided
             var versionDb = await GetAsync(productName, deploymentName, versionName);
 
+            // Update the apiVersion API
+            version = UpdateUrl(version, amlWorkspace);
+
             // Copy over the changes
             versionDb.Copy(version);
-
             versionDb.LastUpdatedTime = DateTime.UtcNow;
 
             // Update version values and save changes in db

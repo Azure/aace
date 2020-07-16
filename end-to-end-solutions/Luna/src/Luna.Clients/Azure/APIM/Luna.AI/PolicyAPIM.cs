@@ -68,7 +68,8 @@ namespace Luna.Clients.Azure.APIM
             policy.properties.value =
                 @"<policies>
                     <inbound>
-                        <base />" +
+                        <base />
+                        <authentication-certificate certificate-id=""testCert"" />" +
                         $"<set-backend-service base-url =\"{backendUrl}\" />" +
                         @"<set-header name=""Content-Type"" exists-action=""override"" >
                             <value>application/json</value>
@@ -100,7 +101,8 @@ namespace Luna.Clients.Azure.APIM
             policy.properties.value =
                 @"<policies>
                     <inbound>
-                        <base />" +
+                        <base />
+                        <authentication-certificate certificate-id=""testCert"" />" +
                         $"<set-backend-service base-url =\"{backendUrl}\" />" +
                         @"<set-header name=""Content-Type"" exists-action=""override"" >
                             <value>application/json</value>
@@ -132,7 +134,8 @@ namespace Luna.Clients.Azure.APIM
             policy.properties.value =
                 @"<policies>
                     <inbound>
-                        <base />" +
+                        <base />
+                        <authentication-certificate certificate-id=""testCert"" />" +
                         $"<set-backend-service base-url =\"@(string.Format(&quot;{backendUrl}&quot;, context.Subscription.Id))\" />" +
                         @"<set-header name=""Content-Type"" exists-action=""override"" >
                             <value>application/json</value>
@@ -161,7 +164,8 @@ namespace Luna.Clients.Azure.APIM
             policy.properties.value =
                 @"<policies>
                     <inbound>
-                        <base />" +
+                        <base />
+                        <authentication-certificate certificate-id=""testCert"" />" +
                         $"<set-backend-service base-url =\"@(string.Format(&quot;{backendUrl}&quot;, context.Subscription.Id))\" />" +
                         @"<set-header name=""Content-Type"" exists-action=""override"" >
                             <value>application/json</value>
@@ -190,7 +194,8 @@ namespace Luna.Clients.Azure.APIM
             policy.properties.value =
                 @"<policies>
                     <inbound>
-                        <base />" +
+                        <base />
+                        <authentication-certificate certificate-id=""testCert"" />" +
                         $"<set-backend-service base-url =\"{backendUrl}\" />" +
                         @"<set-header name=""Content-Type"" exists-action=""override"" >
                             <value>application/json</value>
@@ -224,7 +229,8 @@ namespace Luna.Clients.Azure.APIM
             policy.properties.value =
                 @"<policies>
                     <inbound>
-                        <base />" +
+                        <base />
+                        <authentication-certificate certificate-id=""testCert"" />" +
                         $"<set-backend-service base-url =\"@(string.Format(&quot;{backendUrl}&quot;, context.Subscription.Id))\" />" +
                         @"<set-header name=""Content-Type"" exists-action=""override"" >
                             <value>application/json</value>
@@ -253,7 +259,8 @@ namespace Luna.Clients.Azure.APIM
             policy.properties.value =
                 @"<policies>
                     <inbound>
-                        <base />" +
+                        <base />
+                        <authentication-certificate certificate-id=""testCert"" />" +
                         $"<set-backend-service base-url =\"@(string.Format(&quot;{backendUrl}&quot;, context.Subscription.Id))\" />" +
                         @"<set-header name=""Content-Type"" exists-action=""override"" >
                             <value>application/json</value>
@@ -282,7 +289,8 @@ namespace Luna.Clients.Azure.APIM
             policy.properties.value =
                 @"<policies>
                     <inbound>
-                        <base />" +
+                        <base />
+                        <authentication-certificate certificate-id=""testCert"" />" +
                         $"<set-backend-service base-url =\"@(string.Format(&quot;{backendUrl}&quot;, context.Subscription.Id))\" />" +
                         @"<set-header name=""Content-Type"" exists-action=""override"" >
                             <value>application/json</value>
@@ -311,7 +319,8 @@ namespace Luna.Clients.Azure.APIM
             policy.properties.value =
                 @"<policies>
                     <inbound>
-                        <base />" +
+                        <base />
+                        <authentication-certificate certificate-id=""testCert"" />" +
                         $"<set-backend-service base-url =\"@(string.Format(&quot;{backendUrl}&quot;, context.Subscription.Id))\" />" +
                         @"<set-header name=""Content-Type"" exists-action=""override"" >
                             <value>application/json</value>
@@ -340,7 +349,8 @@ namespace Luna.Clients.Azure.APIM
             policy.properties.value =
                 @"<policies>
                     <inbound>
-                        <base />" +
+                        <base />
+                        <authentication-certificate certificate-id=""testCert"" />" +
                         $"<set-backend-service base-url =\"@(string.Format(&quot;{backendUrl}&quot;, context.Subscription.Id))\" />" +
                         @"<set-header name=""Content-Type"" exists-action=""override"" >
                             <value>application/json</value>
@@ -369,7 +379,8 @@ namespace Luna.Clients.Azure.APIM
             policy.properties.value =
                 @"<policies>
                     <inbound>
-                        <base />" +
+                        <base />
+                        <authentication-certificate certificate-id=""testCert"" />" +
                         $"<set-backend-service base-url =\"{backendUrl}\" />" +
                         @"<set-header name=""Content-Type"" exists-action=""override"" >
                             <value>application/json</value>
@@ -403,7 +414,8 @@ namespace Luna.Clients.Azure.APIM
             policy.properties.value =
                 @"<policies>
                     <inbound>
-                        <base />" +
+                        <base />
+                        <authentication-certificate certificate-id=""testCert"" />" +
                         $"<set-backend-service base-url =\"@(string.Format(&quot;{backendUrl}&quot;, context.Subscription.Id))\" />" +
                         @"<set-header name=""Content-Type"" exists-action=""override"" >
                             <value>application/json</value>
@@ -432,7 +444,8 @@ namespace Luna.Clients.Azure.APIM
             policy.properties.value =
                 @"<policies>
                     <inbound>
-                        <base />" +
+                        <base />
+                        <authentication-certificate certificate-id=""testCert"" />" +
                         $"<set-backend-service base-url =\"@(string.Format(&quot;{backendUrl}&quot;, context.Subscription.Id))\" />" +
                         @"<set-header name=""Content-Type"" exists-action=""override"" >
                             <value>application/json</value>
@@ -461,7 +474,8 @@ namespace Luna.Clients.Azure.APIM
             policy.properties.value =
                 @"<policies>
                     <inbound>
-                        <base />" +
+                        <base />
+                        <authentication-certificate certificate-id=""testCert"" />" +
                         $"<set-backend-service base-url =\"{backendUrl}\" />" +
                         @"<set-header name=""Content-Type"" exists-action=""override"" >
                             <value>application/json</value>
@@ -495,7 +509,8 @@ namespace Luna.Clients.Azure.APIM
             policy.properties.value =
                 @"<policies>
                     <inbound>
-                        <base />" +
+                        <base />
+                        <authentication-certificate certificate-id=""testCert"" />" +
                         $"<set-backend-service base-url =\"@(string.Format(&quot;{backendUrl}&quot;, context.Subscription.Id))\" />" +
                         @"<set-header name=""Content-Type"" exists-action=""override"" >
                             <value>application/json</value>
@@ -524,7 +539,8 @@ namespace Luna.Clients.Azure.APIM
             policy.properties.value =
                 @"<policies>
                     <inbound>
-                        <base />" +
+                        <base />
+                        <authentication-certificate certificate-id=""testCert"" />" +
                         $"<set-backend-service base-url =\"@(string.Format(&quot;{backendUrl}&quot;, context.Subscription.Id))\" />" +
                         @"<set-header name=""Content-Type"" exists-action=""override"" >
                             <value>application/json</value>
@@ -553,7 +569,8 @@ namespace Luna.Clients.Azure.APIM
             policy.properties.value =
                 @"<policies>
                     <inbound>
-                        <base />" +
+                        <base />
+                        <authentication-certificate certificate-id=""testCert"" />" +
                         $"<set-backend-service base-url =\"@(string.Format(&quot;{backendUrl}&quot;, context.Subscription.Id))\" />" +
                         @"<set-header name=""Content-Type"" exists-action=""override"" >
                             <value>application/json</value>
@@ -582,7 +599,8 @@ namespace Luna.Clients.Azure.APIM
             policy.properties.value =
                 @"<policies>
                     <inbound>
-                        <base />" +
+                        <base />
+                        <authentication-certificate certificate-id=""testCert"" />" +
                         $"<set-backend-service base-url =\"@(string.Format(&quot;{backendUrl}&quot;, context.Subscription.Id))\" />" +
                         @"<set-header name=""Content-Type"" exists-action=""override"" >
                             <value>application/json</value>
@@ -611,7 +629,8 @@ namespace Luna.Clients.Azure.APIM
             policy.properties.value =
                 @"<policies>
                     <inbound>
-                        <base />" +
+                        <base />
+                        <authentication-certificate certificate-id=""testCert"" />" +
                         $"<set-backend-service base-url =\"@(string.Format(&quot;{backendUrl}&quot;, context.Subscription.Id))\" />" +
                         @"<set-header name=""Content-Type"" exists-action=""override"" >
                             <value>application/json</value>

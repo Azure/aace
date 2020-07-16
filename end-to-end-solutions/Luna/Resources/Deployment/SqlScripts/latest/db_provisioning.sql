@@ -491,6 +491,7 @@ CREATE TABLE [dbo].[WebhookWebhookParameters](
 CREATE TABLE [dbo].[AMLWorkspaces](
 	[Id] [bigint] IDENTITY(1,1) NOT NULL,
 	[WorkspaceName] [nvarchar](50) NOT NULL,
+	[Region] [nvarchar](64) NOT NULL,
 	[ResourceId] [nvarchar](max) NOT NULL,
 	[AADApplicationId] [uniqueidentifier] NOT NULL,
 	[AADTenantId] [uniqueidentifier] NULL, -- allow null for backward compatibility

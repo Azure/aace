@@ -23,6 +23,7 @@ using Luna.Services.Utilities;
 using Luna.Services.WebHook;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.AzureAD.UI;
+using Microsoft.AspNetCore.Authentication.Certificate;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
@@ -40,6 +41,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Identity.Web.Resource;
 using Microsoft.OpenApi.Models;
+using Newtonsoft.Json;
 using Polly;
 using Polly.Extensions.Http;
 
@@ -137,6 +139,10 @@ namespace Luna.API
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddControllers().AddJsonOptions(options => {
+                options.JsonSerializerOptions.IgnoreNullValues = true;
+            });
+
             services.Configure<CookiePolicyOptions>(
                 options =>
                     {
@@ -149,7 +155,7 @@ namespace Luna.API
                 .AddAzureAD(options => this.configuration.Bind("AzureAd", options));
 
             services.AddAuthentication(AzureADDefaults.JwtBearerAuthenticationScheme)
-                            .AddAzureADBearer(options => this.configuration.Bind("AzureAd", options));
+                .AddAzureADBearer(options => this.configuration.Bind("AzureAd", options));
 
             AADAuthHelper.AdminList = this.configuration["ISVPortal:AdminAccounts"].Split(';', StringSplitOptions.RemoveEmptyEntries);
 

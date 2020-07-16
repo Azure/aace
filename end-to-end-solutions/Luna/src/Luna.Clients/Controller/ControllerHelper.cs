@@ -39,6 +39,26 @@ namespace Luna.Clients.Controller
             return workspaceDetails["location"].ToString();
         }
 
+        public static async Task<string> GetAllPipelines(AMLWorkspace workspace)
+        {
+            var requestUrl = $"https://{workspace.Region}.api.azureml.ms/pipelines/v1.0" + workspace.ResourceId + $"/pipelines";
+            var requestUri = new Uri(requestUrl);
+            var request = new HttpRequestMessage { RequestUri = requestUri, Method = HttpMethod.Get };
+
+            var token = await ControllerAuthHelper.GetToken(workspace.AADTenantId.ToString(), workspace.AADApplicationId.ToString(), workspace.AADApplicationSecrets);
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            var response = await HttpClient.SendAsync(request);
+
+            string responseContent = await response.Content.ReadAsStringAsync();
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new LunaServerException($"Query failed with response {responseContent}");
+            }
+
+            return responseContent;
+        }
+
         public static async Task<string> Predict(APIVersion version, AMLWorkspace workspace, object body)
         {
             var requestUri = new Uri(version.RealTimePredictAPI);
@@ -69,8 +89,6 @@ namespace Luna.Clients.Controller
             }
             return responseContent;
         }
-
-
 
         public static async Task<BatchInferenceResponse> BatchInferenceWithDefaultModel(Product product, Deployment deployment, APIVersion version, AMLWorkspace workspace, APISubscription apiSubscription, string userInput)
         {

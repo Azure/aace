@@ -1,4 +1,5 @@
-﻿using Luna.Clients.Exceptions;
+﻿using Luna.Clients.Controller;
+using Luna.Clients.Exceptions;
 using Luna.Clients.Logging;
 using Luna.Data.Entities;
 using Luna.Data.Repository;
@@ -57,44 +58,6 @@ namespace Luna.Services.Data.Luna.AI
             return workspace;
         }
 
-        public async Task<AMLWorkspace> CreateAsync(AMLWorkspace workspace)
-        {
-            if (workspace is null)
-            {
-                throw new LunaBadRequestUserException(LoggingUtils.ComposePayloadNotProvidedErrorMessage(typeof(AMLWorkspace).Name),
-                    UserErrorCode.PayloadNotProvided);
-            }
-
-            // Check that an offer with the same name does not already exist
-            if (await ExistsAsync(workspace.WorkspaceName))
-            {
-                throw new LunaConflictUserException(LoggingUtils.ComposeAlreadyExistsErrorMessage(typeof(AMLWorkspace).Name,
-                        workspace.WorkspaceName));
-            }
-            _logger.LogInformation(LoggingUtils.ComposeCreateResourceMessage(typeof(AMLWorkspace).Name, workspace.WorkspaceName, payload: JsonSerializer.Serialize(workspace)));
-
-            // Add product to db
-            _context.AMLWorkspaces.Add(workspace);
-            await _context._SaveChangesAsync();
-            _logger.LogInformation(LoggingUtils.ComposeResourceCreatedMessage(typeof(AMLWorkspace).Name, workspace.WorkspaceName));
-
-            return workspace;
-        }
-
-        public async Task<AMLWorkspace> DeleteAsync(string workspaceName)
-        {
-            _logger.LogInformation(LoggingUtils.ComposeDeleteResourceMessage(typeof(AMLWorkspace).Name, workspaceName));
-
-            var workspace = await GetAsync(workspaceName);
-
-            // Remove the product from the db
-            _context.AMLWorkspaces.Remove(workspace);
-            await _context._SaveChangesAsync();
-            _logger.LogInformation(LoggingUtils.ComposeResourceDeletedMessage(typeof(AMLWorkspace).Name, workspaceName));
-
-            return workspace;
-        }
-
         public async Task<bool> ExistsAsync(string workspaceName)
         {
             _logger.LogInformation(LoggingUtils.ComposeCheckResourceExistsMessage(typeof(AMLWorkspace).Name, workspaceName));
@@ -122,7 +85,31 @@ namespace Luna.Services.Data.Luna.AI
             }
         }
 
-        
+        public async Task<AMLWorkspace> CreateAsync(AMLWorkspace workspace)
+        {
+            if (workspace is null)
+            {
+                throw new LunaBadRequestUserException(LoggingUtils.ComposePayloadNotProvidedErrorMessage(typeof(AMLWorkspace).Name),
+                    UserErrorCode.PayloadNotProvided);
+            }
+
+            // Check that an offer with the same name does not already exist
+            if (await ExistsAsync(workspace.WorkspaceName))
+            {
+                throw new LunaConflictUserException(LoggingUtils.ComposeAlreadyExistsErrorMessage(typeof(AMLWorkspace).Name,
+                        workspace.WorkspaceName));
+            }
+            _logger.LogInformation(LoggingUtils.ComposeCreateResourceMessage(typeof(AMLWorkspace).Name, workspace.WorkspaceName, payload: JsonSerializer.Serialize(workspace)));
+
+            workspace.Region = await ControllerHelper.GetRegion(workspace);
+
+            // Add workspace to db
+            _context.AMLWorkspaces.Add(workspace);
+            await _context._SaveChangesAsync();
+            _logger.LogInformation(LoggingUtils.ComposeResourceCreatedMessage(typeof(AMLWorkspace).Name, workspace.WorkspaceName));
+
+            return workspace;
+        }
 
         public async Task<AMLWorkspace> UpdateAsync(string workspaceName, AMLWorkspace workspace)
         {
@@ -145,14 +132,29 @@ namespace Luna.Services.Data.Luna.AI
             }
 
             // Copy over the changes
+            workspace.Region = await ControllerHelper.GetRegion(workspace);
             workspaceDb.Copy(workspace);
 
-            // Update offerDb values and save changes in db
+            // Update workspaceDb values and save changes in db
             _context.AMLWorkspaces.Update(workspaceDb);
             await _context._SaveChangesAsync();
             _logger.LogInformation(LoggingUtils.ComposeResourceUpdatedMessage(typeof(Product).Name, workspace.WorkspaceName));
 
             return workspaceDb;
+        }
+
+        public async Task<AMLWorkspace> DeleteAsync(string workspaceName)
+        {
+            _logger.LogInformation(LoggingUtils.ComposeDeleteResourceMessage(typeof(AMLWorkspace).Name, workspaceName));
+
+            var workspace = await GetAsync(workspaceName);
+
+            // Remove the workspace from the db
+            _context.AMLWorkspaces.Remove(workspace);
+            await _context._SaveChangesAsync();
+            _logger.LogInformation(LoggingUtils.ComposeResourceDeletedMessage(typeof(AMLWorkspace).Name, workspaceName));
+
+            return workspace;
         }
     }
 }

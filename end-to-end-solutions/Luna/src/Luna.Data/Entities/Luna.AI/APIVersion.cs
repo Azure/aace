@@ -1,3 +1,4 @@
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -40,9 +41,9 @@ namespace Luna.Data.Entities
         }
 
         [Key]
-        [JsonIgnore]
+        [System.Text.Json.Serialization.JsonIgnore]
         public long Id { get; set; }
-        [JsonIgnore]
+        [System.Text.Json.Serialization.JsonIgnore]
         public long DeploymentId { get; set; }
         [NotMapped]
         public string ProductName { get; set; }
@@ -50,6 +51,15 @@ namespace Luna.Data.Entities
         public string DeploymentName { get; set; }
 
         public string VersionName { get; set; }
+        [NotMapped]
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public string TrainModelId { get; set; }
+        [NotMapped]
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public string BatchInferenceId { get; set; }
+        [NotMapped]
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public string DeployModelId { get; set; }
 
         public string RealTimePredictAPI { get; set; }
 
@@ -63,7 +73,7 @@ namespace Luna.Data.Entities
 
         public string AuthenticationKey { get; set; }
 
-        [JsonIgnore]
+        [System.Text.Json.Serialization.JsonIgnore]
         public long AMLWorkspaceId { get; set; }
 
         [NotMapped]

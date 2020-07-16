@@ -1,6 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Luna.Clients.Azure.APIM;
+using Luna.Clients.Azure.Auth;
 using Luna.Clients.Controller;
 using Luna.Clients.Exceptions;
 using Luna.Clients.Logging;
@@ -51,6 +53,8 @@ namespace Luna.API.Controllers.Admin
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> Predict(string productName, string deploymentName, [FromQuery(Name = "api-version")] string versionName, [FromBody] PredictRequest request)
         {
+            if (!ClientCertAuthHelper.IsValidClientCertificate(Request.HttpContext.Connection.ClientCertificate))
+                throw new LunaBadRequestUserException("Request Client Certificate is invalid.", UserErrorCode.InvalidParameter);
             var apiSubcription = await _apiSubscriptionService.GetAsync(request.subscriptionId);
             if (apiSubcription == null)
             {
@@ -69,6 +73,8 @@ namespace Luna.API.Controllers.Admin
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> BatchInferenceWithDefaultModel(string productName, string deploymentName, [FromQuery(Name = "api-version")] string versionName, [FromBody] BatchInferenceRequest request)
         {
+            if (!ClientCertAuthHelper.IsValidClientCertificate(Request.HttpContext.Connection.ClientCertificate))
+                throw new LunaBadRequestUserException("Request Client Certificate is invalid.", UserErrorCode.InvalidParameter);
             var apiSubcription = await _apiSubscriptionService.GetAsync(request.subscriptionId);
             if (apiSubcription == null)
             {
@@ -89,6 +95,8 @@ namespace Luna.API.Controllers.Admin
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> GetABatchInferenceOperationWithDefaultModel(string productName, string deploymentName, Guid operationId, [FromQuery(Name = "api-version")] string versionName, [FromBody] BatchInferenceRequest request)
         {
+            if (!ClientCertAuthHelper.IsValidClientCertificate(Request.HttpContext.Connection.ClientCertificate))
+                throw new LunaBadRequestUserException("Request Client Certificate is invalid.", UserErrorCode.InvalidParameter);
             var apiSubcription = await _apiSubscriptionService.GetAsync(request.subscriptionId);
             if (apiSubcription == null)
             {
@@ -115,6 +123,8 @@ namespace Luna.API.Controllers.Admin
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> ListAllInferenceOperationsByUserWithDefaultModel(string productName, string deploymentName, [FromQuery(Name = "api-version")] string versionName, [FromBody] BatchInferenceRequest request)
         {
+            if (!ClientCertAuthHelper.IsValidClientCertificate(Request.HttpContext.Connection.ClientCertificate))
+                throw new LunaBadRequestUserException("Request Client Certificate is invalid.", UserErrorCode.InvalidParameter);
             var apiSubcription = await _apiSubscriptionService.GetAsync(request.subscriptionId);
             if (apiSubcription == null)
             {
@@ -135,6 +145,8 @@ namespace Luna.API.Controllers.Admin
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> TrainModel(string productName, string deploymentName, [FromQuery(Name = "api-version")] string versionName, [FromBody] TrainModelRequest request)
         {
+            if (!ClientCertAuthHelper.IsValidClientCertificate(Request.HttpContext.Connection.ClientCertificate))
+                throw new LunaBadRequestUserException("Request Client Certificate is invalid.", UserErrorCode.InvalidParameter);
             var apiSubcription = await _apiSubscriptionService.GetAsync(request.subscriptionId);
             if (apiSubcription == null)
             {
@@ -155,6 +167,8 @@ namespace Luna.API.Controllers.Admin
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> GetATrainingOperationsByModelIdUser(string productName, string deploymentName, Guid subscriptionId, Guid modelId, [FromQuery(Name = "userid")] string userId, [FromQuery(Name = "api-version")] string versionName)
         {
+            if (!ClientCertAuthHelper.IsValidClientCertificate(Request.HttpContext.Connection.ClientCertificate))
+                throw new LunaBadRequestUserException("Request Client Certificate is invalid.", UserErrorCode.InvalidParameter);
             var apiSubcription = await _apiSubscriptionService.GetAsync(subscriptionId);
             if (apiSubcription == null)
             {
@@ -176,6 +190,8 @@ namespace Luna.API.Controllers.Admin
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> ListAllTrainingOperationsByUser(string productName, string deploymentName, Guid subscriptionId, [FromQuery(Name = "userid")] string userId, [FromQuery(Name = "api-version")] string versionName)
         {
+            if (!ClientCertAuthHelper.IsValidClientCertificate(Request.HttpContext.Connection.ClientCertificate))
+                throw new LunaBadRequestUserException("Request Client Certificate is invalid.", UserErrorCode.InvalidParameter);
             var apiSubcription = await _apiSubscriptionService.GetAsync(subscriptionId);
             if (apiSubcription == null)
             {
@@ -202,6 +218,8 @@ namespace Luna.API.Controllers.Admin
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> GetAModelByModelIdUserProductDeployment(string productName, string deploymentName, Guid subscriptionId, Guid modelId, [FromQuery(Name = "userid")] string userId, [FromQuery(Name = "api-version")] string versionName)
         {
+            if (!ClientCertAuthHelper.IsValidClientCertificate(Request.HttpContext.Connection.ClientCertificate))
+                throw new LunaBadRequestUserException("Request Client Certificate is invalid.", UserErrorCode.InvalidParameter);
             var apiSubcription = await _apiSubscriptionService.GetAsync(subscriptionId);
             if (apiSubcription == null)
             {
@@ -222,6 +240,8 @@ namespace Luna.API.Controllers.Admin
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> GetAllModelsByUserProductDeployment(string productName, string deploymentName, Guid subscriptionId, [FromQuery(Name = "userid")] string userId, [FromQuery(Name = "api-version")] string versionName)
         {
+            if (!ClientCertAuthHelper.IsValidClientCertificate(Request.HttpContext.Connection.ClientCertificate))
+                throw new LunaBadRequestUserException("Request Client Certificate is invalid.", UserErrorCode.InvalidParameter);
             var apiSubcription = await _apiSubscriptionService.GetAsync(subscriptionId);
             if (apiSubcription == null)
             {
@@ -242,6 +262,8 @@ namespace Luna.API.Controllers.Admin
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> DeleteAModel(string productName, string deploymentName, Guid subscriptionId, Guid modelId, [FromQuery(Name = "userid")] string userId, [FromQuery(Name = "api-version")] string versionName)
         {
+            if (!ClientCertAuthHelper.IsValidClientCertificate(Request.HttpContext.Connection.ClientCertificate))
+                throw new LunaBadRequestUserException("Request Client Certificate is invalid.", UserErrorCode.InvalidParameter);
             var apiSubcription = await _apiSubscriptionService.GetAsync(subscriptionId);
             if (apiSubcription == null)
             {
@@ -261,6 +283,8 @@ namespace Luna.API.Controllers.Admin
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> BatchInference(string productName, string deploymentName, Guid modelId, [FromQuery(Name = "api-version")] string versionName, [FromBody] BatchInferenceRequest request)
         {
+            if (!ClientCertAuthHelper.IsValidClientCertificate(Request.HttpContext.Connection.ClientCertificate))
+                throw new LunaBadRequestUserException("Request Client Certificate is invalid.", UserErrorCode.InvalidParameter);
             var apiSubcription = await _apiSubscriptionService.GetAsync(request.subscriptionId);
             if (apiSubcription == null)
             {
@@ -281,6 +305,8 @@ namespace Luna.API.Controllers.Admin
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> GetABatchInferenceOperation(string productName, string deploymentName, Guid subscriptionId, Guid operationId, [FromQuery(Name = "userid")] string userId, [FromQuery(Name = "api-version")] string versionName)
         {
+            if (!ClientCertAuthHelper.IsValidClientCertificate(Request.HttpContext.Connection.ClientCertificate))
+                throw new LunaBadRequestUserException("Request Client Certificate is invalid.", UserErrorCode.InvalidParameter);
             var apiSubcription = await _apiSubscriptionService.GetAsync(subscriptionId);
             if (apiSubcription == null)
             {
@@ -307,6 +333,8 @@ namespace Luna.API.Controllers.Admin
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> ListAllInferenceOperationsByUser(string productName, string deploymentName, Guid subscriptionId, [FromQuery(Name = "userid")] string userId, [FromQuery(Name = "api-version")] string versionName)
         {
+            if (!ClientCertAuthHelper.IsValidClientCertificate(Request.HttpContext.Connection.ClientCertificate))
+                throw new LunaBadRequestUserException("Request Client Certificate is invalid.", UserErrorCode.InvalidParameter);
             var apiSubcription = await _apiSubscriptionService.GetAsync(subscriptionId);
             if (apiSubcription == null)
             {
@@ -333,6 +361,8 @@ namespace Luna.API.Controllers.Admin
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> DeployRealTimePredictionEndpoint(string productName, string deploymentName, Guid modelId, [FromQuery(Name = "api-version")] string versionName, [FromBody] BatchInferenceRequest request)
         {
+            if (!ClientCertAuthHelper.IsValidClientCertificate(Request.HttpContext.Connection.ClientCertificate))
+                throw new LunaBadRequestUserException("Request Client Certificate is invalid.", UserErrorCode.InvalidParameter);
             var apiSubcription = await _apiSubscriptionService.GetAsync(request.subscriptionId);
             if (apiSubcription == null)
             {
@@ -359,6 +389,8 @@ namespace Luna.API.Controllers.Admin
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> GetADeployOperationByEndpointIdUser(string productName, string deploymentName, Guid subscriptionId, Guid endpointId, [FromQuery(Name = "userid")] string userId, [FromQuery(Name = "api-version")] string versionName)
         {
+            if (!ClientCertAuthHelper.IsValidClientCertificate(Request.HttpContext.Connection.ClientCertificate))
+                throw new LunaBadRequestUserException("Request Client Certificate is invalid.", UserErrorCode.InvalidParameter);
             var apiSubcription = await _apiSubscriptionService.GetAsync(subscriptionId);
             if (apiSubcription == null)
             {
@@ -385,6 +417,8 @@ namespace Luna.API.Controllers.Admin
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> ListAllDeployOperationsByUser(string productName, string deploymentName, Guid subscriptionId, [FromQuery(Name = "userid")] string userId, [FromQuery(Name = "api-version")] string versionName)
         {
+            if (!ClientCertAuthHelper.IsValidClientCertificate(Request.HttpContext.Connection.ClientCertificate))
+                throw new LunaBadRequestUserException("Request Client Certificate is invalid.", UserErrorCode.InvalidParameter);
             var apiSubcription = await _apiSubscriptionService.GetAsync(subscriptionId);
             if (apiSubcription == null)
             {
@@ -411,6 +445,8 @@ namespace Luna.API.Controllers.Admin
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> GetAllRealTimeServiceEndpointsByUserProductAndDeployment(string productName, string deploymentName, Guid subscriptionId, [FromQuery(Name = "userid")] string userId, [FromQuery(Name = "api-version")] string versionName)
         {
+            if (!ClientCertAuthHelper.IsValidClientCertificate(Request.HttpContext.Connection.ClientCertificate))
+                throw new LunaBadRequestUserException("Request Client Certificate is invalid.", UserErrorCode.InvalidParameter);
             var apiSubcription = await _apiSubscriptionService.GetAsync(subscriptionId);
             if (apiSubcription == null)
             {
@@ -437,6 +473,8 @@ namespace Luna.API.Controllers.Admin
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> GetARealTimeServiceEndpointByEndpointIdUserProductAndDeployment(string productName, string deploymentName, Guid subscriptionId, Guid endpointId, [FromQuery(Name = "userid")] string userId, [FromQuery(Name = "api-version")] string versionName)
         {
+            if (!ClientCertAuthHelper.IsValidClientCertificate(Request.HttpContext.Connection.ClientCertificate))
+                throw new LunaBadRequestUserException("Request Client Certificate is invalid.", UserErrorCode.InvalidParameter);
             var apiSubcription = await _apiSubscriptionService.GetAsync(subscriptionId);
             if (apiSubcription == null)
             {
@@ -458,6 +496,8 @@ namespace Luna.API.Controllers.Admin
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> DeleteAEndpoint(string productName, string deploymentName, Guid subscriptionId, Guid endpointId, [FromQuery(Name = "userid")] string userId, [FromQuery(Name = "api-version")] string versionName)
         {
+            if (!ClientCertAuthHelper.IsValidClientCertificate(Request.HttpContext.Connection.ClientCertificate))
+                throw new LunaBadRequestUserException("Request Client Certificate is invalid.", UserErrorCode.InvalidParameter);
             var apiSubcription = await _apiSubscriptionService.GetAsync(subscriptionId);
             if (apiSubcription == null)
             {
