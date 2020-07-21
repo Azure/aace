@@ -94,6 +94,42 @@
       "metadata": {
         "description": "The object id for key vault access policy."
       }
+    },
+    "apimAdminEmail": {
+      "type": "string",
+      "metadata": {
+        "description": "The APIM admin email."
+      }
+    },
+    "orgName": {
+      "type": "string",
+      "metadata": {
+        "description": "The orgnization name."
+      }
+    },
+    "apimName": {
+      "type": "string",
+      "metadata": {
+        "description": "APIM service name."
+      }
+    },
+    "apimTier": {
+      "type": "string",
+      "metadata": {
+        "description": "APIM pricing tier."
+      }
+    },
+    "apimCapacity": {
+      "type": "int",
+      "metadata": {
+        "description": "APIM capacity."
+      }
+    },
+    "deployAPIM": {
+      "type": "bool",
+      "metadata": {
+        "description": "If enable v2 and deploy APIM"
+      }
     }
   },
   "variables": {
@@ -469,7 +505,58 @@
             "enabledForDiskEncryption": false,
             "enabledForTemplateDeployment": false
         }
-    }
+    },
+        {
+            "condition": "[parameters('deployAPIM')]",
+            "apiVersion": "2019-01-01",
+            "name": "[parameters('apimName')]",
+            "location": "[parameters('location')]",
+            "type": "Microsoft.ApiManagement/service",
+            "sku": {
+                "name": "[parameters('apimTier')]",
+                "capacity": "[parameters('apimCapacity')]"
+            },
+            "properties": {
+                "publisherEmail": "[parameters('apimAdminEmail')]",
+                "publisherName": "[parameters('orgName')]"
+            },
+            "resources": [
+                {
+                    "condition": "[parameters('deployAPIM')]",
+                    "apiVersion": "2019-01-01",
+                    "type": "loggers",
+                    "name": "[parameters('apiWebAppInsightsName')]",
+                    "dependsOn": [
+                        "[concat('Microsoft.ApiManagement/service/', parameters('apimName'))]"
+                    ],
+                    "properties": {
+                        "loggerType": "applicationInsights",
+                        "resourceId": "resourceId('microsoft.insights/components', parameters('apiWebAppInsightsName'))",
+                        "credentials": {
+                            "instrumentationKey": "[reference(concat('microsoft.insights/components/', parameters('apiWebAppInsightsName')), '2015-05-01').InstrumentationKey]"
+                        }
+                    }
+                },
+                {
+                    "condition": "[parameters('deployAPIM')]",
+                    "apiVersion": "2019-01-01",
+                    "type": "diagnostics",
+                    "name": "applicationinsights",
+                    "dependsOn": [
+                        "[concat('Microsoft.ApiManagement/service/', parameters('apimName'))]",
+                        "[concat('Microsoft.ApiManagement/service/', parameters('apimName'), '/loggers/', parameters('apiWebAppInsightsName'))]"
+                    ],
+                    "properties": {
+                        "loggerId": "[concat('/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.ApiManagement/service/', parameters('apimName'), '/loggers/', parameters('apiWebAppInsightsName'))]",
+                        "alwaysLog": "allErrors",
+                        "sampling": {
+                            "percentage": 100,
+                            "samplingType": "fixed"
+                        }
+                    }
+                }
+            ]
+        }
   ],
   "outputs": {
   }
