@@ -1,3 +1,6 @@
+> ## IMPORTANT
+> ## This solution template is being deprecated. All the functionalities are migrated to the [Knowledge Mining Solution Accelerator](http://aka.ms/kmsolutions). 
+
 # Knowledge Mining Solution Accelerator (KMA v1.0)
 
 We are excited to share with you the Knowledge Mining Solution Accelerator, an open source end-to-end application that enables you to try the latest features of Azure Cognitive Search!  
