@@ -18,4 +18,4 @@ If you want to deploy the ML models to Azure Container Instances, you don't need
 
 ## Next Step
 
-[Create a ML project using Luna.AI project template](./use-luna-ml-project-template.md
+[Create a ML project using Luna.AI project template](./use-luna-ml-project-template.md)
