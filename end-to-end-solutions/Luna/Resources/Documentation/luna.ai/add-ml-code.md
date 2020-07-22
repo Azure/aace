@@ -1,6 +1,26 @@
 # Add code to the Luna ML project
 
-In this article, we are going to show you how to add training, batch inference and scoring code to the Luna ML project. We will use a sklearn Linear Regression classification model as an example.
+In this article, we are going to show you how to add training, batch inference and scoring code to the Luna ML project. We will use a sklearn Logistic Regression classification model as an example.
+
+## Update conda environment
+
+Luna and Azure Machine Learning service will create the execution environment from the *conda.yml* file in the base folder of Luna project template. You should add your conda or pip dependencies in the file.
+
+In this tutorial, we will add the sklearn pip package:
+
+```yaml
+- pip:
+...
+  sklearn
+```
+
+## Create conda environment for local test
+
+In this tutorial, we will run some test locally before deploying the code to Azure Machine Learning service. You need to run the following command from the root folder of the Luna ML project template to create the local conda environment after you update your conda.yml file:
+
+```shell
+conda env create -f conda.yml
+```
 
 ## Where to add my code
 
@@ -12,9 +32,26 @@ The only source code file you need to update in the Luna ML project template is 
 - batch_inference: the function to perform batch inference using a model
 - set_run_mode: this function is for Luna service usage only. Please don't update or remove it.
 
+## Import modules
+
+Add required modules to the *src/luna_publish/LunaPythonModel.py*. In this tutorial, we will be training a Logistic Regression model using sklearn, so add the followings:
+
+```python
+from sklearn.linear_model import LogisticRegression
+import pandas as pd
+import json
+import os
+import pickle
+import requests
+
+from luna.numpyJsonEncoder import NumpyJSONEncoder
+```
+
+The NumpyJSONEncoder helps you serialize Numpy data types to JSON strings. You can also implement and use your own JSON encoder.
+
 ## Model Training
 
-You can add following code to the *train* function of LunaPythonModel class to train a skleanr Linear Regression classification model:
+You can add following code to the *train* function of LunaPythonModel class to train a skleanr Logistic Regression classification model:
 
 ```python
 train_data = pd.read_csv(user_input["trainingDataSource"])
@@ -26,12 +63,12 @@ X = train_data.drop([label_column_name], axis=1)
 
 Y = train_data[label_column_name]
 
-lin_reg = LinearRegression()
-lin_reg.fit(X, Y)
+log_reg = LogisticRegression()
+log_reg.fit(X, Y)
 
 model_path = 'models'
 model_file = os.path.join(model_path, "model.pkl")
-pickle.dump(lin_reg, open(model_file, 'wb'))
+pickle.dump(log_reg, open(model_file, 'wb'))
 
 return model_path, description
 ```
@@ -46,13 +83,13 @@ The user_input is an dictionary contains the JSON contain from user API request.
 }
 ```
 
-The function will read training data from *trainingDataSource* and train a Linear Regression model using sklean library.
+The function will read training data from *trainingDataSource* and train a Logistic Regression model using sklean library.
 
 After you trained and vaidated the model, you can save the model file/files to a local folder (defined as model_path). Luna service will automatically register the model to the Azure Machine Learning workspace with an auto generated model id and return the model id to the user.
 
 ## Batch Inference
 
-You can add the following code to the batch_inference function to perform batch inference using a Linear Regression classification model:
+You can add the following code to the batch_inference function to perform batch inference using a Logistic Regression classification model:
 
 ```python
 data = pd.read_csv(user_input["dataSource"])
@@ -112,10 +149,10 @@ Then you can add the following code to the *predict* function to predict the lab
 ```python
 user_input = json.loads(model_input)
 
-scoring_result = self._model.predict(user_input["records"])
+scoring_result = {"result": self._model.predict(user_input["records"])}
 
 scoring_result = json.dumps(scoring_result, cls=NumpyJSONEncoder)
-return scoring_result
+return AMLResponse(scoring_result, 200)
 ```
 
 ## Next Step

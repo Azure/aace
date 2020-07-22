@@ -4,9 +4,9 @@
 
 In this tutorial, we will show you how to use Project Luna, Azure Machine Learning Service and Azure Marketplace to package and publish ML models and algorithms into AI services and sell through Microsoft.
 
-We are going to use a simple sklearn Linear Regression classification model as an example in this tutorial. By end of the tutorial, you will have:
+We are going to use a simple sklearn Logistic Regression classification model as an example in this tutorial. By end of the tutorial, you will have:
 
-- An Azure Marketplace SaaS offer which allows user to train and use Linear Regression classification models.
+- An Azure Marketplace SaaS offer which allows user to train and use Logistic Regression classification models.
 - Two plans in your SaaS offer:
   - First plan provides a pre-trained model using the sklearn iris dataset. It can be used for trial or demo purposes.
   - Second plan allows user to train classification models using their own data, use the model to do batch inference or deploy the model to a service endpoint for real-time scoring
