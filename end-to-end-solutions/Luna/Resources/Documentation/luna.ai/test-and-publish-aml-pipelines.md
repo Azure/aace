@@ -32,7 +32,7 @@ Write-Host $token
 
 TODO: screenshot from Azure storage explorer
 
-### Prepare test data
+### Update test_data.json
 
 In the Luna project template, the test data is defined in *tests/azureml/test_data.json*. You need to define 3 inputs and 1 output data:
 
