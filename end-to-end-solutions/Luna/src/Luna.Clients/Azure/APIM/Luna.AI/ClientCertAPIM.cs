@@ -45,14 +45,8 @@ namespace Luna.Clients.Azure.APIM
         }
 
 
-        public string GetUserName(string owner)
-        {
-            return owner.Replace("@", "").Replace(".", "");
-        }
-
         public string GetAPIMRESTAPIPath(string owner)
         {
-            string userName = GetUserName(owner);
             return string.Format(PATH_FORMAT, _subscriptionId, _resourceGroupName, _apimServiceName);
         }
 
@@ -69,19 +63,6 @@ namespace Luna.Clients.Azure.APIM
             return new Uri(builder.ToString());
         }
 
-        private Models.Azure.User GetUser(string owner)
-        {
-            string[] names = owner.Split('@');
-            if (names.Length != 2) throw new InvalidOperationException($"user email format is invalid. email: {owner}");
-
-            Models.Azure.User user = new Models.Azure.User();
-            user.name = GetUserName(owner);
-            user.properties.email = owner;
-            user.properties.firstName = names[0] ?? user.properties.firstName;
-            user.properties.lastName = names[1] ?? user.properties.lastName;
-
-            return user;
-        }
 
         public async Task<ClientCertConfiguration> GetCert(string owner)
         {
@@ -91,7 +72,7 @@ namespace Luna.Clients.Azure.APIM
             request.Headers.Authorization = new AuthenticationHeaderValue("SharedAccessSignature", _apimAuthHelper.GetSharedAccessToken());
             request.Headers.Add("If-Match", "*");
 
-            request.Content = new StringContent(JsonConvert.SerializeObject(GetUser(owner)), Encoding.UTF8, "application/json");
+            request.Content = new StringContent(JsonConvert.SerializeObject(owner), Encoding.UTF8, "application/json");
 
             var response = await _httpClient.SendAsync(request);
 
