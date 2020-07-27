@@ -289,6 +289,7 @@ namespace Luna.API
             services.AddHttpClient<IPolicyAPIM, PolicyAPIM>();
             services.AddHttpClient<IAPISubscriptionAPIM, APISubscriptionAPIM>();
             services.AddHttpClient<IUserAPIM, UserAPIM>();
+            services.AddHttpClient<IClientCertAPIM, ClientCertAPIM>();
 
             services.AddOptions<StorageAccountConfigurationOption>().Configure(
                options => {
