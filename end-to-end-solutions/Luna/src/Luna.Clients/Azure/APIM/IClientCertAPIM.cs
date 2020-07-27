@@ -1,5 +1,6 @@
 ﻿using System;
 using Luna.Clients.Azure.Auth;
+using System.Threading.Tasks;
 
 namespace Luna.Clients.Azure.APIM
 {
