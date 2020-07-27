@@ -130,6 +130,24 @@
       "metadata": {
         "description": "If enable v2 and deploy APIM"
       }
+    },
+    "workspaceName": {
+      "type": "string",
+      "metadata": {
+        "description": "AML workspace name"
+      }
+    },
+    "workspaceSku": {
+      "type": "string",
+      "metadata": {
+        "description": "AML workspace SKU"
+      }
+    },
+    "deployAML": {
+      "type": "bool",
+      "metadata": {
+        "description": "If enable v2 and deploy AML workspace"
+      }
     }
   },
   "variables": {
@@ -556,6 +574,56 @@
                     }
                 }
             ]
+        },
+        {
+            "condition": "[parameters('deployAML')]",
+            "type": "Microsoft.MachineLearningServices/workspaces",
+            "apiVersion": "2020-04-01",
+            "name": "[parameters('workspaceName')]",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName'))]",
+                "[resourceId('Microsoft.KeyVault/vaults', parameters('keyVaultName'))]",
+                "[resourceId('Microsoft.Insights/components', parameters('apiWebAppInsightsName'))]"
+            ],
+            "tags": {"purpose":"Luna.ai"},
+            "sku": {
+                "tier": "[parameters('workspaceSku')]",
+                "name": "[parameters('workspaceSku')]"
+            },
+            "identity": {
+                "type": "systemAssigned"
+            },
+            "properties": {
+                "friendlyName": "[parameters('workspaceName')]",
+                "storageAccount": "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName'))]",
+                "keyVault": "[resourceId('Microsoft.KeyVault/vaults', parameters('keyVaultName'))]",
+                "applicationInsights": "[resourceId('Microsoft.Insights/components', parameters('apiWebAppInsightsName'))]"
+            }
+        },
+        {
+            "condition": "[parameters('deployAML')]",
+            "type": "Microsoft.MachineLearningServices/workspaces/computes",
+            "apiVersion": "2020-04-01",
+            "name": "[concat(parameters('workspaceName'), '/lunaamlcompute')]",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.MachineLearningServices/workspaces', parameters('workspaceName'))]"
+            ],
+            "properties": {
+                "computeType": "AmlCompute",
+                "computeLocation": "[parameters('location')]",
+                "properties": {
+                    "vmSize": "STANDARD_DS3_V2",
+                    "vmPriority": "Dedicated",
+                    "scaleSettings": {
+                        "maxNodeCount": 4,
+                        "minNodeCount": 0,
+                        "nodeIdleTimeBeforeScaleDown": "PT2M"
+                    },
+                    "remoteLoginPortPublicAccess": "Enabled"
+                }
+            }
         }
   ],
   "outputs": {

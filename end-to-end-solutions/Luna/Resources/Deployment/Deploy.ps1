@@ -41,6 +41,10 @@
 
     [string]$apimCapacity = 1,
 
+    [string]$amlWorkspaceName = "default",
+
+    [string]$amlWorkspaceSku = "Basic",
+
     [string]$azureMarketplaceAADApplicationName = "default",
 
     [string]$azureMarketplaceAADApplicationId = "00000000-0000-0000-0000-000000000000",
@@ -247,6 +251,7 @@ $apiWebAppName = GetNameForAzureResources -defaultName $apiWebAppName -resourceT
 $apiWebJobName = GetNameForAzureResources -defaultName $apiWebJobName -resourceTypeSuffix "-apiwebjob" -uniqueName $uniqueName
 $apiWebAppInsightsName = GetNameForAzureResources -defaultName $apiWebAppInsightsName -resourceTypeSuffix "-apiappinsights" -uniqueName $uniqueName
 $apimName = GetNameForAzureResources -defaultName $apimName -resourceTypeSuffix "-apim" -uniqueName $uniqueName
+$amlWorkspaceName = GetNameForAzureResources -defaultName $amlWorkspaceName -resourceTypeSuffix "-aml" -uniqueName $uniqueName
 
 $azureMarketplaceAADApplicationName = GetNameForAzureResources -defaultName $azureMarketplaceAADApplicationName -resourceTypeSuffix "-azuremarketplace-aad" -uniqueName $uniqueName
 $azureResourceManagerAADApplicationName = GetNameForAzureResources -defaultName $azureResourceManagerAADApplicationName -resourceTypeSuffix "-azureresourcemanager-aad" -uniqueName $uniqueName
@@ -292,6 +297,7 @@ New-AzResourceGroup -Name $resourceGroupName -Location $location
 
 Write-Host "Deploy ARM template in resource group" $resourceGroupName
 $deployAPIM = $enableV2 -eq 'true'
+$deployAML = $enableV2 -eq 'true'
 New-AzResourceGroupDeployment -ResourceGroupName $resourceGroupName `
                               -TemplateFile .\main.json `
                               -keyVaultName $keyVaultName `
@@ -314,7 +320,10 @@ New-AzResourceGroupDeployment -ResourceGroupName $resourceGroupName `
                               -apimName $apimName `
                               -apimTier $apimTier `
                               -apimCapacity $apimCapacity `
-                              -deployAPIM $deployAPIM
+                              -deployAPIM $deployAPIM `
+                              -workspaceName $amlWorkspaceName `
+                              -workspaceSku $amlWorkspaceSku `
+                              -deployAML $deployAML
 
 
 $filter = "AppId eq '"+$webAppAADApplicationId+"'"
@@ -388,6 +397,10 @@ if ($isNewApp){
     
     Write-Host "Assign subscription contribution role to the service principal."
     $scope = '/subscriptions/'+$userApplicationSubscriptionId
+    NewAzureRoleAssignment -objectId $principalId -scope $scope -retryCount 10
+    
+    Write-Host "Assign contribution role on the AML workspace to the service principal."
+    $scope = '/subscriptions/'+$userApplicationSubscriptionId+'/resourceGroups/'+$resourceGroupName+'/providers/Microsoft.MachineLearningServices/workspaces/'+$amlWorkspaceName
     NewAzureRoleAssignment -objectId $principalId -scope $scope -retryCount 10
 }
 

@@ -31,6 +31,27 @@ After updating all the variables, you can start to run the test by running the r
 
 ## Run tests using Luna client library
 
+You can also choose to test the AI service using Luna client library.
+
 ### Subscribe the AI service
 
+Before testing the AI service using client library, you need to subscribe the AI service, get the base url and the key. You can still download the [Postman collection](https://www.getpostman.com/collections/92eec92e800414e8cece) and run corresponding requests to subscribe the AI service, or you can subscribe the AI service by the following http request:
+
+```http
+POST https://{{unique_name}}-apiapp.azurewebsites.net/api/apisubscriptions/createwithid?ProductName={{product_name}}&DeploymentName={{deployment_name}}&UserId={{user_id}}&SubscriptionName={{subscription_name}}&SubscriptionId={{subscription_id}}
+```
+
+where
+
+- unique_name is the unique name you used when deploying Luna service
+- product_name is the product name you used when publish the AI service
+- deployment_name is the deployment name you used when publish the AI service
+- user_id is your AAD id
+- subscsription_name can be any name less than 64 characters.
+- subscription_id needs to be a guid without hyphens
+
 ### Run tests in the sample python notebook
+
+## Next Step
+
+[Publish an SaaS offer](./publish-saas-offer.md)

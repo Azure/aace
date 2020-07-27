@@ -497,6 +497,7 @@ CREATE TABLE [dbo].[AMLWorkspaces](
 	[AADApplicationId] [uniqueidentifier] NOT NULL,
 	[AADTenantId] [uniqueidentifier] NULL,
 	[AADApplicationSecrets] [nvarchar](128) NOT NULL,
+	[Region] [nvarchar](32) NOT NULL,
 	PRIMARY KEY (Id)
 )
 GO
