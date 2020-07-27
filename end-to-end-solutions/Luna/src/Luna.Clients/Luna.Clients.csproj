@@ -43,6 +43,7 @@ HACK: Covering the discrepancy between prod API and mock API for gell all subscr
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Controller\Model\" />
     <Folder Include="Properties\" />
   </ItemGroup>
 

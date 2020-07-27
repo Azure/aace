@@ -491,6 +491,7 @@ CREATE TABLE [dbo].[WebhookWebhookParameters](
 CREATE TABLE [dbo].[AMLWorkspaces](
 	[Id] [bigint] IDENTITY(1,1) NOT NULL,
 	[WorkspaceName] [nvarchar](50) NOT NULL,
+	[Region] [nvarchar](64) NOT NULL,
 	[ResourceId] [nvarchar](max) NOT NULL,
 	[AADApplicationId] [uniqueidentifier] NOT NULL,
 	[AADTenantId] [uniqueidentifier] NULL, -- allow null for backward compatibility
@@ -557,4 +558,36 @@ CREATE TABLE [dbo].[APISubscriptions](
 	PRIMARY KEY (SubscriptionId),
 	CONSTRAINT FK_deploymentId_APISubscriptions FOREIGN KEY (DeploymentId) REFERENCES Deployments(Id)
 ) ON [PRIMARY]
+GO
+
+CREATE TABLE [dbo].[APISubscriptions_tmp](
+    [Id] [bigint] identity(1,1) NOT NULL,
+	[SubscriptionId] [uniqueidentifier] NOT NULL,
+	[DeploymentId] [bigint] NOT NULL,
+	[SubscriptionName] [nvarchar](64) NOT NULL,
+	[userId] [nvarchar](512) NOT NULL,
+	[Status] [nvarchar](32) NULL,
+	[BaseUrl] [nvarchar](max) NULL,
+	[PrimaryKey] [nvarchar](64) NULL,
+	[SecondaryKey] [nvarchar](64) NULL,
+	[CreatedTime] [datetime2](7) NOT NULL,
+	[LastUpdatedTime] [datetime2](7) NOT NULL,
+	PRIMARY KEY CLUSTERED([SubscriptionId] ASC)WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+
+insert into APISubscriptions_tmp select * from APISubscriptions
+GO
+
+drop table apisubscriptions
+GO
+
+EXEC sp_rename 'apisubscriptions_tmp', 'APISubscriptions'
+GO
+
+ALTER TABLE [dbo].[APISubscriptions]  WITH CHECK ADD  CONSTRAINT [FK_deploymentId_APISubscriptions] FOREIGN KEY([DeploymentId])
+REFERENCES [dbo].[Deployments] ([Id])
+GO
+
+ALTER TABLE [dbo].[APISubscriptions] CHECK CONSTRAINT [FK_deploymentId_APISubscriptions]
 GO

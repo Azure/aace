@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using Luna.Clients.Azure.Auth;
+using Luna.Clients.Controller;
 using Luna.Clients.Exceptions;
 using Luna.Clients.Logging;
 using Luna.Data.Entities;
@@ -36,6 +37,21 @@ namespace Luna.API.Controllers.Admin
         {
             _workspaceService = workspaceService ?? throw new ArgumentNullException(nameof(workspaceService));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        }
+
+        /// <summary>
+        /// Get deployed pipelines from a workspace.
+        /// </summary>
+        /// <param name="workspaceName">The name of the workspace to get.</param>
+        /// <returns>HTTP 200 OK with workspace JSON object in response body.</returns>
+        [HttpGet("amlworkspaces/{workspaceName}/pipelines")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<ActionResult> GetAllPipelinesAsync(string workspaceName)
+        {
+            AADAuthHelper.VerifyUserAccess(this.HttpContext, _logger, true);
+            _logger.LogInformation($"Get workspace {workspaceName}");
+            var workspace = await _workspaceService.GetAsync(workspaceName);
+            return this.Content((await ControllerHelper.GetAllPipelines(workspace)), "application/json");
         }
 
         /// <summary>

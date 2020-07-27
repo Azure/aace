@@ -1,0 +1,18 @@
+Metadata-Version: 2.1
+Name: luna-client
+Version: 0.1.0
+Summary: Python client library for project Luna
+Home-page: https://github.com/Azure/AIPlatform/end-to-end-solutions/Luna/src/Luna.Packages/luna-client
+Author: Xiaochen Wu
+Author-email: xiwu@microsoft.com
+License: MIT
+Description: # Python client library for Project Luna
+        
+        ## Overview
+        
+        ### 
+Platform: UNKNOWN
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.7
+Description-Content-Type: text/markdown

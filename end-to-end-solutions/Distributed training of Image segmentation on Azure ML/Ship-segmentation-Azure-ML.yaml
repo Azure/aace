@@ -1,0 +1,8 @@
+name: project_environment
+dependencies:
+  - python>3.6.2
+  - torch>1.0
+  - pip:
+      # You must list azureml-defaults as a pip dependency
+    - fastai
+    - azureml-sdk[notebooks,automl]
