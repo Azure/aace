@@ -222,7 +222,7 @@
         "reserved": false,
         "scmSiteAlsoStopped": false,
         "clientAffinityEnabled": true,
-        "clientCertEnabled": false,
+        "clientCertEnabled": true,
         "hostNamesDisabled": false,
         "containerSize": 0,
         "dailyMemoryTimeQuota": 0,

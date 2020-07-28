@@ -82,7 +82,7 @@ Then click on "Certificates & Secrets" in the menu on the left side. Under "Clie
 
 Type in the name of you Azure Machine Learning service in the search window of Azure portal, find your Azure Machine Learning service and click on it.
 
-
+Click on access control
 
 ![register-aml-workspace](../images/luna.ai/register-aml-workspace.png)
 
