@@ -11,3 +11,7 @@ When you are introducing a breaking change or a major feature, you don't want to
 - Instead of updating an existing API version, create a new API version using the new real-time prediction endpoint URL or the AML pipelines. Review [this document](./publish-ai-service.md) for more details
 
 Now you have a new API version published. All your existing users will continue running the AI service with the original vesion without any impact. When they are ready to test and move to the new version, they can simple do that by updating the api-version query parameter in the requests sent to your AI service.
+
+## Next Step
+
+[Responsible AI Overview](./responsible-ai-overview.md)

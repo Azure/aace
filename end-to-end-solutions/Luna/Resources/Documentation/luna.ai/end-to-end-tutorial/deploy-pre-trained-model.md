@@ -49,7 +49,13 @@ Following is an example of the input data for our Logistic Regression model:
 
 ## Run python script to train and deploy model
 
-After updated all the properties and the input data, you can run the *train_and_deploy_model.py* to train and deploy the model. The script will:
+After updated all the properties and the input data, you can run the following command in the conda console to train and deploy the model.
+
+```shell
+python src/luna_publish/azureml/train_and_deploy_model.py
+```
+
+The script will:
 
 - Start a AML pipeline run to train the model
 - Register the model with modelId
@@ -62,9 +68,29 @@ Record the scoring URL and key.
 
 The script will print out *"Link to Azure Machine Learning Portal"* for the pipeline run. If the run failed, you can open the link and see the error details in Azure Machine Learning workspace. You can find the most relevant error messages by click on the failed component on the graphic design canvas. You can also browse the azureml-logs folder to see other logs.
 
-TODO: add screenshot
+![aml-workspace-failed-run](../../images/luna.ai/aml-workspace-failed-run.png)
+
+If the deployment step failed and you need more information from the container log to toubleshoot, you can find it in the Azure portal
+
+- Go to azure portal and type in the deployment endpointId in the search textbox. Select the Container instance popped up.
+
+  ![azure-portal-find-aci](../../images/luna.ai/azure-portal-find-aci.png)
+
+- Click on "Containers" in the manu on the left side, select the container with same name with the endpointId in the container list and click on "Logs" in the menu bar below. You will see all the log from the container instance.
+
+  ![azure-portal-aci](../../images/luna.ai/azure-portal-aci.png)
+
+- You can also go the the "Connect" tab and connect to the running container instance for further troubleshooting.
 
 ## Test the scoring endpoint
+
+After the training and deployment completed, you can find the endpoint information in your Azure Machine Learning workspace.
+
+- Open the Azure Machine Learning workspace by the pipeline run URL
+- Click on "Endpoints" in the menu on left side. Select the endpoint you just deployed
+- Go to the "Consume" tab, you will see the REST endpoint and authentiation key
+
+![aml-workspace-get-endpoint](../../images/luna.ai/aml-workspace-get-endpoint.png)
 
 You can test the scoring endpoint with your test data in Postman:
 
@@ -82,8 +108,6 @@ You can test the scoring endpoint with your test data in Postman:
 
 - Click on "Send" button to send the request
 - The response body will show in the bottom. If everything runs correctly, the sample test data should get you [1] as result.
-
-TODO: fix the response body format issue
 
 ## Next Step
 

@@ -10,31 +10,37 @@ In this tutorial, we will add the sklearn pip package:
 
 ```yaml
 - pip:
-...
+  ...
   sklearn
 ```
 
 ## Create conda environment for local test
 
-In this tutorial, we will run some test locally before deploying the code to Azure Machine Learning service. You need to run the following command from the root folder of the Luna ML project template to create the local conda environment after you update your conda.yml file:
+In this tutorial, we will run some test locally before deploying the code to Azure Machine Learning service. You need to open a anaconda console, run the following command from the root folder of the Luna ML project template to create the local conda environment after you update your conda.yml file:
 
 ```shell
 conda env create -f conda.yml
+conda activate project_environment
 ```
 
 ## Where to add my code
 
 The only source code file you need to update in the Luna ML project template is *src/luna_publish/LunaPythonModel.py*. There're 5 functions in the LunaPythonModel class:
 
+The following two functions are used for real-time prediction
+
 - load_context: this function will be called every time the container instance/pod started if you or the user deploy the model to a service endpoint. You can use this function to perform some heavy initialization operations.
 - predict: this function will be called when user calling the deploy service endpoint API for real-time scoring.
+
+The following two functions are used for model training and batch inference
+
 - train: the function to train a model
 - batch_inference: the function to perform batch inference using a model
 - set_run_mode: this function is for Luna service usage only. Please don't update or remove it.
 
 ## Import modules
 
-Add required modules to the *src/luna_publish/LunaPythonModel.py*. In this tutorial, we will be training a Logistic Regression model using sklearn, so add the followings:
+You need to add required modules to the *src/luna_publish/LunaPythonModel.py*. In this tutorial, we will be training a Logistic Regression model using sklearn. Add the followings to the code:
 
 ```python
 from sklearn.linear_model import LogisticRegression
@@ -51,7 +57,7 @@ The NumpyJSONEncoder helps you serialize Numpy data types to JSON strings. You c
 
 ## Model Training
 
-You can add following code to the *train* function of LunaPythonModel class to train a skleanr Logistic Regression classification model:
+You can add following code to the *train* function of LunaPythonModel class to train a sklearn Logistic Regression classification model:
 
 ```python
 train_data = pd.read_csv(user_input["trainingDataSource"])
@@ -77,7 +83,7 @@ The user_input is an dictionary contains the JSON contain from user API request.
 
 ```json
 {
-    "trainingDataSource": "https://xiwutestai.blob.core.windows.net/lunav2/BostonHousing/Boston_all_with_header.csv?your_sas_key",
+    "trainingDataSource": "https://xiwutestai.blob.core.windows.net/lunav2/Iris/data.csv?your_sas_key",
     "labelColumnName": "medv",
     "description": "boston housing price prediction"
 }
@@ -120,8 +126,8 @@ A sample user input will look like:
 
 ```json
 {
-    "dataSource": "https://xiwutestai.blob.core.windows.net/lunav2/BostonHousing/Boston_all_no_label_with_header.csv?your_sas_key",
-    "output": "https://xiwutestai.blob.core.windows.net/lunav2/BostonHousing/result.csv?your_sas_key"
+    "dataSource": "https://xiwutestai.blob.core.windows.net/lunav2/Iris/test.csv?your_sas_key",
+    "output": "https://xiwutestai.blob.core.windows.net/lunav2/Iris/result.csv?your_sas_key"
 }
 ```
 
