@@ -55,7 +55,7 @@ namespace Luna.API.Controllers.Admin
         }
 
         /// <summary>
-        /// Get an product.
+        /// Get a product.
         /// </summary>
         /// <param name="productName">The name of the product to get.</param>
         /// <returns>HTTP 200 OK with product JSON object in response body.</returns>
@@ -100,7 +100,8 @@ namespace Luna.API.Controllers.Admin
         /// </summary>
         /// <param name="productName">The name of the product to update.</param>
         /// <param name="product">The updated product object.</param>
-        /// <returns>HTTP 204 NO CONTENT.</returns>
+        /// <returns>HTTP 201 CREATED with URI to created resource in response header.</returns>
+        /// <returns>HTTP 200 OK with updated product JSON objects in response body.</returns>
         [HttpPut("products/{productName}")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status200OK)]

@@ -100,7 +100,7 @@ namespace Luna.Clients.Controller
 
             var batchInferenceId = GetLunaGeneratedUuid();
             var batchInferenceWithDefaultModelRequest = new Models.Controller.Backend.BatchInferenceWithDefaultModelRequest();
-            batchInferenceWithDefaultModelRequest.experimentName = $"p_{product.Id}_d_{deployment.Id}_s_{apiSubscription.SubscriptionId}_infer";
+            batchInferenceWithDefaultModelRequest.experimentName = $"p_{product.Id}_d_{deployment.Id}_s_{apiSubscription.Id}_infer";
             batchInferenceWithDefaultModelRequest.parameterAssignments.userInput = userInput;
             batchInferenceWithDefaultModelRequest.parameterAssignments.operationId = batchInferenceId;
             batchInferenceWithDefaultModelRequest.tags.userId = apiSubscription.UserId;
@@ -128,7 +128,7 @@ namespace Luna.Clients.Controller
         {
             var region = await GetRegion(workspace);
 
-            var requestUrl = $"https://{region}.api.azureml.ms/modelmanagement/v1.0" + workspace.ResourceId + $"/experiments/p_{product.Id}_d_{deployment.Id}_s_{apiSubscription.Id}_infer/runs:query";
+            var requestUrl = $"https://{region}.api.azureml.ms/history/v1.0" + workspace.ResourceId + $"/experiments/p_{product.Id}_d_{deployment.Id}_s_{apiSubscription.Id}_infer/runs:query";
             var requestUri = new Uri(requestUrl);
             var request = new HttpRequestMessage { RequestUri = requestUri, Method = HttpMethod.Post };
 

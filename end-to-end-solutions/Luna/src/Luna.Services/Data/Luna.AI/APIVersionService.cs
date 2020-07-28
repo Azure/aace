@@ -135,8 +135,13 @@ namespace Luna.Services.Data.Luna.AI
                 apiVersion.DeploymentName = deployment.DeploymentName;
                 apiVersion.ProductName = product.ProductName;
 
-                var amlWorkspace = await _context.AMLWorkspaces.FindAsync(apiVersion.AMLWorkspaceId);
-                apiVersion.AMLWorkspaceName = amlWorkspace.WorkspaceName;
+                //check if there is amlworkspace
+                if (apiVersion.AMLWorkspaceId != 0)
+                {
+                    // Get the amlWorkspace associated with the Id provided
+                    var amlWorkspace = await _context.AMLWorkspaces.FindAsync(apiVersion.AMLWorkspaceId);
+                    apiVersion.AMLWorkspaceName = amlWorkspace.WorkspaceName;
+                }
             }
 
             _logger.LogInformation(LoggingUtils.ComposeReturnCountMessage(typeof(APIVersion).Name, apiVersions.Count()));
@@ -173,9 +178,13 @@ namespace Luna.Services.Data.Luna.AI
             var product = await _productService.GetAsync(productName);
             apiVersion.ProductName = product.ProductName;
 
-            // Get the amlWorkspace associated with the Id provided
-            var amlWorkspace = await _context.AMLWorkspaces.FindAsync(apiVersion.AMLWorkspaceId);
-            apiVersion.AMLWorkspaceName = amlWorkspace.WorkspaceName;
+            //check if there is amlworkspace
+            if (apiVersion.AMLWorkspaceId != 0)
+            {
+                // Get the amlWorkspace associated with the Id provided
+                var amlWorkspace = await _context.AMLWorkspaces.FindAsync(apiVersion.AMLWorkspaceId);
+                apiVersion.AMLWorkspaceName = amlWorkspace.WorkspaceName;
+            }
 
             _logger.LogInformation(LoggingUtils.ComposeReturnValueMessage(typeof(APIVersion).Name,
                 versionName,
@@ -217,16 +226,11 @@ namespace Luna.Services.Data.Luna.AI
 
             // Get the deployment associated with the productName and the deploymentName provided
             var deployment = await _deploymentService.GetAsync(productName, deploymentName);
-
-            // Get the amlWorkspace associated with the AMLWorkspaceName provided
-            var amlWorkspace = await _amlWorkspaceService.GetAsync(version.AMLWorkspaceName);
-
+            
             // Set the FK to apiVersion
             version.ProductName = product.ProductName;
             version.DeploymentName = deployment.DeploymentName;
-            version.DeploymentId = deployment.Id;
-            version.AMLWorkspaceName = amlWorkspace.WorkspaceName;
-            version.AMLWorkspaceId = amlWorkspace.Id;
+            version.DeploymentId = deployment.Id;            
 
             // Update the apiVersion created time
             version.CreatedTime = DateTime.UtcNow;
@@ -234,8 +238,18 @@ namespace Luna.Services.Data.Luna.AI
             // Update the apiVersion last updated time
             version.LastUpdatedTime = version.CreatedTime;
 
-            // Update the apiVersion API
-            version = UpdateUrl(version, amlWorkspace);
+            //check if amlworkspace is required
+            if (version.TrainModelId != null || version.BatchInferenceId != null || version.DeployModelId != null)
+            {
+                // Get the amlWorkspace associated with the AMLWorkspaceName provided
+                var amlWorkspace = await _amlWorkspaceService.GetAsync(version.AMLWorkspaceName);
+
+                version.AMLWorkspaceName = amlWorkspace.WorkspaceName;
+                version.AMLWorkspaceId = amlWorkspace.Id;
+
+                // Update the apiVersion API
+                version = UpdateUrl(version, amlWorkspace);
+            }
 
             // Add apiVersion to APIM
             await _apiVersionAPIM.CreateAsync(version);
@@ -283,15 +297,19 @@ namespace Luna.Services.Data.Luna.AI
 
             _logger.LogInformation(LoggingUtils.ComposeUpdateResourceMessage(typeof(APIVersion).Name, versionName, payload: JsonSerializer.Serialize(version)));
 
-            // Get the amlWorkspace associated with the AMLWorkspaceName provided
-            var amlWorkspace = await _amlWorkspaceService.GetAsync(version.AMLWorkspaceName);
+            //check if amlworkspace is required
+            if (version.TrainModelId != null || version.BatchInferenceId != null || version.DeployModelId != null)
+            {
+                // Get the amlWorkspace associated with the AMLWorkspaceName provided
+                var amlWorkspace = await _amlWorkspaceService.GetAsync(version.AMLWorkspaceName);
 
+                // Update the apiVersion API
+                version = UpdateUrl(version, amlWorkspace);
+            }
+           
             // Get the apiVersion that matches the productName, deploymentName and versionName provided
             var versionDb = await GetAsync(productName, deploymentName, versionName);
-
-            // Update the apiVersion API
-            version = UpdateUrl(version, amlWorkspace);
-
+            
             // Copy over the changes
             versionDb.Copy(version);
             versionDb.LastUpdatedTime = DateTime.UtcNow;

@@ -89,7 +89,7 @@ namespace Luna.API.Controllers.Admin
         }
 
         /// <summary>
-        /// Gets a apiSubscription.
+        /// Gets an apiSubscription.
         /// </summary>
         /// <param name="apiSubscriptionId">The apiSubscription id.</param>
         /// <returns>HTTP 200 OK with apiSubscription JSON object in response body.</returns>
@@ -124,6 +124,7 @@ namespace Luna.API.Controllers.Admin
             return await CreateInternal(apiSubscription);
         }
 
+        /// <param name="apiSubscription">The apiSubscription object</param>
         [HttpPost("apiSubscriptions/Create")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         public async Task<ActionResult> CreateAsync([FromBody] APISubscription apiSubscription)
@@ -150,7 +151,7 @@ namespace Luna.API.Controllers.Admin
         }
 
         /// <summary>
-        /// Update a apiSubscription
+        /// Update an apiSubscription
         /// </summary>
         /// <param name="apiSubscriptionId">The apiSubscription id.</param>
         /// <param name="apiSubscription">The apiSubscription object</param>
@@ -178,9 +179,9 @@ namespace Luna.API.Controllers.Admin
         }
 
         /// <summary>
-        /// Deletes a apiSubscription.
+        /// Deletes an apiSubscription.
         /// </summary>
-        /// <param name="apiSubscriptionId">The subcription id.</param>
+        /// <param name="apiSubscriptionId">The apiSubscription id.</param>
         /// <returns>HTTP 204 NO CONTENT.</returns>
         [HttpDelete("apiSubscriptions/{apiSubscriptionId}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -195,6 +196,10 @@ namespace Luna.API.Controllers.Admin
             return NoContent();
         }
 
+        /// <summary>
+        /// Deletes an apiSubscriptions from query parameter.
+        /// </summary>
+        /// <returns>HTTP 204 NO CONTENT.</returns>
         [HttpPost("apiSubscriptions/Delete")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [AllowAnonymous]
@@ -214,10 +219,10 @@ namespace Luna.API.Controllers.Admin
         }
 
         /// <summary>
-        /// Regenerate key for a apiSubscription
+        /// Regenerate key for an apiSubscription
         /// </summary>
-        /// <param name="apiSubscriptionId">The apiSubscription id</param>
-        /// <returns>The apiSubscription</returns>
+        /// <param name="apiSubscriptionId">The apiSubscription id.</param>
+        /// <returns>HTTP 200 OK with apiSubscription JSON objects in response body.</returns>
         [HttpPost("apiSubscriptions/{apiSubscriptionId}/regenerateKey")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> RegenerateKey(Guid apiSubscriptionId, [FromBody] APISubscriptionKeyName keyName)

@@ -1,12 +1,14 @@
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Microsoft.Azure.KeyVault.WebKey;
 
 namespace Luna.Clients.Azure.Auth
 {
     public interface IKeyVaultHelper
-    {   
+    {
+        Task<string> SetSecretAsync(string vaultName, string secretName, string value);
         Task<string> GetSecretAsync(string vaultName, string secretName);
-        
+        Task<string> DeleteSecretAsync(string vaultName, string secretName);
+
         Task<JsonWebKey> GetKeyAsync(string vaultName, string keyName);
     
         /// <summary>
