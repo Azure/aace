@@ -10,11 +10,11 @@ In this tutorial, we will show you how to use Project Luna, Azure Machine Learni
 
 We are going to use a simple sklearn Logistic Regression classification model as an example. By end of the tutorial, you will have:
 
-- An Azure Marketplace SaaS offer which allows user to train and use Logistic Regression classification models.
+- An Azure Marketplace SaaS offer which allows user to train and use Logistic Regression classification models through API calls or client library.
 - Two plans in your SaaS offer:
-  - First plan provides real-time prediction AI service. It exposing an service endpoint with a pre-trained model using the sklearn iris dataset.
+  - First plan provides real-time prediction AI service. It exposing an service endpoint with a pre-trained logistic regression classification model using the sklearn iris dataset.
   - Second plan provides a train-your-own-model AI service. It allows user to train classification models using their own data, use the model to do batch inference or deploy the model to a service endpoint for real-time scoring
-- Usage based billing for the train-your-own-model plan
+- Usage based billing enabled for the train-your-own-model plan.
 
 ## Get Started
 

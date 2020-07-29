@@ -6,7 +6,7 @@ You need to get a few things ready before you can start this tutorial:
 
 You can run most of the tutorial in any modern OS. But since AAD PowerShell module is not supported in .netcore version of Azure PowerShell, you will need a Windows machine with Windows PowerShell installed to deploy Luna service.
 
-The easiest way to get a Windows Machine is to create a Windows 10 VM in your Azure Subscription. You can follow this document to create your Windows 10 VM: [Create a indows Virtual Machine in Azure](https://docs.microsoft.com/en-us/learn/modules/create-windows-virtual-machine-in-azure/). Since we are only going to run a PowerShell script, you can choose the minimum configuration and ignore all advanced settings. Make sure you have RDP enabled.
+The easiest way to get a Windows Machine is to create a Windows 10 VM in your Azure Subscription. You can follow this document to create your Windows 10 VM: [Create a Windows Virtual Machine in Azure](https://docs.microsoft.com/en-us/learn/modules/create-windows-virtual-machine-in-azure/). Since we are only going to run a PowerShell script, you can choose the minimum configuration and ignore all advanced settings. Make sure you have RDP enabled.
 
 If Windows PowerShell is not installed on your machine, install it following this [instruction](https://docs.microsoft.com/en-us/powershell/scripting/install/installing-windows-powershell?view=powershell-6).
 
@@ -36,8 +36,7 @@ After all these, reboot the VM or machine.
 
 In this tutorial, the Luna service and your models will all be deployed to an Azure subscription. You need to make sure:
 
-- You are a contributor, owner or admin of this Azure subscription
-- The region where you want to deploy Luna service to is enabled in this subscription
+- You are a contributor or owner of this Azure subscription
 - The following resource providers are enabled in this subscription
   - Microsoft.Network
   - Microsoft.Compute
@@ -51,6 +50,7 @@ In this tutorial, the Luna service and your models will all be deployed to an Az
   - Microsoft.KeyVault
   - Microsoft.Web
   - Microsoft.OperationalInsights
+- The region where you want to deploy Luna service to is enabled in this subscription
 
 You can find a PowerShell script [CheckPermissions.ps1](../../../Deployment/CheckPermissions.ps1) under *Resources/Deployment* folder of the this repo. You can enable all resource providers, check your permission and region availability by running
 
@@ -108,13 +108,13 @@ In this tutorial, the AI service will read and write data from a Azure storage a
 
 We also highly recommend downloading and installing the [Azure Storage Explorer](https://azure.microsoft.com/en-us/features/storage-explorer/). The Azure Storage Explorer can help you easily create, manage and browse blob files in your Azure storage.
 
-## Install Postman
+## Postman
 
-We will be calling REST APIs during this tutorial. For you convinience, we recommed you [install Postman](https://www.postman.com) on your dev machine.
+In this tutorial, we will be testing the AI services by calling REST APIs. For you convinience, we recommed you [install Postman](https://www.postman.com) on your dev machine.
 
 ## Notepad or other tools to record information
 
-Scripts and commands we are running in this tutorial may generate information which is needed for futher steps. We recommend you saving those information using Windows Notepad or your favirate tools.
+Scripts and commands we are running in this tutorial may generate information which is needed for futher steps. We recommend you saving those information using Windows Notepad or your favirate text editing tools.
 
 ## Next Step
 

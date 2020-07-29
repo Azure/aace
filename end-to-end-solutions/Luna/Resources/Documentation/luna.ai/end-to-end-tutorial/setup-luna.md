@@ -8,7 +8,7 @@ Before you continue, you should follow [this document](./get-ready.md) to setup 
 
 ## Clone project Luna GitHub repo
 
-You can find our GitHub repo at aka.ms/lunaai
+You can find our GitHub repo [here](aka.ms/lunaai)
 
 See [here](https://docs.github.com/en/github/creating-cloning-and-archiving-repositories/cloning-a-repository) about how to clone a GitHub repo.
 
@@ -21,7 +21,7 @@ You will need to following information for the deployment:
 - Location: Which azure region you want to deploy the Luna service to. It should be in format like "westus2".
 - A unique name: it is a string with only **lower case letters** and **less than 12 characters**. It will be used as prefix of all Azure and AAD resources. To avoid any failure during deployment, please make it as unique as possible.
 - Admin accounts: the AAD accounts who you want to assign admin permission to your Luna service. It can be mutiple AAD accounts seperated by semicolons.
-- (only if you are using any kind of VPN or proxy service) The IP range of your VPN or proxy service: we can add the IP range to Azure SQL Server firewall rule so you can access your SQL database. We will detect your local ip (without VPN or proxy) and add it to the firewall rule automatically. Contact your network admin for the IP range of your VPN or proxy service.
+- (only if you are running the script from your dev machine and using any kind of VPN or proxy service) The IP range of your VPN or proxy service: we can add the IP range to Azure SQL Server firewall rule so you can access your SQL database. We will detect your local ip (without VPN or proxy) and add it to the firewall rule automatically. Contact your network admin for the IP range of your VPN or proxy service.
 
 See [this document](../how-to/how-to-find-azure-info.md) for more details about how to find these information.
 
@@ -35,7 +35,7 @@ Open a notepad and compose the deployment script:
 ./Deploy.ps1 -uniqueName {unique_name} -location {location} -tenantId {tenant_id} -lunaServiceSubscriptionId {subscription_id} -adminAccounts {adminAccounts}
 ```
 
-If you are using any VPN or proxy service, add the following arguments:
+If you are using any VPN or proxy service, add the following arguments. You don't need set this if you are running the script from an Azure VM.
 
 ```powershell
 -firewallStartIpAddress {start_ip_address} -firewallEndIpAddress {end_ip_address}
