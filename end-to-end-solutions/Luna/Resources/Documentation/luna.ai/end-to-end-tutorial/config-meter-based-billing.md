@@ -16,11 +16,11 @@ After the Log Analytics workspace is created, we need to configure the API manag
 
 First login into Azure portal, type in uniqueName-apim in the search textbox and select the service.
 
-![azure-portal-go-to-apim](../images/luna.ai/azure-portal-go-to-apim.png)
+![azure-portal-go-to-apim](../../images/luna.ai/azure-portal-go-to-apim.png)
 
 On the APIM resource page, select "Diagnostic settings" under "Monitoring" in the menu on the left side.
 
-![azure-portal-apim-diagnostic](../images/luna.ai/azure-portal-apim-diagnostic.png)
+![azure-portal-apim-diagnostic](../../images/luna.ai/azure-portal-apim-diagnostic.png)
 
 Click on "Add diagnostic setting" on the page. It will open the diagnostic setting details page. On this page, give the setting a name, check at least "GatewayLogs" under "log", and check "Send to Log Analytics" under "Destination details". Then select the Log Analytics workspace you just created and click on "Save" button.
 
@@ -32,12 +32,12 @@ Now we need to configure the access to Log Analytics workspace from Luna service
 
 - Go back to the Log Analytics workspace in Azure portal by type in the name in the search text box. Select "Access Control" in the menu on the left side.
 
-    ![azure-portal-log-analytics](../images/luna.ai/azure-portal-log-analytics.png)
+    ![azure-portal-log-analytics](../../images/luna.ai/azure-portal-log-analytics.png)
 
 - Click on "Add" button and choose "Add role assignement"
 - On the popped up side window, choose "Log Analytics Reader" as role and in the "Select" text box, type in "uniqueName-AzureResourceManager-aad" where uniqueName is the unique name you used when deploying Luna service. Choosed the filtered item and click on "Save". Here in this example, we are reusing the AAD application we created for Luna service to deploy ARM templates to your Azure subscription. If you want to create a new AAD application for this purpose, you can follow the instruction [here](https://docs.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal).
 
-    ![azure-portal-log-analytics-role-assignement](../images/luna.ai/azure-portal-log-analytics-role-assignement.png)
+    ![azure-portal-log-analytics-role-assignement](../../images/luna.ai/azure-portal-log-analytics-role-assignement.png)
 
 - Go back to the overview page of the workspace and write down the Workspace ID
 
@@ -69,7 +69,7 @@ ApiManagementGatewayLogs
 | summarize quantity=toreal(count(CorrelationId))/1000 by resourceId = ApimSubscriptionId
 ```
 
-![luna-portal-custom-meters](../images/luna.ai/luna-portal-custom-meters.png)
+![luna-portal-custom-meters](../../images/luna.ai/luna-portal-custom-meters.png)
 
 ## Update plan to use the custom meter
 

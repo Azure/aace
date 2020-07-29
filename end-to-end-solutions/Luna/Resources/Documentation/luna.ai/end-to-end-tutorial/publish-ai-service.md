@@ -21,7 +21,7 @@ You can create a new AI product by click on the "New Product" button on the "Pro
 - Host Type: choose SaaS. "Bring Your Own Compute" host type is not supported yet.
 - Owner: use your AAD id
 
-![create-rtp-product](../images/luna.ai/create-new-rtp-product.png)
+![create-rtp-product](../../images/luna.ai/create-new-rtp-product.png)
 
 Then click on "Save" button to save the changes.
 
@@ -34,7 +34,7 @@ To create a new deployment, click on the "New Deployment" button. You will need 
 - Deployment Name: the name of the deployment. We are going to use *rtp_deployment* in this example.
 - Description: the description of the deployment, you can write your own description here
 
-![create-rtp-deployment](../images/luna.ai/create-new-rtp-deployment.png)
+![create-rtp-deployment](../../images/luna.ai/create-new-rtp-deployment.png)
 
 Then click on "Create" button to save the changes.
 
@@ -42,7 +42,7 @@ Then click on "Create" button to save the changes.
 
 In Luna AI service, we allow you to create multiple version of APIs for a deployment. To create a new API version, click on the "New Version" button.
 
-![create-rtp-version](../images/luna.ai/create-new-rtp-version-1.png)
+![create-rtp-version](../../images/luna.ai/create-new-rtp-version-1.png)
 
 ## Publish a train-your-own-model AI service
 
@@ -54,7 +54,7 @@ You can skip this section if you are not planning to publish a train-your-own-mo
 
 We are going to create a new product with name tyom_product for the train your own model AI service. For "Product Type", you should choose "Train Your Own Model"
 
-![create-tyom-product](../images/luna.ai/create-new-tyom-product.png)
+![create-tyom-product](../../images/luna.ai/create-new-tyom-product.png)
 
 Then click on the "Save" button to save the changes.
 
@@ -66,11 +66,11 @@ In Luna service, we use an AAD application to connect to the Azure Machine Learn
 
 First, in Azure portal type in "aad" in the search text box and click on "Azure Active Directory":
 
-![azure-portal-go-toaad](../images/luna.ai/azure-portal-go-to-aad.png)
+![azure-portal-go-toaad](../../images/luna.ai/azure-portal-go-to-aad.png)
 
 In the menu on the left side, choose "App registration". Click on "All application", type in *uniqueName*-azureresourcemanager-aad, and click on the item.
 
-![azure-portal-locate-aad-application](../images/luna.ai/azure-portal-locate-aad-application.png)
+![azure-portal-locate-aad-application](../../images/luna.ai/azure-portal-locate-aad-application.png)
 
 On the overview page of the AAD application, you can find the "Application (client) ID" and "Directory (tenant) ID". Write it down in the notepad
 
@@ -78,29 +78,33 @@ On the overview page of the AAD application, you can find the "Application (clie
 
 Then click on "Certificates & Secrets" in the menu on the left side. Under "Client Secrets", click on "New client secret". Write your own description and click on "Add". Copy and save the secret value before you leave the page.
 
-![azure-portal-aad-application-secret](../images/luna.ai/azure-portal-aad-application-secrets.png)
+![azure-portal-aad-application-secret](../../images/luna.ai/azure-portal-aad-application-secrets.png)
 
 Type in the name of you Azure Machine Learning service in the search window of Azure portal, find your Azure Machine Learning service and click on it.
 
 Click on access control
 
-![register-aml-workspace](../images/luna.ai/register-aml-workspace.png)
+![register-aml-workspace](../../images/luna.ai/register-aml-workspace.png)
 
 [Azure Role-based access control documentation](https://docs.microsoft.com/en-us/azure/role-based-access-control/role-assignments-portal)
 
 ### Create a train-your-own-model deployment
 
-![create-tyom-deployment](../images/luna.ai/create-new-tyom-deployment.png)
+You can create a new deployment in your product by click on the "New Deployment" button. Put in deployment name typm_deployment, write your own description and click on "Create" button
+
+![create-tyom-deployment](../../images/luna.ai/create-new-tyom-deployment.png)
 
 ### Create a train-your-own-model API version
 
-![create-tyom-version](../images/luna.ai/create-new-tyom-version-1-old.png)
+After the deployment is created, you can create a new API version by click on the "New Version" button. In the popped up window, put in "v1.0" as version name. TODO: finish when UI change is deployed.
+
+![create-tyom-version](../../images/luna.ai/create-new-tyom-version-1-old.png)
 
 ## Save the Luna webhook URL
 
 Going back to the home page of the "Products" tab, you will see a button "Copy Luna webhook URL". Clicking on the button, it will open a modal where 3 webhook URLs are shown. Later we will use these URLs to manage subscriptions of the AI services you just published in the SaaS offer. You may want to save the URLs in a notepad so you don't have to come back to this page later.
 
-![copy-webhook-urls](../images/luna.ai/copy-webhook-urls.png)
+![copy-webhook-urls](../../images/luna.ai/copy-webhook-urls.png)
 
 ## Next Step
 

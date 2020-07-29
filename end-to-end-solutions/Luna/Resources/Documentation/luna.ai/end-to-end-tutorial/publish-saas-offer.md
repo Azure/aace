@@ -18,7 +18,7 @@ To use your offer for this tutorial, you need to:
 - Add your orgnization's tenant id to the Restricted Audience list of your private plan.
 - Configure [meter based billing](https://docs.microsoft.com/en-us/azure/marketplace/partner-center-portal/saas-metered-billing) for your private plan. In this tutorial, we will assume you billing your user $0 per 1000 API calls.
 
-TODO: add screenshot
+  ![partner-center-plan-meter](../../images/luna.ai/partner-center-plan-meter.png)
 
 ## Create and configure an offer in Luna management portal
 
@@ -30,7 +30,7 @@ To create an SaaS offer in Luna, you can login to the Luna management portal (wh
 - Owners: put your AAD id here
 - Host Subscription: Luna allows you deploy and manage Azure resources when end user create, update or delete their subscription. We won't use this feature in our tutorial, so you can put any GUID in this field. If you are going to explore and use this feature later, you can alway come back and update your subscription id.
 
-![create new offer](../images/luna.ai/create-new-saas-offer.png)
+![create new offer](../../images/luna.ai/create-new-saas-offer.png)
 
 Then click on Save. It will bring you to the offer configuration wizard.
 
@@ -57,13 +57,13 @@ The offer parameters allow you to collect additional information from your custo
   - Description: Choose whether you want to receive product update email from us
   - Value Type: Boolean
 
-![configure offer parameters](../images/luna.ai/configure-offer-parameters.png)
+![configure offer parameters](../../images/luna.ai/configure-offer-parameters.png)
 
 ### Create webhooks to connect your SaaS offer with the AI services
 
 In Luna service, you can define webhooks and calling those webhooks when user create, update or delete their subscriptions. We will use this function to connect your SaaS offer with the AI services you created in the previous steps.
 
-In the previous step (TODO: add link), we saved 3 webhook URLs from the "Product" tab of Luna management portal. If you don't have those webhook URLs yet, go to the "Product" panel and copy it.
+In the [previous step](./publish-ai-service.md#save-the-luna-webhook-url), we saved 3 webhook URLs from the "Product" tab of Luna management portal. If you don't have those webhook URLs yet, go to the "Product" panel and copy it.
 
 When you are defining webhooks in Luna service, you can pass in more information to your webhook using query parameters. There are two types of parameters: system parameter and user defined parameters.
 
@@ -111,12 +111,22 @@ DeploymentName:
 Parameters["servicetype"].Equals("real-time prediction")?"rtp_deployment":"tyom_deployment"
 ```
 
-![configure webhooks](../images/luna.ai/configure-webhooks.png)
+![configure webhooks](../../images/luna.ai/configure-webhooks.png)
 
 Then click on the "Save" button on the upper right corner to save the changes.
 
 ### Create and configure a plan
 
-![create plan](../images/luna.ai/create-new-plan.png)
+The last step of publishing a SaaS offer is to create a plan. Go to the Plans tab in the offer configuraiton wizard, click on "Add Plan" button.
+
+- In the popped up window, fill in the plan name which should be the same with the plan id you used when creating the private plan in Microsoft Partner Center.
+- Then select the webhook for corresponding operations.
+- Click on "Save" button to save the changes.
+
+![create plan](../../images/luna.ai/create-new-plan.png)
+
+Now you have your SaaS offer and plan published in Luna service.
 
 ## Next step
+
+[Test SaaS offer](./test-ai-service.md)

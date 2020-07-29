@@ -8,39 +8,39 @@ If you have your Azure Marketplace SaaS offer published in the preview steps (TO
 
 Login into the [Azure Portal](https://portal.azure.com). Type SaaS in the search text box and choose "Software as a Service (SaaS)".
 
-![azure-portal-go-to-saas](../images/luna.ai/azure-portal-go-to-saas.png)
+![azure-portal-go-to-saas](../../images/luna.ai/azure-portal-go-to-saas.png)
 
 Click on the "Add" button on the upper left corner. It will bring you to the Azure Marketplace.
 
-![azure-portal-azure-marketplace](../images/luna.ai/azure-portal-azure-marketplace.png)
+![azure-portal-azure-marketplace](../../images/luna.ai/azure-portal-azure-marketplace.png)
 
 If you published offer with a public plan, you can search for your offer name in the search text box. If you published a private plan and whitelisted your organization's tenant id, click on the "View private offers" link on the "You have private offers available" banner to view all the private offers.
 
 Once you find the SaaS offer you published, click on the tile. It will open the offer details page. Select the private plan you created for this tutorial and click on the "Set up + subscribe" button.
 
-![azure-portal-saas-offer-page](../images/luna.ai/azure-portal-saas-offer-page.png)
+![azure-portal-saas-offer-page](../../images/luna.ai/azure-portal-saas-offer-page.png)
 
 On the next page, give the subscription a name, choose the Azure subscription, and click on "Subscribe" button.
 
-![azure-portal-saas-offer-subscribe](../images/luna.ai/azure-portal-saas-offer-subscribe.png)
+![azure-portal-saas-offer-subscribe](../../images/luna.ai/azure-portal-saas-offer-subscribe.png)
 
 The subscription operation usaully taks 20 seconds to a minute, after the subscription completed, click on the "Configure SaaS account on publish's site". It will bring you to the landing page which is deployed and configured as a part of Luna service.
 
-![azure-portal-saas-offer-completed](../images/luna.ai/azure-portal-saas-offer-completed.png)
+![azure-portal-saas-offer-completed](../../images/luna.ai/azure-portal-saas-offer-completed.png)
 
-On the landing page, you will see all 3 offer parameters we created when configuring SaaS offer in Luna management portal (TODO: add link).
+On the landing page, you will see all 3 offer parameters we created [when configuring SaaS offer in Luna management portal](./publish-saas-offer.md#add-offer-parameters).
 
-![luna-landing-page](../images/luna.ai/luna-landing-page.png)
+![luna-landing-page](../../images/luna.ai/luna-landing-page.png)
 
 Choose the AI service you want to test, fill in rest of the fields and click on "Submit" button. It will bring you to the user subscription management page where you can see all your subscriptions.
 
-![luna-user-subscription-list](../images/luna.ai/luna-user-subscription-list.png)
+![luna-user-subscription-list](../../images/luna.ai/luna-user-subscription-list.png)
 
 In the backend, Luna service started a state machine running all the provisioning steps as you configured, including calling the webhook to subscribe the AI service. The state machine runs every minute to move to the next state. it will take 3 to 5 minutes to finish the provisioning.
 
 After the provisioning is completed (you need to refresh the page to see the changes), you should see a hyperlink on the subcription name. Click on the hyperlink, it will open a modal with the AI service base url and the subscription key.
 
-![luna-user-portal-subscription-details](../images/luna.ai/luna-user-portal-subscription-details.png)
+![luna-user-portal-subscription-details](../../images/luna.ai/luna-user-portal-subscription-details.png)
 
 Now you can use either the [Postman collection or the python notebook we used to test the AI service](./test-ai-service.md) to continue the test.
 
@@ -50,7 +50,7 @@ Publishing a SaaS offer in Azure Marketplace requires some marketing and legal m
 
 ### Get AAD token
 
-Before creating your subscription, you need to get an AAD token to be able to call the REST APIs:
+Before creating your subscription, you need to get an AAD token to be able to call the REST APIs
 
 #### Find the AAD application info
 

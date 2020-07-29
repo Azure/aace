@@ -111,4 +111,4 @@ You can test the scoring endpoint with your test data in Postman:
 
 ## Next Step
 
-[Test and publish Azure Machine Learning pipelines](./use-luna-ml-project-template.md)
+[Test and publish Azure Machine Learning pipelines](./test-and-publish-aml-pipeline.md)

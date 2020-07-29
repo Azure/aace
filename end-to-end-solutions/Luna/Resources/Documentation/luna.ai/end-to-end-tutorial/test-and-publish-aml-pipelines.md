@@ -30,9 +30,9 @@ $token = New-AzStorageContainerSASToken -Name $containerName -Context $ctx -Perm
 Write-Host $token
 ```
 
-TODO: screenshot from Azure storage explorer
+You can also create the container and get the SaS key in Azure Storage Explorer. See [here](https://docs.microsoft.com/en-us/azure/vs-azure-tools-storage-manage-with-storage-explorer?tabs=windows#account-level-shared-access-signature) for more details.
 
-### Update test_data.json
+### Update test data in test_data.json
 
 In the Luna project template, the test data is defined in *tests/azureml/test_data.json*. You need to define 3 inputs and 1 output data:
 
@@ -54,7 +54,7 @@ In the Luna project template, the test data is defined in *tests/azureml/test_da
   }
   ```
 
-- real_time_scoring_input: it is the input data for the real time scoring. An example of the real time scoring input data will be:
+- real_time_scoring_input: it is the input data for the real time scoring. An example of the real time scoring input data for our Iris classification model will be:
 
   ```json
   {
@@ -62,7 +62,7 @@ In the Luna project template, the test data is defined in *tests/azureml/test_da
   }
   ```
 
-- real_time_scoring_expected_output: it is the expected output of the real time scoring call. We will be comparing it to the real output. An example of the real time scoring expected output data will be:
+- real_time_scoring_expected_output: it is the expected output of the real time scoring call. We will be comparing it to the real output. An example of the expected output data from the input above will be:
 
   ```json
   {
@@ -72,7 +72,13 @@ In the Luna project template, the test data is defined in *tests/azureml/test_da
 
 ## Run the test
 
-The test script is located at *tests/azureml/azureml_test.py*. You can run the test by running this script file. The test will:
+The test script is located at *tests/azureml/azureml_test.py*. Run the following command in the Anaconda console from the root folder of the project
+
+```shell
+python tests/azureml/azureml_test.py
+```
+
+The test will:
 
 - Schedule an AML pipeline run to train a model and regiester the model to AML workspace
 - Poll the model training run status by model id and wait until it completed
@@ -86,6 +92,8 @@ The test script is located at *tests/azureml/azureml_test.py*. You can run the t
 
 When we start a pipeline run, we will print out the *"Link to Azure Machine Learning Portal"* in the ternimal. If your pipeline run failed, you can click into the link and find out the detailed errors. Fix those errors and schedule the run again.
 
+![aml-workspace-failed-run](../../images/luna.ai/aml-workspace-failed-run.png)
+
 ## Publish code to AML pipelines
 
 If all local tests passed, we are ready to publish the code to AML pipelines. The script to publish the pipelines is located at *src/luna_publish/azureml/publish_azureml_pipelines.py*.
@@ -98,11 +106,19 @@ batch_inference_pipeline_name = 'sklearnirisbatchinference'
 deployment_pipeline_name = 'sklearnirisdeployment'
 ```
 
-Then you can run the script file to publish all 3 pipelines to AML workspace:
+Run the following command in the Anaconda console from the root folder of the project
+
+```shell
+python tests/azureml/src/luna_publish/azureml/publish_azureml_pipelines.py
+```
+
+It will publish all 3 pipelines to AML workspace:
 
 - training
 - batch inference
 - deployment
+
+Save the output. You will need to use it in the next step.
 
 ## Next Step
 
