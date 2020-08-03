@@ -112,7 +112,11 @@ namespace Luna.Services.Data.Luna.AI
             workspace.Region = await ControllerHelper.GetRegion(workspace);
 
             // Add secret to keyvault
-            string secretName = $"workspace-AADApplicationSecrets-{workspace.WorkspaceName}";
+            if (workspace.AADApplicationSecrets == null)
+            {
+                throw new LunaBadRequestUserException("AAD Application Secrets is needed with the aml workspace", UserErrorCode.ArmTemplateNotProvided);
+            }
+            string secretName = $"aml-{workspace.WorkspaceName}-key";
             await (_keyVaultHelper.SetSecretAsync(_options.CurrentValue.Config.VaultName, secretName, workspace.AADApplicationSecrets));
 
             // Add workspace to db
@@ -145,7 +149,11 @@ namespace Luna.Services.Data.Luna.AI
             }
 
             // Add secret to keyvault
-            string secretName = $"workspace-AADApplicationSecrets-{workspace.WorkspaceName}";
+            if (workspace.AADApplicationSecrets == null)
+            {
+                throw new LunaBadRequestUserException("AAD Application Secrets is needed with the aml workspace", UserErrorCode.ArmTemplateNotProvided);
+            }
+            string secretName = $"aml-{workspace.WorkspaceName}-key";
             await (_keyVaultHelper.SetSecretAsync(_options.CurrentValue.Config.VaultName, secretName, workspace.AADApplicationSecrets));
 
             // Copy over the changes
@@ -168,7 +176,15 @@ namespace Luna.Services.Data.Luna.AI
             var workspace = await GetAsync(workspaceName);
 
             // Delete secret from key vault
-            await (_keyVaultHelper.DeleteSecretAsync(_options.CurrentValue.Config.VaultName, workspace.AADApplicationSecrets));
+            if (workspace.AADApplicationSecrets != null)
+            {
+                string secretName = workspace.AADApplicationSecrets;
+                try
+                {
+                    await (_keyVaultHelper.DeleteSecretAsync(_options.CurrentValue.Config.VaultName, secretName));
+                }
+                catch { }
+            }
 
             // Remove the workspace from the db
             _context.AMLWorkspaces.Remove(workspace);

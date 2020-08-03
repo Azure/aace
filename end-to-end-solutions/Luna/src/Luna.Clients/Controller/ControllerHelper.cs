@@ -165,10 +165,9 @@ namespace Luna.Clients.Controller
             Models.Controller.GetABatchInferenceOperationResponse getABatchInferenceOperationResponse = new Models.Controller.GetABatchInferenceOperationResponse() 
             {
                 operationId = operation.tags.operationId,
-                operationType = operation.tags.operationType,
+                status = operation.status,
                 startTimeUtc = operation.startTimeUtc,
                 completeTimeUtc = operation.endTimeUtc,
-                description = operation.description,
                 error = operation.error,
             };
             return getABatchInferenceOperationResponse;
@@ -217,10 +216,9 @@ namespace Luna.Clients.Controller
                 listAllInferenceOperationsByUserResponse.operations.Add(new Models.Controller.ListAllInferenceOperationsByUserResponse.Operation()
                 {
                     operationId = operation.tags.operationId,
-                    operationType = operation.tags.operationType,
+                    status = operation.status,
                     startTimeUtc = operation.startTimeUtc,
                     completeTimeUtc = operation.endTimeUtc,
-                    description = operation.description,
                     error = operation.error,
                 });
             }

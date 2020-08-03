@@ -3,15 +3,18 @@ using Luna.Clients.Exceptions;
 using Luna.Clients.Logging;
 using Luna.Data.Entities;
 using Luna.Data.Repository;
+using Luna.Clients.Azure.Auth;
 using Luna.Services.Utilities.ExpressionEvaluation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+
 
 namespace Luna.Services.Data.Luna.AI
 {
@@ -26,6 +29,8 @@ namespace Luna.Services.Data.Luna.AI
         private readonly IProductAPIVersionAPIM _productAPIVersionAPIM;
         private readonly IOperationAPIM _operationAPIM;
         private readonly IPolicyAPIM _policyAPIM;
+        private readonly IKeyVaultHelper _keyVaultHelper;
+        private readonly IOptionsMonitor<APIMConfigurationOption> _options;
 
         /// <summary>
         /// Constructor that uses dependency injection.
@@ -40,7 +45,8 @@ namespace Luna.Services.Data.Luna.AI
         /// <param name="policyAPIM">The apim service.</param>
         public APIVersionService(ISqlDbContext sqlDbContext, IProductService productService, IDeploymentService deploymentService, IAMLWorkspaceService amlWorkspaceService,
             ILogger<APIVersionService> logger, 
-            IAPIVersionAPIM apiVersionAPIM, IProductAPIVersionAPIM productAPIVersionAPIM, IOperationAPIM operationAPIM, IPolicyAPIM policyAPIM)
+            IAPIVersionAPIM apiVersionAPIM, IProductAPIVersionAPIM productAPIVersionAPIM, IOperationAPIM operationAPIM, IPolicyAPIM policyAPIM,
+            IOptionsMonitor<APIMConfigurationOption> options, IKeyVaultHelper keyVaultHelper)
         {
             _context = sqlDbContext ?? throw new ArgumentNullException(nameof(sqlDbContext));
             _productService = productService ?? throw new ArgumentNullException(nameof(productService));
@@ -51,6 +57,8 @@ namespace Luna.Services.Data.Luna.AI
             _productAPIVersionAPIM = productAPIVersionAPIM ?? throw new ArgumentNullException(nameof(productAPIVersionAPIM));
             _operationAPIM = operationAPIM ?? throw new ArgumentNullException(nameof(operationAPIM));
             _policyAPIM = policyAPIM ?? throw new ArgumentNullException(nameof(policyAPIM));
+            _options = options ?? throw new ArgumentNullException(nameof(options));
+            _keyVaultHelper = keyVaultHelper;
         }
 
         private List<Clients.Models.Azure.OperationTypeEnum> GetOperationTypes(string productType)
@@ -250,6 +258,19 @@ namespace Luna.Services.Data.Luna.AI
                 // Update the apiVersion API
                 version = UpdateUrl(version, amlWorkspace);
             }
+            
+            // add athentication key to keyVault if authentication type is key
+            if (String.Compare(version.AuthenticationType, "Key") == 0)
+            {
+                if (version.AuthenticationKey == null)
+                {
+                    throw new LunaBadRequestUserException("Authentication key is needed with the key authentication type", UserErrorCode.ArmTemplateNotProvided);
+                }
+                string secretName = $"{productName}-{deploymentName}-{version.VersionName}-authkey";
+                await (_keyVaultHelper.SetSecretAsync(_options.CurrentValue.Config.VaultName, secretName, version.AuthenticationKey));
+                version.AuthenticationKey = secretName;
+            }
+            
 
             // Add apiVersion to APIM
             await _apiVersionAPIM.CreateAsync(version);
@@ -306,7 +327,19 @@ namespace Luna.Services.Data.Luna.AI
                 // Update the apiVersion API
                 version = UpdateUrl(version, amlWorkspace);
             }
-           
+
+            // add athentication key to keyVault if authentication type is key
+            if (String.Compare(version.AuthenticationType, "Key") == 0)
+            {
+                if (version.AuthenticationKey == null)
+                {
+                    throw new LunaBadRequestUserException("Authentication key is needed with the key authentication type", UserErrorCode.ArmTemplateNotProvided);
+                }
+                string secretName = $"{productName}-{deploymentName}-{version.VersionName}-authkey";
+                await (_keyVaultHelper.SetSecretAsync(_options.CurrentValue.Config.VaultName, secretName, version.AuthenticationKey));
+                version.AuthenticationKey = secretName;
+            }
+
             // Get the apiVersion that matches the productName, deploymentName and versionName provided
             var versionDb = await GetAsync(productName, deploymentName, versionName);
             
@@ -340,6 +373,19 @@ namespace Luna.Services.Data.Luna.AI
             var version = await GetAsync(productName, deploymentName, versionName);
             version.ProductName = productName;
             version.DeploymentName = deploymentName;
+
+            // delete athentication key from keyVault if authentication type is key
+            if (String.Compare(version.AuthenticationType, "Key") == 0)
+            {
+                if (version.AuthenticationKey != null)
+                {
+                    string secretName = version.AuthenticationKey;
+                    try
+                    {
+                        await (_keyVaultHelper.DeleteSecretAsync(_options.CurrentValue.Config.VaultName, secretName));
+                    }catch { }
+                }
+            }
 
             // Remove the apiVersion from the APIM
             await _apiVersionAPIM.DeleteAsync(version);
