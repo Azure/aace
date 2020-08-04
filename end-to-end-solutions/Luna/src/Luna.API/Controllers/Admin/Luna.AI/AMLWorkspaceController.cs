@@ -51,7 +51,7 @@ namespace Luna.API.Controllers.Admin
             AADAuthHelper.VerifyUserAccess(this.HttpContext, _logger, true);
             _logger.LogInformation($"Get workspace {workspaceName}");
             var workspace = await _workspaceService.GetAsync(workspaceName);
-            return this.Content((await ControllerHelper.GetAllPipelines(workspace)), "application/json");
+            return Ok(await ControllerHelper.GetAllPipelines(workspace));
         }
 
         /// <summary>

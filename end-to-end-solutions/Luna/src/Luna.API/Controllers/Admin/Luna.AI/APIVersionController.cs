@@ -1,9 +1,11 @@
 using System;
+using System.Collections.Generic;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Luna.Clients.Azure.Auth;
 using Luna.Clients.Exceptions;
 using Luna.Clients.Logging;
+using Luna.Data.DataContracts.Luna.AI;
 using Luna.Data.Entities;
 using Luna.Services.Data;
 using Microsoft.AspNetCore.Authorization;
@@ -126,6 +128,23 @@ namespace Luna.API.Controllers.Admin
             _logger.LogInformation($"Delete apiVersion {versionName.ToString()} in deployment {deploymentName} in product {productName}.");
             await _apiVersionService.DeleteAsync(productName, deploymentName, versionName);
             return NoContent();
+        }
+
+        /// <summary>
+        /// Get apiVersion source types
+        /// </summary>
+        /// <returns>The apiVersion</returns>
+        [HttpGet("apiVersions/sourceTypes")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<ActionResult> GetSourceTypes()
+        {
+            AADAuthHelper.VerifyUserAccess(this.HttpContext, _logger, true);
+            List<APIVersionSourceType> list = new List<APIVersionSourceType>();
+
+            list.Add(new APIVersionSourceType() { DisplayName = "Azure ML Pipelines", id = "amlPipeline" });
+            list.Add(new APIVersionSourceType() { DisplayName = "Git repo", id = "git" });
+            _logger.LogInformation($"Get apiVersion source types.");
+            return Ok(list);
         }
     }
 }

@@ -110,15 +110,26 @@ namespace Luna.Services.Data.Luna.AI
 
         private APIVersion UpdateUrl(APIVersion version, AMLWorkspace workspace)
         {
-            version.BatchInferenceAPI = version.BatchInferenceId == null ? "" : GetUrl(workspace, version.BatchInferenceId);
-            version.TrainModelAPI = version.TrainModelId == null ? "" : GetUrl(workspace, version.TrainModelId);
-            version.DeployModelAPI = version.DeployModelId == null ? "" : GetUrl(workspace, version.DeployModelId);
+            version.BatchInferenceAPI = string.IsNullOrEmpty(version.BatchInferenceId) ? "" : GetUrl(workspace, version.BatchInferenceId);
+            version.TrainModelAPI = string.IsNullOrEmpty(version.TrainModelId) ? "" : GetUrl(workspace, version.TrainModelId);
+            version.DeployModelAPI = string.IsNullOrEmpty(version.DeployModelId) ? "" : GetUrl(workspace, version.DeployModelId);
 
             version.BatchInferenceId = null;
             version.TrainModelId = null;
             version.DeployModelId = null;
 
             return version;
+        }
+        private string GetPipelineIdFromUrl(string pipelineId)
+        {
+            return pipelineId.Substring(pipelineId.LastIndexOf('/') + 1);
+        }
+
+        private void SetPipelineIds(APIVersion version)
+        {
+            version.TrainModelId = string.IsNullOrEmpty(version.TrainModelAPI) ? null : GetPipelineIdFromUrl(version.TrainModelAPI);
+            version.BatchInferenceId = string.IsNullOrEmpty(version.BatchInferenceAPI) ? null : GetPipelineIdFromUrl(version.BatchInferenceAPI);
+            version.DeployModelId = string.IsNullOrEmpty(version.DeployModelAPI) ? null : GetPipelineIdFromUrl(version.DeployModelAPI);
         }
 
         /// <summary>
@@ -149,7 +160,18 @@ namespace Luna.Services.Data.Luna.AI
                     // Get the amlWorkspace associated with the Id provided
                     var amlWorkspace = await _context.AMLWorkspaces.FindAsync(apiVersion.AMLWorkspaceId);
                     apiVersion.AMLWorkspaceName = amlWorkspace.WorkspaceName;
+                    SetPipelineIds(apiVersion);
                 }
+
+                if (!string.IsNullOrEmpty(apiVersion.AuthenticationKeySecretName))
+                {
+                    apiVersion.AuthenticationKey = await _keyVaultHelper.GetSecretAsync(_options.CurrentValue.Config.VaultName, apiVersion.AuthenticationKeySecretName);
+                }
+
+                if (!string.IsNullOrEmpty(apiVersion.GitPersonalAccessTokenSecretName))
+                {
+                    apiVersion.GitPersonalAccessToken = await _keyVaultHelper.GetSecretAsync(_options.CurrentValue.Config.VaultName, apiVersion.GitPersonalAccessTokenSecretName);
+                }    
             }
 
             _logger.LogInformation(LoggingUtils.ComposeReturnCountMessage(typeof(APIVersion).Name, apiVersions.Count()));
@@ -192,6 +214,17 @@ namespace Luna.Services.Data.Luna.AI
                 // Get the amlWorkspace associated with the Id provided
                 var amlWorkspace = await _context.AMLWorkspaces.FindAsync(apiVersion.AMLWorkspaceId);
                 apiVersion.AMLWorkspaceName = amlWorkspace.WorkspaceName;
+                SetPipelineIds(apiVersion);
+            }
+
+            if (!string.IsNullOrEmpty(apiVersion.AuthenticationKeySecretName))
+            {
+                apiVersion.AuthenticationKey = await _keyVaultHelper.GetSecretAsync(_options.CurrentValue.Config.VaultName, apiVersion.AuthenticationKeySecretName);
+            }
+
+            if (!string.IsNullOrEmpty(apiVersion.GitPersonalAccessToken))
+            {
+                apiVersion.GitPersonalAccessToken = await _keyVaultHelper.GetSecretAsync(_options.CurrentValue.Config.VaultName, apiVersion.GitPersonalAccessTokenSecretName);
             }
 
             _logger.LogInformation(LoggingUtils.ComposeReturnValueMessage(typeof(APIVersion).Name,
@@ -247,7 +280,7 @@ namespace Luna.Services.Data.Luna.AI
             version.LastUpdatedTime = version.CreatedTime;
 
             //check if amlworkspace is required
-            if (version.TrainModelId != null || version.BatchInferenceId != null || version.DeployModelId != null)
+            if (!string.IsNullOrEmpty(version.AMLWorkspaceName))
             {
                 // Get the amlWorkspace associated with the AMLWorkspaceName provided
                 var amlWorkspace = await _amlWorkspaceService.GetAsync(version.AMLWorkspaceName);
@@ -260,17 +293,23 @@ namespace Luna.Services.Data.Luna.AI
             }
             
             // add athentication key to keyVault if authentication type is key
-            if (String.Compare(version.AuthenticationType, "Key") == 0)
+            if (version.AuthenticationType.Equals("Key", StringComparison.InvariantCultureIgnoreCase))
             {
                 if (version.AuthenticationKey == null)
                 {
-                    throw new LunaBadRequestUserException("Authentication key is needed with the key authentication type", UserErrorCode.ArmTemplateNotProvided);
+                    throw new LunaBadRequestUserException("Authentication key is needed with the key authentication type", UserErrorCode.AuthKeyNotProvided);
                 }
                 string secretName = $"{productName}-{deploymentName}-{version.VersionName}-authkey";
                 await (_keyVaultHelper.SetSecretAsync(_options.CurrentValue.Config.VaultName, secretName, version.AuthenticationKey));
-                version.AuthenticationKey = secretName;
+                version.AuthenticationKeySecretName = secretName;
             }
-            
+
+            if (!string.IsNullOrEmpty(version.GitPersonalAccessToken))
+            {
+                string secretName = $"{productName}-{deploymentName}-{version.VersionName}-gitpat";
+                await (_keyVaultHelper.SetSecretAsync(_options.CurrentValue.Config.VaultName, secretName, version.GitPersonalAccessToken));
+                version.GitPersonalAccessTokenSecretName = secretName;
+            }
 
             // Add apiVersion to APIM
             await _apiVersionAPIM.CreateAsync(version);
@@ -319,7 +358,7 @@ namespace Luna.Services.Data.Luna.AI
             _logger.LogInformation(LoggingUtils.ComposeUpdateResourceMessage(typeof(APIVersion).Name, versionName, payload: JsonSerializer.Serialize(version)));
 
             //check if amlworkspace is required
-            if (version.TrainModelId != null || version.BatchInferenceId != null || version.DeployModelId != null)
+            if (!string.IsNullOrEmpty(version.AMLWorkspaceName))
             {
                 // Get the amlWorkspace associated with the AMLWorkspaceName provided
                 var amlWorkspace = await _amlWorkspaceService.GetAsync(version.AMLWorkspaceName);
@@ -329,15 +368,22 @@ namespace Luna.Services.Data.Luna.AI
             }
 
             // add athentication key to keyVault if authentication type is key
-            if (String.Compare(version.AuthenticationType, "Key") == 0)
+            if (version.AuthenticationType.Equals("Key", StringComparison.InvariantCultureIgnoreCase))
             {
                 if (version.AuthenticationKey == null)
                 {
-                    throw new LunaBadRequestUserException("Authentication key is needed with the key authentication type", UserErrorCode.ArmTemplateNotProvided);
+                    throw new LunaBadRequestUserException("Authentication key is needed with the key authentication type", UserErrorCode.AuthKeyNotProvided);
                 }
                 string secretName = $"{productName}-{deploymentName}-{version.VersionName}-authkey";
                 await (_keyVaultHelper.SetSecretAsync(_options.CurrentValue.Config.VaultName, secretName, version.AuthenticationKey));
-                version.AuthenticationKey = secretName;
+                version.AuthenticationKeySecretName = secretName;
+            }
+
+            if (!string.IsNullOrEmpty(version.GitPersonalAccessToken))
+            {
+                string secretName = $"{productName}-{deploymentName}-{version.VersionName}-gitpat";
+                await (_keyVaultHelper.SetSecretAsync(_options.CurrentValue.Config.VaultName, secretName, version.GitPersonalAccessToken));
+                version.GitPersonalAccessTokenSecretName = secretName;
             }
 
             // Get the apiVersion that matches the productName, deploymentName and versionName provided
@@ -375,7 +421,7 @@ namespace Luna.Services.Data.Luna.AI
             version.DeploymentName = deploymentName;
 
             // delete athentication key from keyVault if authentication type is key
-            if (String.Compare(version.AuthenticationType, "Key") == 0)
+            if (version.AuthenticationType.Equals("Key", StringComparison.InvariantCultureIgnoreCase))
             {
                 if (version.AuthenticationKey != null)
                 {

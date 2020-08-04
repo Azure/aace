@@ -43,6 +43,10 @@ namespace Luna.Services.Data.Luna.AI
 
             // Get all products
             var workspaces = await _context.AMLWorkspaces.ToListAsync();
+            foreach (var workspace in workspaces)
+            {
+                workspace.AADApplicationSecrets = await _keyVaultHelper.GetSecretAsync(_options.CurrentValue.Config.VaultName, workspace.AADApplicationSecretName);
+            }
             _logger.LogInformation(LoggingUtils.ComposeReturnCountMessage(typeof(AMLWorkspace).Name, workspaces.Count()));
 
             return workspaces;
@@ -59,6 +63,8 @@ namespace Luna.Services.Data.Luna.AI
 
             // Get the product that matches the provided productName
             var workspace = await _context.AMLWorkspaces.SingleOrDefaultAsync(o => (o.WorkspaceName == workspaceName));
+
+            workspace.AADApplicationSecrets = await _keyVaultHelper.GetSecretAsync(_options.CurrentValue.Config.VaultName, workspace.AADApplicationSecretName);
             _logger.LogInformation(LoggingUtils.ComposeReturnValueMessage(typeof(Product).Name,
                workspaceName,
                JsonSerializer.Serialize(workspace)));
@@ -114,13 +120,13 @@ namespace Luna.Services.Data.Luna.AI
             // Add secret to keyvault
             if (workspace.AADApplicationSecrets == null)
             {
-                throw new LunaBadRequestUserException("AAD Application Secrets is needed with the aml workspace", UserErrorCode.ArmTemplateNotProvided);
+                throw new LunaBadRequestUserException("AAD Application Secrets is needed with the aml workspace", UserErrorCode.AuthKeyNotProvided);
             }
             string secretName = $"aml-{workspace.WorkspaceName}-key";
             await (_keyVaultHelper.SetSecretAsync(_options.CurrentValue.Config.VaultName, secretName, workspace.AADApplicationSecrets));
 
             // Add workspace to db
-            workspace.AADApplicationSecrets = secretName;
+            workspace.AADApplicationSecretName = secretName;
             _context.AMLWorkspaces.Add(workspace);
             await _context._SaveChangesAsync();
             _logger.LogInformation(LoggingUtils.ComposeResourceCreatedMessage(typeof(AMLWorkspace).Name, workspace.WorkspaceName));
@@ -158,7 +164,7 @@ namespace Luna.Services.Data.Luna.AI
 
             // Copy over the changes
             workspace.Region = await ControllerHelper.GetRegion(workspace);
-            workspace.AADApplicationSecrets = secretName;
+            workspace.AADApplicationSecretName = secretName;
             workspaceDb.Copy(workspace);
 
             // Update workspaceDb values and save changes in db
@@ -176,9 +182,9 @@ namespace Luna.Services.Data.Luna.AI
             var workspace = await GetAsync(workspaceName);
 
             // Delete secret from key vault
-            if (workspace.AADApplicationSecrets != null)
+            if (!string.IsNullOrEmpty(workspace.AADApplicationSecretName))
             {
-                string secretName = workspace.AADApplicationSecrets;
+                string secretName = workspace.AADApplicationSecretName;
                 try
                 {
                     await (_keyVaultHelper.DeleteSecretAsync(_options.CurrentValue.Config.VaultName, secretName));

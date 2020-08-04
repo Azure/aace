@@ -27,7 +27,7 @@ namespace Luna.Data.Entities
             Region = workspace.Region;
             ResourceId = workspace.ResourceId;
             AADApplicationId = workspace.AADApplicationId;
-            AADApplicationSecrets = workspace.AADApplicationSecrets;
+            AADApplicationSecretName = workspace.AADApplicationSecretName;
             AADTenantId = workspace.AADTenantId;
         }
     
@@ -43,7 +43,11 @@ namespace Luna.Data.Entities
         
         public Guid AADApplicationId { get; set; }
 
+        [NotMapped]
         public string AADApplicationSecrets { get; set; }
+
+        [JsonIgnore]
+        public string AADApplicationSecretName { get; set; }
 
         public Guid AADTenantId { get; set; }
     }

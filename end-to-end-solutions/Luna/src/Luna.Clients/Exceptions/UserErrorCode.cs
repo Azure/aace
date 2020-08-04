@@ -10,6 +10,7 @@
         ParameterNotProvided,
         ArmTemplateNotProvided,
         InvalidParameter,
-        Unauthorized
+        Unauthorized,
+        AuthKeyNotProvided
     }
 }

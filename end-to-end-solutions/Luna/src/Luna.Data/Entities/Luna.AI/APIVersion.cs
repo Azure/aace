@@ -1,4 +1,3 @@
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -33,6 +32,10 @@ namespace Luna.Data.Entities
             this.DeployModelAPI = version.DeployModelAPI;
             this.AuthenticationType = version.AuthenticationType;
             this.AuthenticationKey = version.AuthenticationKey;
+            this.VersionSourceType = version.VersionSourceType;
+            this.GitPersonalAccessToken = version.GitPersonalAccessToken;
+            this.GitUrl = version.GitUrl;
+            this.GitVersion = version.GitVersion;
         }
 
         public string GetVersionIdFormat()
@@ -52,13 +55,10 @@ namespace Luna.Data.Entities
 
         public string VersionName { get; set; }
         [NotMapped]
-        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public string TrainModelId { get; set; }
         [NotMapped]
-        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public string BatchInferenceId { get; set; }
         [NotMapped]
-        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public string DeployModelId { get; set; }
 
         public string RealTimePredictAPI { get; set; }
@@ -71,7 +71,11 @@ namespace Luna.Data.Entities
 
         public string AuthenticationType { get; set; }
 
+        [NotMapped]
         public string AuthenticationKey { get; set; }
+
+        [JsonIgnore]
+        public string AuthenticationKeySecretName { get; set; }
 
         [System.Text.Json.Serialization.JsonIgnore]
         public long AMLWorkspaceId { get; set; }
@@ -84,6 +88,17 @@ namespace Luna.Data.Entities
         public DateTime CreatedTime { get; set; }
 
         public DateTime LastUpdatedTime { get; set; }
+        public string GitUrl { get; set; }
+
+        [NotMapped]
+        public string GitPersonalAccessToken { get; set; }
+
+        [JsonIgnore]
+        public string GitPersonalAccessTokenSecretName { get; set; }
+
+        public string GitVersion { get; set; }
+
+        public string VersionSourceType { get; set; }
 
     }
 }

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Luna.Clients.Controller.Auth;
 using Luna.Clients.Exceptions;
 using Luna.Clients.Models.Controller;
+using Luna.Data.DataContracts.Luna.AI;
 using Luna.Data.Entities;
 using Newtonsoft.Json;
 
@@ -39,7 +40,7 @@ namespace Luna.Clients.Controller
             return workspaceDetails["location"].ToString();
         }
 
-        public static async Task<string> GetAllPipelines(AMLWorkspace workspace)
+        public static async Task<List<AMLPipeline>> GetAllPipelines(AMLWorkspace workspace)
         {
             var requestUrl = $"https://{workspace.Region}.api.azureml.ms/pipelines/v1.0" + workspace.ResourceId + $"/pipelines";
             var requestUri = new Uri(requestUrl);
@@ -51,12 +52,29 @@ namespace Luna.Clients.Controller
             var response = await HttpClient.SendAsync(request);
 
             string responseContent = await response.Content.ReadAsStringAsync();
+
+            List<Dictionary<string, object>> rawPipelineList = (List<Dictionary<string, object>>)System.Text.Json.JsonSerializer.Deserialize(responseContent, typeof(List<Dictionary<string, object>>));
+            List<AMLPipeline> pipelineList = new List<AMLPipeline>();
+            foreach (var item in rawPipelineList)
+            {
+                string displayName = item.ContainsKey("Name") && item["Name"] != null ? item["Name"].ToString() : "noName";
+                string id = item.ContainsKey("Id") && item["Id"] != null ? item["Id"].ToString() : "noId";
+                string description = item.ContainsKey("Description") && item["Description"] != null ? item["Description"].ToString() : "noDescription";
+                string createdDate = item.ContainsKey("CreatedDate") && item["CreatedDate"] != null ? item["CreatedDate"].ToString() : "noCreatedDate";
+                pipelineList.Add(new AMLPipeline()
+                {
+                    DisplayName = displayName,
+                    Id = id,
+                    Description = description,
+                    CreatedDate = createdDate
+                });
+            }
             if (!response.IsSuccessStatusCode)
             {
                 throw new LunaServerException($"Query failed with response {responseContent}");
             }
 
-            return responseContent;
+            return pipelineList;
         }
 
         public static async Task<string> Predict(APIVersion version, AMLWorkspace workspace, object body)
@@ -476,7 +494,7 @@ namespace Luna.Clients.Controller
                 throw new LunaServerException($"Query failed with response {responseContent}");
             }
         }
-        public static async Task<BatchInferenceResponse> BatchInference(Product product, Deployment deployment, APIVersion version, AMLWorkspace workspace, APISubscription apiSubscription, Guid modelId, string userInput)
+        public static async Task<BatchInferenceResponse> BatchInference(Product product, Deployment deployment, APIVersion version, AMLWorkspace workspace, APISubscription apiSubscription, string modelId, string userInput)
         {
             var requestUri = new Uri(version.BatchInferenceAPI);
             var request = new HttpRequestMessage { RequestUri = requestUri, Method = HttpMethod.Post };
@@ -488,13 +506,13 @@ namespace Luna.Clients.Controller
             var batchInferenceRequest = new Models.Controller.Backend.BatchInferenceRequest();
             batchInferenceRequest.experimentName = $"p_{product.Id}_d_{deployment.Id}_s_{apiSubscription.Id}_infer";
             batchInferenceRequest.parameterAssignments.userInput = userInput;
-            batchInferenceRequest.parameterAssignments.modelId = modelId.ToString("N");
+            batchInferenceRequest.parameterAssignments.modelId = modelId;
             batchInferenceRequest.parameterAssignments.operationId = operationId;
             batchInferenceRequest.tags.userId = apiSubscription.UserId;
             batchInferenceRequest.tags.productName = product.ProductName;
             batchInferenceRequest.tags.deploymentName = deployment.DeploymentName;
             batchInferenceRequest.tags.apiVersion = version.VersionName;
-            batchInferenceRequest.tags.modelId = modelId.ToString("N");
+            batchInferenceRequest.tags.modelId = modelId;
             batchInferenceRequest.tags.operationId = operationId;
             batchInferenceRequest.tags.operationType = "inference";
             batchInferenceRequest.tags.subscriptionId = apiSubscription.SubscriptionId.ToString();
