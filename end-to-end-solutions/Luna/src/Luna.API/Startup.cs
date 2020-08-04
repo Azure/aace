@@ -4,6 +4,7 @@ using System.Net;
 using System.Reflection;
 using Luna.API.Controllers.Admin;
 using Luna.Clients;
+using Luna.Clients.Azure.APIM;
 using Luna.Clients.Azure.Auth;
 using Luna.Clients.Azure.Storage;
 using Luna.Clients.CustomMetering;
@@ -15,12 +16,14 @@ using Luna.Data.Repository;
 using Luna.Services;
 using Luna.Services.CustomMeterEvent;
 using Luna.Services.Data;
+using Luna.Services.Data.Luna.AI;
 using Luna.Services.Marketplace;
 using Luna.Services.Provisoning;
 using Luna.Services.Utilities;
 using Luna.Services.WebHook;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.AzureAD.UI;
+using Microsoft.AspNetCore.Authentication.Certificate;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
@@ -37,8 +40,8 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Identity.Web.Resource;
-using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Newtonsoft.Json;
 using Polly;
 using Polly.Extensions.Http;
 
@@ -136,6 +139,10 @@ namespace Luna.API
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddControllers().AddJsonOptions(options => {
+                options.JsonSerializerOptions.IgnoreNullValues = true;
+            });
+
             services.Configure<CookiePolicyOptions>(
                 options =>
                     {
@@ -148,7 +155,7 @@ namespace Luna.API
                 .AddAzureAD(options => this.configuration.Bind("AzureAd", options));
 
             services.AddAuthentication(AzureADDefaults.JwtBearerAuthenticationScheme)
-                            .AddAzureADBearer(options => this.configuration.Bind("AzureAd", options));
+                .AddAzureADBearer(options => this.configuration.Bind("AzureAd", options));
 
             AADAuthHelper.AdminList = this.configuration["ISVPortal:AdminAccounts"].Split(';', StringSplitOptions.RemoveEmptyEntries);
 
@@ -268,6 +275,21 @@ namespace Luna.API
             // Register the db context interface
             services.TryAddScoped<ISqlDbContext, SqlDbContext>();
 
+            services.AddOptions<APIMConfigurationOption>().Configure(
+                options =>
+                {
+                    this.configuration.Bind("SecuredCredentials:APIM", options);
+                });
+
+            services.AddHttpClient<IProductAPIM, ProductAPIM>();
+            services.AddHttpClient<IAPIVersionSetAPIM, APIVersionSetAPIM>();
+            services.AddHttpClient<IAPIVersionAPIM, APIVersionAPIM>();
+            services.AddHttpClient<IProductAPIVersionAPIM, ProductAPIVersionAPIM>();
+            services.AddHttpClient<IOperationAPIM, OperationAPIM>();
+            services.AddHttpClient<IPolicyAPIM, PolicyAPIM>();
+            services.AddHttpClient<IAPISubscriptionAPIM, APISubscriptionAPIM>();
+            services.AddHttpClient<IUserAPIM, UserAPIM>();
+            services.AddHttpClient<IClientCertAPIM, ClientCertAPIM>();
 
             services.AddOptions<StorageAccountConfigurationOption>().Configure(
                options => {
@@ -308,7 +330,13 @@ namespace Luna.API
             services.AddHttpClient("Luna", x => { x.BaseAddress = new Uri(configuration.GetValue<string>("LunaClient:BaseUri")); });
             services.TryAddScoped<LunaClient>();
 
-            
+            // Register Luna.AI services
+            services.TryAddScoped<IProductService, ProductService>();
+            services.TryAddScoped<IDeploymentService, DeploymentService>();
+            services.TryAddScoped<IAPIVersionService, APIVersionService>();
+            services.TryAddScoped<IAPISubscriptionService, APISubscriptionService>();
+            services.TryAddScoped<IAMLWorkspaceService, AMLWorkspaceService>();
+
             services.AddCors();
 
             services.AddRazorPages();
@@ -333,6 +361,11 @@ namespace Luna.API
                o.Conventions.Controller<RestrictedUserController>().HasApiVersion(latest);
                o.Conventions.Controller<WebhookController>().HasApiVersion(latest);
                o.Conventions.Controller<WebhookParameterController>().HasApiVersion(latest);
+                o.Conventions.Controller<AMLWorkspaceController>().HasApiVersion(latest);
+                o.Conventions.Controller<APISubscriptionController>().HasApiVersion(latest);
+                o.Conventions.Controller<APIVersionController>().HasApiVersion(latest);
+                o.Conventions.Controller<DeploymentController>().HasApiVersion(latest);
+                o.Conventions.Controller<ProductController>().HasApiVersion(latest);
             });
 
             // Register the Swagger generator, defining 1 or more Swagger documents

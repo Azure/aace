@@ -25,6 +25,21 @@ namespace Luna.Clients.Azure.Auth
             );
         }
 
+        public async Task<string> SetSecretAsync(string vaultName, string secretName, string value)
+        {
+            try
+            {
+                _logger.LogInformation("SetSecretAsync to Key Vault");
+                var secret = await keyVaultClient.SetSecretAsync($"https://{vaultName}.vault.azure.net/", secretName, value);
+                _logger.LogInformation("SetSecretAsync operation completed");
+                return secret.Value;
+            }
+            catch(Exception ex)
+            {
+                throw new InvalidOperationException(ex.Message);
+            }
+        }
+
         public async Task<string> GetSecretAsync(string vaultName, string secretName)
         { 
             try {
@@ -33,6 +48,21 @@ namespace Luna.Clients.Azure.Auth
                 _logger.LogInformation("GetSecretAsync operation completed");
                 return secret.Value;
             } catch (Exception ex) {
+                throw new InvalidOperationException(ex.Message);
+            }
+        }
+
+        public async Task<string> DeleteSecretAsync(string vaultName, string secretName)
+        {
+            try
+            {
+                _logger.LogInformation("DeleteSecretAsync from Key Vault");
+                var secret = await keyVaultClient.DeleteSecretAsync($"https://{vaultName}.vault.azure.net/", secretName);
+                _logger.LogInformation("DeleteSecretAsync operation completed");
+                return secret.Value;
+            }
+            catch (Exception ex)
+            {
                 throw new InvalidOperationException(ex.Message);
             }
         }

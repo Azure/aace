@@ -30,6 +30,13 @@ namespace Luna.Data.Repository
 
         DbSet<TelemetryDataConnector> TelemetryDataConnectors { get; set; }
 
+        DbSet<Product> Products { get; set; }
+        DbSet<Deployment> Deployments { get; set; }
+        DbSet<APIVersion> APIVersions { get; set; }
+        DbSet<AMLWorkspace> AMLWorkspaces { get; set; }
+
+        DbSet<APISubscription> APISubscriptions { get; set; }
+
         // Wrappers for DbContext methods that are used
         Task<int> _SaveChangesAsync();
         Task<IDbContextTransaction> BeginTransactionAsync();

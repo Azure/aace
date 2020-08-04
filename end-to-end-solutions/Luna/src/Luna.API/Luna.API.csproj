@@ -11,6 +11,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.8.1" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.AzureAD.UI" Version="3.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.Certificate" Version="3.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Versioning" Version="4.0.0-preview8.19405.7" />
     <PackageReference Include="Microsoft.Azure.Services.AppAuthentication" Version="1.3.1" />
     <PackageReference Include="Microsoft.CodeAnalysis.Common" Version="3.3.1" />
@@ -36,6 +37,10 @@
 
   <ItemGroup>
     <WCFMetadata Include="Connected Services" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Controllers\APIRouting\" />
   </ItemGroup>
 
   <PropertyGroup>

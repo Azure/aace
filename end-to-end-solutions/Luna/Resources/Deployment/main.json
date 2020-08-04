@@ -94,6 +94,60 @@
       "metadata": {
         "description": "The object id for key vault access policy."
       }
+    },
+    "apimAdminEmail": {
+      "type": "string",
+      "metadata": {
+        "description": "The APIM admin email."
+      }
+    },
+    "orgName": {
+      "type": "string",
+      "metadata": {
+        "description": "The orgnization name."
+      }
+    },
+    "apimName": {
+      "type": "string",
+      "metadata": {
+        "description": "APIM service name."
+      }
+    },
+    "apimTier": {
+      "type": "string",
+      "metadata": {
+        "description": "APIM pricing tier."
+      }
+    },
+    "apimCapacity": {
+      "type": "int",
+      "metadata": {
+        "description": "APIM capacity."
+      }
+    },
+    "deployAPIM": {
+      "type": "bool",
+      "metadata": {
+        "description": "If enable v2 and deploy APIM"
+      }
+    },
+    "workspaceName": {
+      "type": "string",
+      "metadata": {
+        "description": "AML workspace name"
+      }
+    },
+    "workspaceSku": {
+      "type": "string",
+      "metadata": {
+        "description": "AML workspace SKU"
+      }
+    },
+    "deployAML": {
+      "type": "bool",
+      "metadata": {
+        "description": "If enable v2 and deploy AML workspace"
+      }
     }
   },
   "variables": {
@@ -168,7 +222,7 @@
         "reserved": false,
         "scmSiteAlsoStopped": false,
         "clientAffinityEnabled": true,
-        "clientCertEnabled": false,
+        "clientCertEnabled": true,
         "hostNamesDisabled": false,
         "containerSize": 0,
         "dailyMemoryTimeQuota": 0,
@@ -469,7 +523,108 @@
             "enabledForDiskEncryption": false,
             "enabledForTemplateDeployment": false
         }
-    }
+    },
+        {
+            "condition": "[parameters('deployAPIM')]",
+            "apiVersion": "2019-01-01",
+            "name": "[parameters('apimName')]",
+            "location": "[parameters('location')]",
+            "type": "Microsoft.ApiManagement/service",
+            "sku": {
+                "name": "[parameters('apimTier')]",
+                "capacity": "[parameters('apimCapacity')]"
+            },
+            "properties": {
+                "publisherEmail": "[parameters('apimAdminEmail')]",
+                "publisherName": "[parameters('orgName')]"
+            },
+            "resources": [
+                {
+                    "condition": "[parameters('deployAPIM')]",
+                    "apiVersion": "2019-01-01",
+                    "type": "loggers",
+                    "name": "[parameters('apiWebAppInsightsName')]",
+                    "dependsOn": [
+                        "[concat('Microsoft.ApiManagement/service/', parameters('apimName'))]"
+                    ],
+                    "properties": {
+                        "loggerType": "applicationInsights",
+                        "resourceId": "resourceId('microsoft.insights/components', parameters('apiWebAppInsightsName'))",
+                        "credentials": {
+                            "instrumentationKey": "[reference(concat('microsoft.insights/components/', parameters('apiWebAppInsightsName')), '2015-05-01').InstrumentationKey]"
+                        }
+                    }
+                },
+                {
+                    "condition": "[parameters('deployAPIM')]",
+                    "apiVersion": "2019-01-01",
+                    "type": "diagnostics",
+                    "name": "applicationinsights",
+                    "dependsOn": [
+                        "[concat('Microsoft.ApiManagement/service/', parameters('apimName'))]",
+                        "[concat('Microsoft.ApiManagement/service/', parameters('apimName'), '/loggers/', parameters('apiWebAppInsightsName'))]"
+                    ],
+                    "properties": {
+                        "loggerId": "[concat('/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.ApiManagement/service/', parameters('apimName'), '/loggers/', parameters('apiWebAppInsightsName'))]",
+                        "alwaysLog": "allErrors",
+                        "sampling": {
+                            "percentage": 100,
+                            "samplingType": "fixed"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "condition": "[parameters('deployAML')]",
+            "type": "Microsoft.MachineLearningServices/workspaces",
+            "apiVersion": "2020-04-01",
+            "name": "[parameters('workspaceName')]",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName'))]",
+                "[resourceId('Microsoft.KeyVault/vaults', parameters('keyVaultName'))]",
+                "[resourceId('Microsoft.Insights/components', parameters('apiWebAppInsightsName'))]"
+            ],
+            "tags": {"purpose":"Luna.ai"},
+            "sku": {
+                "tier": "[parameters('workspaceSku')]",
+                "name": "[parameters('workspaceSku')]"
+            },
+            "identity": {
+                "type": "systemAssigned"
+            },
+            "properties": {
+                "friendlyName": "[parameters('workspaceName')]",
+                "storageAccount": "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName'))]",
+                "keyVault": "[resourceId('Microsoft.KeyVault/vaults', parameters('keyVaultName'))]",
+                "applicationInsights": "[resourceId('Microsoft.Insights/components', parameters('apiWebAppInsightsName'))]"
+            }
+        },
+        {
+            "condition": "[parameters('deployAML')]",
+            "type": "Microsoft.MachineLearningServices/workspaces/computes",
+            "apiVersion": "2020-04-01",
+            "name": "[concat(parameters('workspaceName'), '/lunaamlcompute')]",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.MachineLearningServices/workspaces', parameters('workspaceName'))]"
+            ],
+            "properties": {
+                "computeType": "AmlCompute",
+                "computeLocation": "[parameters('location')]",
+                "properties": {
+                    "vmSize": "STANDARD_DS3_V2",
+                    "vmPriority": "Dedicated",
+                    "scaleSettings": {
+                        "maxNodeCount": 4,
+                        "minNodeCount": 0,
+                        "nodeIdleTimeBeforeScaleDown": "PT2M"
+                    },
+                    "remoteLoginPortPublicAccess": "Enabled"
+                }
+            }
+        }
   ],
   "outputs": {
   }
