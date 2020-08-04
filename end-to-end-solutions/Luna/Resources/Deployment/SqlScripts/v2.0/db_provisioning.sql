@@ -546,8 +546,7 @@ CREATE TABLE [dbo].[APIVersions](
 	[ProjectFileUrl] [nvarchar](max) NULL,
 	[GitVersion] [nvarchar](max) NULL,
 	PRIMARY KEY (Id),
-	CONSTRAINT FK_DeploymentId_APIVersions FOREIGN KEY (DeploymentId) REFERENCES Deployments(Id),
-	CONSTRAINT FK_AMLWorkspaceId_APIVersions FOREIGN KEY (AMLWorkspaceId) REFERENCES AMLWorkspaces(Id)
+	CONSTRAINT FK_DeploymentId_APIVersions FOREIGN KEY (DeploymentId) REFERENCES Deployments(Id)
 )
 GO
 

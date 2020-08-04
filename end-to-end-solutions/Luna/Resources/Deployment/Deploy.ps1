@@ -140,7 +140,7 @@ function Create-AzureADApplication{
 function GrantKeyVaultAccessToWebApp{
     param($resourceGroupName, $keyVaultName, $webAppName)
     $webapp = Get-AzWebApp -ResourceGroupName $resourceGroupname -Name $webAppName
-    Set-AzKeyVaultAccessPolicy -VaultName $keyVaultName -ObjectId $webapp.Identity.PrincipalId -PermissionsToSecrets list,get
+    Set-AzKeyVaultAccessPolicy -VaultName $keyVaultName -ObjectId $webapp.Identity.PrincipalId -PermissionsToSecrets list,get,set,delete
 }
 
 function Get-PublishingProfileCredentials($resourceGroupName, $webAppName){
@@ -283,7 +283,7 @@ if ($userApplicationSubscriptionId -eq "default"){
     $userApplicationSubscriptionId = $currentContext.Subscription.Id
 }
 
-$currentUser = Get-AzADUser -Mail $accountId
+$currentUser = Get-AzADUser -UserPrincipalName $accountId
 
 
 if ($adminAccounts -eq "default"){
@@ -457,7 +457,8 @@ if ($enableV2 -eq 'true'){
     Set-AzApiManagementTenantAccess -Context $apimContext -Enabled $True
 
     $tenantAccess = Get-AzApiManagementTenantAccess -Context $apimContext
-    $apimPrimaryKey = $tenantAccess.PrimaryKey
+    $tenantAccessSecret = Get-AzApiManagementTenantAccessSecret -Context $apimContext
+    $apimPrimaryKey = $tenantAccessSecret.PrimaryKey
     $secretvalue = ConvertTo-SecureString $apimPrimaryKey -AsPlainText -Force
     Set-AzKeyVaultSecret -VaultName $keyVaultName -Name 'apim-key' -SecretValue $secretvalue
     

@@ -45,7 +45,7 @@ If you are using any VPN or proxy service, add the following arguments. You don'
 In the end, add the following parameters to get our private preview build:
 
 ```powershell
--buildLocation "https://github.com/Azure/AIPlatform/raw/master/end-to-end-solutions/Luna/Resources/Builds/2.0" -sqlScriptFileLocation ".\SqlScripts\v2.0\db_provisioning.sql" -enableV2 true
+-buildLocation "https://github.com/Azure/AIPlatform/raw/luna.ai/end-to-end-solutions/Luna/Resources/Builds/2.0" -sqlScriptFileLocation ".\SqlScripts\v2.0\db_provisioning.sql" -enableV2 true
 ```
 
 Copy the whole command to the WindowsPowerShell window and run it. The AAD sign-in page will pop up twice, once for signing in to Azure and second time for AAD. The deployment may take up to 40 minutes mainly because it take quite long time to create Azure API Management service.
