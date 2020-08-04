@@ -49,10 +49,24 @@ Following is an example of the input data for our Logistic Regression model:
 
 ## Run python script to train and deploy model
 
-After updated all the properties and the input data, you can run the following command in the conda console to train and deploy the model.
+You can run the following command in the conda console to train and deploy the model.
 
 ```shell
 python src/luna_publish/azureml/train_and_deploy_model.py
+```
+
+You can specify the following arguments:
+
+- *--experiment_name*: the name of AML experiment. The default value is *train_and_deploy_model*
+- *--model_id*: the id of the registered model. If not specified, a new uuid4 will be used
+- *--endpoint_id*: the id of the deployed endpoint. If not specified, a new uuid4 will be used
+- *--dns_name_label*: the dns name label of the deployed endpoint. If not specified, a new uuid4 will be used
+- *--input_data_file_path*: the training input data file path. The default value is *training_input.json*
+
+For example:
+
+```shell
+python src/luna_publish/azureml/train_and_deploy_model.py --model_id iris_model --endpoint_id iris_endpoint --dns_name_label iris_classification
 ```
 
 The script will:

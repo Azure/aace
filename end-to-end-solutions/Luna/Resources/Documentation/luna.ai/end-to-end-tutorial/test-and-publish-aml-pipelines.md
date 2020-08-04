@@ -78,6 +78,12 @@ The test script is located at *tests/azureml/azureml_test.py*. Run the following
 python tests/azureml/azureml_test.py
 ```
 
+If you are using a different test data file, you can specify the test data file path by the *--test_data_file_path* parameter:
+
+```shell
+python tests/azureml/azureml_test.py --test_data_file_path <test-data-file-path>
+```
+
 The test will:
 
 - Schedule an AML pipeline run to train a model and regiester the model to AML workspace
@@ -100,17 +106,20 @@ If all local tests passed, we are ready to publish the code to AML pipelines. Th
 
 Before running the script, you should update the pipeline names to the values you want. In this example, we will use the following values:
 
-```python
-training_pipeline_name = 'sklearniristraining'
-batch_inference_pipeline_name = 'sklearnirisbatchinference'
-deployment_pipeline_name = 'sklearnirisdeployment'
-```
-
 Run the following command in the Anaconda console from the root folder of the project
 
 ```shell
 python tests/azureml/src/luna_publish/azureml/publish_azureml_pipelines.py
 ```
+
+You can specify the following parameters:
+
+- *--training_pipeline_name*: the name of training pipeline, default value is *mytrainingpipeline*
+- *--batch_inference_pipeline_name*: the name of batch inference pipeline, default value is *mybatchinferencepipeline*
+- *--deployment_pipeline_name*: the name of deployment pipeline, default value is *deployment_pipeline_name*
+- *--aml_workspace_name*: the name of the AML workspace, if not specified, the one defined in the test_workspace.json will be used
+- *--subscription_id*: the subscription id of the AML workspace, if not specified, the one defined in the test_workspace.json will be used
+- *--resource_group*: the resource group name of the AML workspace, if not specified, the one defined in the test_workspace.json will be used
 
 It will publish all 3 pipelines to AML workspace:
 
