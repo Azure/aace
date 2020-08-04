@@ -38,11 +38,11 @@ namespace Luna.API.Controllers.Admin
         }
 
         /// <summary>
-        /// Gets all apiVersions within a deployment within an product.
+        /// Get all apiVersions within a deployment within an product.
         /// </summary>
         /// <param name="productName">The name of the product.</param>
         /// <param name="deploymentName">The name of the deployment.</param>
-        /// <returns>HTTP 200 OK with apiVersion JSON objects in response body.</returns>
+        /// <returns>HTTP 200 OK with apiVersions JSON objects in response body.</returns>
         [HttpGet("products/{productName}/deployments/{deploymentName}/apiVersions")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> GetAllAsync(string productName, string deploymentName)
@@ -53,12 +53,12 @@ namespace Luna.API.Controllers.Admin
         }
 
         /// <summary>
-        /// Get a apiVersion
+        /// Get an apiVersion
         /// </summary>
-        /// <param name="productName">The product name</param>
-        /// <param name="deploymentName">The deployment name</param>
-        /// <param name="versionName">The tenant Id</param>
-        /// <returns>The apiVersion</returns>
+        /// <param name="productName">The name of the product.</param>
+        /// <param name="deploymentName">The name of the deployment.</param>
+        /// <param name="versionName">The name of apiversion</param>
+        /// <returns>HTTP 200 OK with one apiVersion JSON objects in response body.</returns>
         [HttpGet("products/{productName}/deployments/{deploymentName}/apiVersions/{versionName}", Name = nameof(GetAsync) + nameof(APIVersion))]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> GetAsync(string productName, string deploymentName, string versionName)
@@ -73,9 +73,10 @@ namespace Luna.API.Controllers.Admin
         /// </summary>
         /// <param name="productName">The name of the product.</param>
         /// <param name="deploymentName">The name of the deployment.</param>
-        /// <param name="versionName">The tenant id</param>
+        /// <param name="versionName">The name of apiversion</param>
         /// <param name="apiVersion">The apiVersion object to create.</param>
         /// <returns>HTTP 201 CREATED with URI to created resource in response header.</returns>
+        /// <returns>HTTP 200 OK with updated apiVersion JSON objects in response body.</returns>
         [HttpPut("products/{productName}/deployments/{deploymentName}/apiVersions/{versionName}")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -95,13 +96,13 @@ namespace Luna.API.Controllers.Admin
 
             if(await _apiVersionService.ExistsAsync(productName, deploymentName, versionName))
             {
-                _logger.LogInformation($"Update resticted user {versionName} in deployment {deploymentName} in product {productName} with payload {JsonSerializer.Serialize(apiVersion)}.");
+                _logger.LogInformation($"Update apiVersion {versionName} in deployment {deploymentName} in product {productName} with payload {JsonSerializer.Serialize(apiVersion)}.");
                 apiVersion = await _apiVersionService.UpdateAsync(productName, deploymentName, versionName, apiVersion);
                 return Ok(apiVersion);
             }
             else
             {
-                _logger.LogInformation($"Create resticted user {versionName} in deployment {deploymentName} in product {productName} with payload {JsonSerializer.Serialize(apiVersion)}.");
+                _logger.LogInformation($"Create apiVersion {versionName} in deployment {deploymentName} in product {productName} with payload {JsonSerializer.Serialize(apiVersion)}.");
                 await _apiVersionService.CreateAsync(productName, deploymentName, apiVersion);
                 return CreatedAtRoute(nameof(GetAsync) + nameof(APIVersion), new { productName = productName, deploymentName = deploymentName, versionName = versionName }, apiVersion);
             }
@@ -112,10 +113,10 @@ namespace Luna.API.Controllers.Admin
         /// <summary>
         /// Delete an apiVersion
         /// </summary>
-        /// <param name="productName">The product name</param>
-        /// <param name="deploymentName">The deployment name</param>
-        /// <param name="versionName">The tenant id</param>
-        /// <returns>no content</returns>
+        /// <param name="productName">The name of the product.</param>
+        /// <param name="deploymentName">The name of the deployment.</param>
+        /// <param name="versionName">The name of apiversion</param>
+        /// <returns>HTTP 204 NO CONTENT</returns>
         [HttpDelete("products/{productName}/deployments/{deploymentName}/apiVersions/{versionName}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<ActionResult> DeleteAsync(string productName, string deploymentName, string versionName)

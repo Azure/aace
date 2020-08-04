@@ -11,6 +11,7 @@ using Luna.Services.Data;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Luna.API.Controllers.Admin
 {
@@ -31,6 +32,9 @@ namespace Luna.API.Controllers.Admin
         private readonly IAPISubscriptionService _apiSubscriptionService;
         private readonly ILogger<ProductController> _logger;
         private readonly IUserAPIM _userAPIM;
+        private readonly IClientCertAPIM _certificateAPIM;
+        private readonly IKeyVaultHelper _keyVaultHelper;
+        private readonly IOptionsMonitor<APIMConfigurationOption> _options;
 
         /// <summary>
         /// Constructor that uses dependency injection.
@@ -38,7 +42,7 @@ namespace Luna.API.Controllers.Admin
         /// <param name="logger">The logger.</param>
         public APIRoutingController(IProductService productService, IDeploymentService deploymentService, IAPIVersionService apiVersionService, IAMLWorkspaceService amlWorkspaceService, IAPISubscriptionService apiSubscriptionService,
             ILogger<ProductController> logger,
-            IUserAPIM userAPIM)
+            IUserAPIM userAPIM, IClientCertAPIM certificateAPIM, IOptionsMonitor<APIMConfigurationOption> options, IKeyVaultHelper keyVaultHelper)
         {
             _productService = productService ?? throw new ArgumentNullException(nameof(productService));
             _deploymentService = deploymentService ?? throw new ArgumentNullException(nameof(deploymentService));
@@ -47,13 +51,17 @@ namespace Luna.API.Controllers.Admin
             _apiSubscriptionService = apiSubscriptionService ?? throw new ArgumentNullException(nameof(apiSubscriptionService));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _userAPIM = userAPIM ?? throw new ArgumentNullException(nameof(userAPIM));
+            _certificateAPIM = certificateAPIM ?? throw new ArgumentNullException(nameof(certificateAPIM));
+            _options = options ?? throw new ArgumentNullException(nameof(options));
+            _keyVaultHelper = keyVaultHelper;
         }
 
         [HttpPost("products/{productName}/deployments/{deploymentName}/predict")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> Predict(string productName, string deploymentName, [FromQuery(Name = "api-version")] string versionName, [FromBody] PredictRequest request)
         {
-            if (!ClientCertAuthHelper.IsValidClientCertificate(Request.HttpContext.Connection.ClientCertificate))
+            var APIMCert = await _certificateAPIM.GetCert(request.userId);
+            if (!ClientCertAuthHelper.IsValidClientCertificate(Request.HttpContext.Connection.ClientCertificate, APIMCert))
                 throw new LunaBadRequestUserException("Request Client Certificate is invalid.", UserErrorCode.InvalidParameter);
             var apiSubcription = await _apiSubscriptionService.GetAsync(request.subscriptionId);
             if (apiSubcription == null)
@@ -64,8 +72,17 @@ namespace Luna.API.Controllers.Admin
                 throw new LunaBadRequestUserException("UserId of request is not equal to apiSubscription.", UserErrorCode.InvalidParameter);
 
             var version = await _apiVersionService.GetAsync(productName, deploymentName, versionName);
-            var workspace = await _amlWorkspaceService.GetAsync(version.AMLWorkspaceName);
-
+            var workspace = new Luna.Data.Entities.AMLWorkspace();
+            if (version.AMLWorkspaceName != null)
+            {
+                workspace = await _amlWorkspaceService.GetAsync(version.AMLWorkspaceName);
+                try{workspace.AADApplicationSecrets = await _keyVaultHelper.GetSecretAsync(_options.CurrentValue.Config.VaultName, workspace.AADApplicationSecrets); } catch { }
+            }
+            if (version.AuthenticationKey != null)
+            {
+                try{ version.AuthenticationKey = await _keyVaultHelper.GetSecretAsync(_options.CurrentValue.Config.VaultName, versionName); }catch { }
+            }
+            
             return this.Content((await ControllerHelper.Predict(version, workspace, request.userInput)), "application/json");
         }
 
@@ -73,7 +90,8 @@ namespace Luna.API.Controllers.Admin
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> BatchInferenceWithDefaultModel(string productName, string deploymentName, [FromQuery(Name = "api-version")] string versionName, [FromBody] BatchInferenceRequest request)
         {
-            if (!ClientCertAuthHelper.IsValidClientCertificate(Request.HttpContext.Connection.ClientCertificate))
+            var APIMCert = await _certificateAPIM.GetCert(request.userId);
+            if (!ClientCertAuthHelper.IsValidClientCertificate(Request.HttpContext.Connection.ClientCertificate, APIMCert))
                 throw new LunaBadRequestUserException("Request Client Certificate is invalid.", UserErrorCode.InvalidParameter);
             var apiSubcription = await _apiSubscriptionService.GetAsync(request.subscriptionId);
             if (apiSubcription == null)
@@ -87,6 +105,8 @@ namespace Luna.API.Controllers.Admin
             var deployment = await _deploymentService.GetAsync(productName, deploymentName);
             var version = await _apiVersionService.GetAsync(productName, deploymentName, versionName);
             var workspace = await _amlWorkspaceService.GetAsync(version.AMLWorkspaceName);
+            try { version.AuthenticationKey = await _keyVaultHelper.GetSecretAsync(_options.CurrentValue.Config.VaultName, versionName); } catch { }
+            try { workspace.AADApplicationSecrets = await _keyVaultHelper.GetSecretAsync(_options.CurrentValue.Config.VaultName, workspace.AADApplicationSecrets); } catch { }
 
             return Ok(await ControllerHelper.BatchInferenceWithDefaultModel(product, deployment, version, workspace, apiSubcription, request.userInput));
         }
@@ -95,7 +115,8 @@ namespace Luna.API.Controllers.Admin
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> GetABatchInferenceOperationWithDefaultModel(string productName, string deploymentName, Guid operationId, [FromQuery(Name = "api-version")] string versionName, [FromBody] BatchInferenceRequest request)
         {
-            if (!ClientCertAuthHelper.IsValidClientCertificate(Request.HttpContext.Connection.ClientCertificate))
+            var APIMCert = await _certificateAPIM.GetCert(request.userId);
+            if (!ClientCertAuthHelper.IsValidClientCertificate(Request.HttpContext.Connection.ClientCertificate, APIMCert))
                 throw new LunaBadRequestUserException("Request Client Certificate is invalid.", UserErrorCode.InvalidParameter);
             var apiSubcription = await _apiSubscriptionService.GetAsync(request.subscriptionId);
             if (apiSubcription == null)
@@ -109,21 +130,18 @@ namespace Luna.API.Controllers.Admin
             var deployment = await _deploymentService.GetAsync(productName, deploymentName);
             var version = await _apiVersionService.GetAsync(productName, deploymentName, versionName);
             var workspace = await _amlWorkspaceService.GetAsync(version.AMLWorkspaceName);
+            try { version.AuthenticationKey = await _keyVaultHelper.GetSecretAsync(_options.CurrentValue.Config.VaultName, versionName); } catch { }
+            try { workspace.AADApplicationSecrets = await _keyVaultHelper.GetSecretAsync(_options.CurrentValue.Config.VaultName, workspace.AADApplicationSecrets); } catch { }
 
             return Ok(await ControllerHelper.GetABatchInferenceOperationWithDefaultModel(product, deployment, version, workspace, apiSubcription, operationId));
         }
 
-        /// <summary>
-        /// Gets all apiVersions within a deployment within an product.
-        /// </summary>
-        /// <param name="productName">The name of the product.</param>
-        /// <param name="deploymentName">The name of the deployment.</param>
-        /// <returns>HTTP 200 OK with apiVersion JSON objects in response body.</returns>
         [HttpGet("products/{productName}/deployments/{deploymentName}/operations")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> ListAllInferenceOperationsByUserWithDefaultModel(string productName, string deploymentName, [FromQuery(Name = "api-version")] string versionName, [FromBody] BatchInferenceRequest request)
         {
-            if (!ClientCertAuthHelper.IsValidClientCertificate(Request.HttpContext.Connection.ClientCertificate))
+            var APIMCert = await _certificateAPIM.GetCert(request.userId);
+            if (!ClientCertAuthHelper.IsValidClientCertificate(Request.HttpContext.Connection.ClientCertificate, APIMCert))
                 throw new LunaBadRequestUserException("Request Client Certificate is invalid.", UserErrorCode.InvalidParameter);
             var apiSubcription = await _apiSubscriptionService.GetAsync(request.subscriptionId);
             if (apiSubcription == null)
@@ -137,6 +155,8 @@ namespace Luna.API.Controllers.Admin
             var deployment = await _deploymentService.GetAsync(productName, deploymentName);
             var version = await _apiVersionService.GetAsync(productName, deploymentName, versionName);
             var workspace = await _amlWorkspaceService.GetAsync(version.AMLWorkspaceName);
+            try { version.AuthenticationKey = await _keyVaultHelper.GetSecretAsync(_options.CurrentValue.Config.VaultName, versionName); } catch { }
+            try { workspace.AADApplicationSecrets = await _keyVaultHelper.GetSecretAsync(_options.CurrentValue.Config.VaultName, workspace.AADApplicationSecrets); } catch { }
 
             return Ok(await ControllerHelper.ListAllInferenceOperationsByUserWithDefaultModel(product, deployment, version, workspace, apiSubcription));
         }
@@ -145,7 +165,8 @@ namespace Luna.API.Controllers.Admin
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> TrainModel(string productName, string deploymentName, [FromQuery(Name = "api-version")] string versionName, [FromBody] TrainModelRequest request)
         {
-            if (!ClientCertAuthHelper.IsValidClientCertificate(Request.HttpContext.Connection.ClientCertificate))
+            var APIMCert = await _certificateAPIM.GetCert(request.userId);
+            if (!ClientCertAuthHelper.IsValidClientCertificate(Request.HttpContext.Connection.ClientCertificate, APIMCert))
                 throw new LunaBadRequestUserException("Request Client Certificate is invalid.", UserErrorCode.InvalidParameter);
             var apiSubcription = await _apiSubscriptionService.GetAsync(request.subscriptionId);
             if (apiSubcription == null)
@@ -159,6 +180,8 @@ namespace Luna.API.Controllers.Admin
             var deployment = await _deploymentService.GetAsync(productName, deploymentName);
             var version = await _apiVersionService.GetAsync(productName, deploymentName, versionName);
             var workspace = await _amlWorkspaceService.GetAsync(version.AMLWorkspaceName);
+            try { version.AuthenticationKey = await _keyVaultHelper.GetSecretAsync(_options.CurrentValue.Config.VaultName, versionName); } catch { }
+            try { workspace.AADApplicationSecrets = await _keyVaultHelper.GetSecretAsync(_options.CurrentValue.Config.VaultName, workspace.AADApplicationSecrets); } catch { }
 
             return Ok(await ControllerHelper.TrainModel(product, deployment, version, workspace, apiSubcription, request.userInput));
         }
@@ -167,7 +190,8 @@ namespace Luna.API.Controllers.Admin
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> GetATrainingOperationsByModelIdUser(string productName, string deploymentName, Guid subscriptionId, Guid modelId, [FromQuery(Name = "userid")] string userId, [FromQuery(Name = "api-version")] string versionName)
         {
-            if (!ClientCertAuthHelper.IsValidClientCertificate(Request.HttpContext.Connection.ClientCertificate))
+            var APIMCert = await _certificateAPIM.GetCert(userId);
+            if (!ClientCertAuthHelper.IsValidClientCertificate(Request.HttpContext.Connection.ClientCertificate, APIMCert))
                 throw new LunaBadRequestUserException("Request Client Certificate is invalid.", UserErrorCode.InvalidParameter);
             var apiSubcription = await _apiSubscriptionService.GetAsync(subscriptionId);
             if (apiSubcription == null)
@@ -182,6 +206,8 @@ namespace Luna.API.Controllers.Admin
             var deployment = await _deploymentService.GetAsync(productName, deploymentName);
             var version = await _apiVersionService.GetAsync(productName, deploymentName, versionName);
             var workspace = await _amlWorkspaceService.GetAsync(version.AMLWorkspaceName);
+            try { version.AuthenticationKey = await _keyVaultHelper.GetSecretAsync(_options.CurrentValue.Config.VaultName, versionName); } catch { }
+            try { workspace.AADApplicationSecrets = await _keyVaultHelper.GetSecretAsync(_options.CurrentValue.Config.VaultName, workspace.AADApplicationSecrets); } catch { }
 
             return Ok(await ControllerHelper.GetATrainingOperationsByModelIdUser(product, deployment, version, workspace, apiSubcription, modelId));
         }
@@ -190,7 +216,8 @@ namespace Luna.API.Controllers.Admin
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> ListAllTrainingOperationsByUser(string productName, string deploymentName, Guid subscriptionId, [FromQuery(Name = "userid")] string userId, [FromQuery(Name = "api-version")] string versionName)
         {
-            if (!ClientCertAuthHelper.IsValidClientCertificate(Request.HttpContext.Connection.ClientCertificate))
+            var APIMCert = await _certificateAPIM.GetCert(userId);
+            if (!ClientCertAuthHelper.IsValidClientCertificate(Request.HttpContext.Connection.ClientCertificate, APIMCert))
                 throw new LunaBadRequestUserException("Request Client Certificate is invalid.", UserErrorCode.InvalidParameter);
             var apiSubcription = await _apiSubscriptionService.GetAsync(subscriptionId);
             if (apiSubcription == null)
@@ -204,21 +231,18 @@ namespace Luna.API.Controllers.Admin
             var deployment = await _deploymentService.GetAsync(productName, deploymentName);
             var version = await _apiVersionService.GetAsync(productName, deploymentName, versionName);
             var workspace = await _amlWorkspaceService.GetAsync(version.AMLWorkspaceName);
+            try { version.AuthenticationKey = await _keyVaultHelper.GetSecretAsync(_options.CurrentValue.Config.VaultName, versionName); } catch { }
+            try { workspace.AADApplicationSecrets = await _keyVaultHelper.GetSecretAsync(_options.CurrentValue.Config.VaultName, workspace.AADApplicationSecrets); } catch { }
 
             return Ok(await ControllerHelper.ListAllTrainingOperationsByUser(product, deployment, version, workspace, apiSubcription));
         }
 
-        /// <summary>
-        /// Gets all apiVersions within a deployment within an product.
-        /// </summary>
-        /// <param name="productName">The name of the product.</param>
-        /// <param name="deploymentName">The name of the deployment.</param>
-        /// <returns>HTTP 200 OK with apiVersion JSON objects in response body.</returns>
         [HttpGet("products/{productName}/deployments/{deploymentName}/subscriptions/{subscriptionId}/models/{modelId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> GetAModelByModelIdUserProductDeployment(string productName, string deploymentName, Guid subscriptionId, Guid modelId, [FromQuery(Name = "userid")] string userId, [FromQuery(Name = "api-version")] string versionName)
         {
-            if (!ClientCertAuthHelper.IsValidClientCertificate(Request.HttpContext.Connection.ClientCertificate))
+            var APIMCert = await _certificateAPIM.GetCert(userId);
+            if (!ClientCertAuthHelper.IsValidClientCertificate(Request.HttpContext.Connection.ClientCertificate, APIMCert))
                 throw new LunaBadRequestUserException("Request Client Certificate is invalid.", UserErrorCode.InvalidParameter);
             var apiSubcription = await _apiSubscriptionService.GetAsync(subscriptionId);
             if (apiSubcription == null)
@@ -232,6 +256,8 @@ namespace Luna.API.Controllers.Admin
             var deployment = await _deploymentService.GetAsync(productName, deploymentName);
             var version = await _apiVersionService.GetAsync(productName, deploymentName, versionName);
             var workspace = await _amlWorkspaceService.GetAsync(version.AMLWorkspaceName);
+            try { version.AuthenticationKey = await _keyVaultHelper.GetSecretAsync(_options.CurrentValue.Config.VaultName, versionName); } catch { }
+            try { workspace.AADApplicationSecrets = await _keyVaultHelper.GetSecretAsync(_options.CurrentValue.Config.VaultName, workspace.AADApplicationSecrets); } catch { }
 
             return Ok(await ControllerHelper.GetAModelByModelIdUserProductDeployment(product, deployment, version, workspace, apiSubcription, modelId));
         }
@@ -240,7 +266,8 @@ namespace Luna.API.Controllers.Admin
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> GetAllModelsByUserProductDeployment(string productName, string deploymentName, Guid subscriptionId, [FromQuery(Name = "userid")] string userId, [FromQuery(Name = "api-version")] string versionName)
         {
-            if (!ClientCertAuthHelper.IsValidClientCertificate(Request.HttpContext.Connection.ClientCertificate))
+            var APIMCert = await _certificateAPIM.GetCert(userId);
+            if (!ClientCertAuthHelper.IsValidClientCertificate(Request.HttpContext.Connection.ClientCertificate, APIMCert))
                 throw new LunaBadRequestUserException("Request Client Certificate is invalid.", UserErrorCode.InvalidParameter);
             var apiSubcription = await _apiSubscriptionService.GetAsync(subscriptionId);
             if (apiSubcription == null)
@@ -254,6 +281,8 @@ namespace Luna.API.Controllers.Admin
             var deployment = await _deploymentService.GetAsync(productName, deploymentName);
             var version = await _apiVersionService.GetAsync(productName, deploymentName, versionName);
             var workspace = await _amlWorkspaceService.GetAsync(version.AMLWorkspaceName);
+            try { version.AuthenticationKey = await _keyVaultHelper.GetSecretAsync(_options.CurrentValue.Config.VaultName, versionName); } catch { }
+            try { workspace.AADApplicationSecrets = await _keyVaultHelper.GetSecretAsync(_options.CurrentValue.Config.VaultName, workspace.AADApplicationSecrets); } catch { }
 
             return Ok(await ControllerHelper.GetAllModelsByUserProductDeployment(product, deployment, version, workspace, apiSubcription));
         }
@@ -262,7 +291,8 @@ namespace Luna.API.Controllers.Admin
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> DeleteAModel(string productName, string deploymentName, Guid subscriptionId, Guid modelId, [FromQuery(Name = "userid")] string userId, [FromQuery(Name = "api-version")] string versionName)
         {
-            if (!ClientCertAuthHelper.IsValidClientCertificate(Request.HttpContext.Connection.ClientCertificate))
+            var APIMCert = await _certificateAPIM.GetCert(userId);
+            if (!ClientCertAuthHelper.IsValidClientCertificate(Request.HttpContext.Connection.ClientCertificate, APIMCert))
                 throw new LunaBadRequestUserException("Request Client Certificate is invalid.", UserErrorCode.InvalidParameter);
             var apiSubcription = await _apiSubscriptionService.GetAsync(subscriptionId);
             if (apiSubcription == null)
@@ -274,6 +304,8 @@ namespace Luna.API.Controllers.Admin
 
             var version = await _apiVersionService.GetAsync(productName, deploymentName, versionName);
             var workspace = await _amlWorkspaceService.GetAsync(version.AMLWorkspaceName);
+            try { version.AuthenticationKey = await _keyVaultHelper.GetSecretAsync(_options.CurrentValue.Config.VaultName, versionName); } catch { }
+            try { workspace.AADApplicationSecrets = await _keyVaultHelper.GetSecretAsync(_options.CurrentValue.Config.VaultName, workspace.AADApplicationSecrets); } catch { }
             await ControllerHelper.DeleteAModel(workspace, modelId);
 
             return Ok();
@@ -283,7 +315,8 @@ namespace Luna.API.Controllers.Admin
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> BatchInference(string productName, string deploymentName, Guid modelId, [FromQuery(Name = "api-version")] string versionName, [FromBody] BatchInferenceRequest request)
         {
-            if (!ClientCertAuthHelper.IsValidClientCertificate(Request.HttpContext.Connection.ClientCertificate))
+            var APIMCert = await _certificateAPIM.GetCert(request.userId);
+            if (!ClientCertAuthHelper.IsValidClientCertificate(Request.HttpContext.Connection.ClientCertificate, APIMCert))
                 throw new LunaBadRequestUserException("Request Client Certificate is invalid.", UserErrorCode.InvalidParameter);
             var apiSubcription = await _apiSubscriptionService.GetAsync(request.subscriptionId);
             if (apiSubcription == null)
@@ -297,6 +330,8 @@ namespace Luna.API.Controllers.Admin
             var deployment = await _deploymentService.GetAsync(productName, deploymentName);
             var version = await _apiVersionService.GetAsync(productName, deploymentName, versionName);
             var workspace = await _amlWorkspaceService.GetAsync(version.AMLWorkspaceName);
+            try { version.AuthenticationKey = await _keyVaultHelper.GetSecretAsync(_options.CurrentValue.Config.VaultName, versionName); } catch { }
+            try { workspace.AADApplicationSecrets = await _keyVaultHelper.GetSecretAsync(_options.CurrentValue.Config.VaultName, workspace.AADApplicationSecrets); } catch { }
 
             return Ok(await ControllerHelper.BatchInference(product, deployment, version, workspace, apiSubcription, modelId, request.userInput));
         }
@@ -305,7 +340,8 @@ namespace Luna.API.Controllers.Admin
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> GetABatchInferenceOperation(string productName, string deploymentName, Guid subscriptionId, Guid operationId, [FromQuery(Name = "userid")] string userId, [FromQuery(Name = "api-version")] string versionName)
         {
-            if (!ClientCertAuthHelper.IsValidClientCertificate(Request.HttpContext.Connection.ClientCertificate))
+            var APIMCert = await _certificateAPIM.GetCert(userId);
+            if (!ClientCertAuthHelper.IsValidClientCertificate(Request.HttpContext.Connection.ClientCertificate, APIMCert))
                 throw new LunaBadRequestUserException("Request Client Certificate is invalid.", UserErrorCode.InvalidParameter);
             var apiSubcription = await _apiSubscriptionService.GetAsync(subscriptionId);
             if (apiSubcription == null)
@@ -319,21 +355,18 @@ namespace Luna.API.Controllers.Admin
             var deployment = await _deploymentService.GetAsync(productName, deploymentName);
             var version = await _apiVersionService.GetAsync(productName, deploymentName, versionName);
             var workspace = await _amlWorkspaceService.GetAsync(version.AMLWorkspaceName);
+            try { version.AuthenticationKey = await _keyVaultHelper.GetSecretAsync(_options.CurrentValue.Config.VaultName, versionName); } catch { }
+            try { workspace.AADApplicationSecrets = await _keyVaultHelper.GetSecretAsync(_options.CurrentValue.Config.VaultName, workspace.AADApplicationSecrets); } catch { }
 
             return Ok(await ControllerHelper.GetABatchInferenceOperation(product, deployment, version, workspace, apiSubcription, operationId));
         }
 
-        /// <summary>
-        /// Gets all apiVersions within a deployment within an product.
-        /// </summary>
-        /// <param name="productName">The name of the product.</param>
-        /// <param name="deploymentName">The name of the deployment.</param>
-        /// <returns>HTTP 200 OK with apiVersion JSON objects in response body.</returns>
         [HttpGet("products/{productName}/deployments/{deploymentName}/subscriptions/{subscriptionId}/operations/inference")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> ListAllInferenceOperationsByUser(string productName, string deploymentName, Guid subscriptionId, [FromQuery(Name = "userid")] string userId, [FromQuery(Name = "api-version")] string versionName)
         {
-            if (!ClientCertAuthHelper.IsValidClientCertificate(Request.HttpContext.Connection.ClientCertificate))
+            var APIMCert = await _certificateAPIM.GetCert(userId);
+            if (!ClientCertAuthHelper.IsValidClientCertificate(Request.HttpContext.Connection.ClientCertificate, APIMCert))
                 throw new LunaBadRequestUserException("Request Client Certificate is invalid.", UserErrorCode.InvalidParameter);
             var apiSubcription = await _apiSubscriptionService.GetAsync(subscriptionId);
             if (apiSubcription == null)
@@ -347,21 +380,18 @@ namespace Luna.API.Controllers.Admin
             var deployment = await _deploymentService.GetAsync(productName, deploymentName);
             var version = await _apiVersionService.GetAsync(productName, deploymentName, versionName);
             var workspace = await _amlWorkspaceService.GetAsync(version.AMLWorkspaceName);
+            try { version.AuthenticationKey = await _keyVaultHelper.GetSecretAsync(_options.CurrentValue.Config.VaultName, versionName); } catch { }
+            try { workspace.AADApplicationSecrets = await _keyVaultHelper.GetSecretAsync(_options.CurrentValue.Config.VaultName, workspace.AADApplicationSecrets); } catch { }
 
             return Ok(await ControllerHelper.ListAllInferenceOperationsByUser(product, deployment, version, workspace, apiSubcription));
         }
 
-        /// <summary>
-        /// Gets all apiVersions within a deployment within an product.
-        /// </summary>
-        /// <param name="productName">The name of the product.</param>
-        /// <param name="deploymentName">The name of the deployment.</param>
-        /// <returns>HTTP 200 OK with apiVersion JSON objects in response body.</returns>
         [HttpPost("products/{productName}/deployments/{deploymentName}/models/{modelId}/deploy")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> DeployRealTimePredictionEndpoint(string productName, string deploymentName, Guid modelId, [FromQuery(Name = "api-version")] string versionName, [FromBody] BatchInferenceRequest request)
         {
-            if (!ClientCertAuthHelper.IsValidClientCertificate(Request.HttpContext.Connection.ClientCertificate))
+            var APIMCert = await _certificateAPIM.GetCert(request.userId);
+            if (!ClientCertAuthHelper.IsValidClientCertificate(Request.HttpContext.Connection.ClientCertificate, APIMCert))
                 throw new LunaBadRequestUserException("Request Client Certificate is invalid.", UserErrorCode.InvalidParameter);
             var apiSubcription = await _apiSubscriptionService.GetAsync(request.subscriptionId);
             if (apiSubcription == null)
@@ -375,21 +405,18 @@ namespace Luna.API.Controllers.Admin
             var deployment = await _deploymentService.GetAsync(productName, deploymentName);
             var version = await _apiVersionService.GetAsync(productName, deploymentName, versionName);
             var workspace = await _amlWorkspaceService.GetAsync(version.AMLWorkspaceName);
+            try { version.AuthenticationKey = await _keyVaultHelper.GetSecretAsync(_options.CurrentValue.Config.VaultName, versionName); } catch { }
+            try { workspace.AADApplicationSecrets = await _keyVaultHelper.GetSecretAsync(_options.CurrentValue.Config.VaultName, workspace.AADApplicationSecrets); } catch { }
 
             return Ok(await ControllerHelper.DeployRealTimePredictionEndpoint(product, deployment, version, workspace, apiSubcription, modelId, request.userInput));
         }
 
-        /// <summary>
-        /// Gets all apiVersions within a deployment within an product.
-        /// </summary>
-        /// <param name="productName">The name of the product.</param>
-        /// <param name="deploymentName">The name of the deployment.</param>
-        /// <returns>HTTP 200 OK with apiVersion JSON objects in response body.</returns>
         [HttpGet("products/{productName}/deployments/{deploymentName}/subscriptions/{subscriptionId}/operations/deployment/{endpointId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> GetADeployOperationByEndpointIdUser(string productName, string deploymentName, Guid subscriptionId, Guid endpointId, [FromQuery(Name = "userid")] string userId, [FromQuery(Name = "api-version")] string versionName)
         {
-            if (!ClientCertAuthHelper.IsValidClientCertificate(Request.HttpContext.Connection.ClientCertificate))
+            var APIMCert = await _certificateAPIM.GetCert(userId);
+            if (!ClientCertAuthHelper.IsValidClientCertificate(Request.HttpContext.Connection.ClientCertificate, APIMCert))
                 throw new LunaBadRequestUserException("Request Client Certificate is invalid.", UserErrorCode.InvalidParameter);
             var apiSubcription = await _apiSubscriptionService.GetAsync(subscriptionId);
             if (apiSubcription == null)
@@ -403,21 +430,18 @@ namespace Luna.API.Controllers.Admin
             var deployment = await _deploymentService.GetAsync(productName, deploymentName);
             var version = await _apiVersionService.GetAsync(productName, deploymentName, versionName);
             var workspace = await _amlWorkspaceService.GetAsync(version.AMLWorkspaceName);
+            try { version.AuthenticationKey = await _keyVaultHelper.GetSecretAsync(_options.CurrentValue.Config.VaultName, versionName); } catch { }
+            try { workspace.AADApplicationSecrets = await _keyVaultHelper.GetSecretAsync(_options.CurrentValue.Config.VaultName, workspace.AADApplicationSecrets); } catch { }
 
             return Ok(await ControllerHelper.GetADeployOperationByEndpointIdUser(product, deployment, version, workspace, apiSubcription, endpointId));
         }
 
-        /// <summary>
-        /// Gets all apiVersions within a deployment within an product.
-        /// </summary>
-        /// <param name="productName">The name of the product.</param>
-        /// <param name="deploymentName">The name of the deployment.</param>
-        /// <returns>HTTP 200 OK with apiVersion JSON objects in response body.</returns>
         [HttpGet("products/{productName}/deployments/{deploymentName}/subscriptions/{subscriptionId}/operations/deployment")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> ListAllDeployOperationsByUser(string productName, string deploymentName, Guid subscriptionId, [FromQuery(Name = "userid")] string userId, [FromQuery(Name = "api-version")] string versionName)
         {
-            if (!ClientCertAuthHelper.IsValidClientCertificate(Request.HttpContext.Connection.ClientCertificate))
+            var APIMCert = await _certificateAPIM.GetCert(userId);
+            if (!ClientCertAuthHelper.IsValidClientCertificate(Request.HttpContext.Connection.ClientCertificate, APIMCert))
                 throw new LunaBadRequestUserException("Request Client Certificate is invalid.", UserErrorCode.InvalidParameter);
             var apiSubcription = await _apiSubscriptionService.GetAsync(subscriptionId);
             if (apiSubcription == null)
@@ -431,21 +455,18 @@ namespace Luna.API.Controllers.Admin
             var deployment = await _deploymentService.GetAsync(productName, deploymentName);
             var version = await _apiVersionService.GetAsync(productName, deploymentName, versionName);
             var workspace = await _amlWorkspaceService.GetAsync(version.AMLWorkspaceName);
+            try { version.AuthenticationKey = await _keyVaultHelper.GetSecretAsync(_options.CurrentValue.Config.VaultName, versionName); } catch { }
+            try { workspace.AADApplicationSecrets = await _keyVaultHelper.GetSecretAsync(_options.CurrentValue.Config.VaultName, workspace.AADApplicationSecrets); } catch { }
 
             return Ok(await ControllerHelper.ListAllDeployOperationsByUser(product, deployment, version, workspace, apiSubcription));
         }
 
-        /// <summary>
-        /// Gets all apiVersions within a deployment within an product.
-        /// </summary>
-        /// <param name="productName">The name of the product.</param>
-        /// <param name="deploymentName">The name of the deployment.</param>
-        /// <returns>HTTP 200 OK with apiVersion JSON objects in response body.</returns>
         [HttpGet("products/{productName}/deployments/{deploymentName}/subscriptions/{subscriptionId}/endpoints")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> GetAllRealTimeServiceEndpointsByUserProductAndDeployment(string productName, string deploymentName, Guid subscriptionId, [FromQuery(Name = "userid")] string userId, [FromQuery(Name = "api-version")] string versionName)
         {
-            if (!ClientCertAuthHelper.IsValidClientCertificate(Request.HttpContext.Connection.ClientCertificate))
+            var APIMCert = await _certificateAPIM.GetCert(userId);
+            if (!ClientCertAuthHelper.IsValidClientCertificate(Request.HttpContext.Connection.ClientCertificate, APIMCert))
                 throw new LunaBadRequestUserException("Request Client Certificate is invalid.", UserErrorCode.InvalidParameter);
             var apiSubcription = await _apiSubscriptionService.GetAsync(subscriptionId);
             if (apiSubcription == null)
@@ -459,21 +480,18 @@ namespace Luna.API.Controllers.Admin
             var deployment = await _deploymentService.GetAsync(productName, deploymentName);
             var version = await _apiVersionService.GetAsync(productName, deploymentName, versionName);
             var workspace = await _amlWorkspaceService.GetAsync(version.AMLWorkspaceName);
+            try { version.AuthenticationKey = await _keyVaultHelper.GetSecretAsync(_options.CurrentValue.Config.VaultName, versionName); } catch { }
+            try { workspace.AADApplicationSecrets = await _keyVaultHelper.GetSecretAsync(_options.CurrentValue.Config.VaultName, workspace.AADApplicationSecrets); } catch { }
 
             return Ok(await ControllerHelper.GetAllRealTimeServiceEndpointsByUserProductDeployment(product, deployment, version, workspace, apiSubcription));
         }
 
-        /// <summary>
-        /// Gets all apiVersions within a deployment within an product.
-        /// </summary>
-        /// <param name="productName">The name of the product.</param>
-        /// <param name="deploymentName">The name of the deployment.</param>
-        /// <returns>HTTP 200 OK with apiVersion JSON objects in response body.</returns>
         [HttpGet("products/{productName}/deployments/{deploymentName}/subscriptions/{subscriptionId}/endpoints/{endpointId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> GetARealTimeServiceEndpointByEndpointIdUserProductAndDeployment(string productName, string deploymentName, Guid subscriptionId, Guid endpointId, [FromQuery(Name = "userid")] string userId, [FromQuery(Name = "api-version")] string versionName)
         {
-            if (!ClientCertAuthHelper.IsValidClientCertificate(Request.HttpContext.Connection.ClientCertificate))
+            var APIMCert = await _certificateAPIM.GetCert(userId);
+            if (!ClientCertAuthHelper.IsValidClientCertificate(Request.HttpContext.Connection.ClientCertificate, APIMCert))
                 throw new LunaBadRequestUserException("Request Client Certificate is invalid.", UserErrorCode.InvalidParameter);
             var apiSubcription = await _apiSubscriptionService.GetAsync(subscriptionId);
             if (apiSubcription == null)
@@ -487,6 +505,8 @@ namespace Luna.API.Controllers.Admin
             var deployment = await _deploymentService.GetAsync(productName, deploymentName);
             var version = await _apiVersionService.GetAsync(productName, deploymentName, versionName);
             var workspace = await _amlWorkspaceService.GetAsync(version.AMLWorkspaceName);
+            try { version.AuthenticationKey = await _keyVaultHelper.GetSecretAsync(_options.CurrentValue.Config.VaultName, versionName); } catch { }
+            try { workspace.AADApplicationSecrets = await _keyVaultHelper.GetSecretAsync(_options.CurrentValue.Config.VaultName, workspace.AADApplicationSecrets); } catch { }
 
             return Ok(await ControllerHelper.GetARealTimeServiceEndpointByEndpointIdUserProductDeployment(product, deployment, version, workspace, apiSubcription, endpointId));
         }
@@ -496,7 +516,8 @@ namespace Luna.API.Controllers.Admin
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> DeleteAEndpoint(string productName, string deploymentName, Guid subscriptionId, Guid endpointId, [FromQuery(Name = "userid")] string userId, [FromQuery(Name = "api-version")] string versionName)
         {
-            if (!ClientCertAuthHelper.IsValidClientCertificate(Request.HttpContext.Connection.ClientCertificate))
+            var APIMCert = await _certificateAPIM.GetCert(userId);
+            if (!ClientCertAuthHelper.IsValidClientCertificate(Request.HttpContext.Connection.ClientCertificate, APIMCert))
                 throw new LunaBadRequestUserException("Request Client Certificate is invalid.", UserErrorCode.InvalidParameter);
             var apiSubcription = await _apiSubscriptionService.GetAsync(subscriptionId);
             if (apiSubcription == null)
@@ -508,6 +529,9 @@ namespace Luna.API.Controllers.Admin
 
             var version = await _apiVersionService.GetAsync(productName, deploymentName, versionName);
             var workspace = await _amlWorkspaceService.GetAsync(version.AMLWorkspaceName);
+            try { version.AuthenticationKey = await _keyVaultHelper.GetSecretAsync(_options.CurrentValue.Config.VaultName, versionName); } catch { }
+            try { workspace.AADApplicationSecrets = await _keyVaultHelper.GetSecretAsync(_options.CurrentValue.Config.VaultName, workspace.AADApplicationSecrets); } catch { }
+            
             await ControllerHelper.DeleteAEndpoint(workspace, endpointId);
 
             return Ok();

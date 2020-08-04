@@ -1,15 +1,18 @@
-﻿using Luna.Clients.Controller;
+﻿using Luna.Clients.Azure.Auth;
+using Luna.Clients.Controller;
 using Luna.Clients.Exceptions;
 using Luna.Clients.Logging;
 using Luna.Data.Entities;
 using Luna.Data.Repository;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Luna.Clients.Azure.APIM;
 
 namespace Luna.Services.Data.Luna.AI
 {
@@ -17,16 +20,21 @@ namespace Luna.Services.Data.Luna.AI
     {
         private readonly ISqlDbContext _context;
         private readonly ILogger<AMLWorkspaceService> _logger;
+        private readonly IKeyVaultHelper _keyVaultHelper;
+        private readonly IOptionsMonitor<APIMConfigurationOption> _options;
 
         /// <summary>
         /// Constructor that uses dependency injection.
         /// </summary>
         /// <param name="sqlDbContext">The context to be injected.</param>
         /// <param name="logger">The logger.</param>
-        public AMLWorkspaceService(ISqlDbContext sqlDbContext, ILogger<AMLWorkspaceService> logger)
+        public AMLWorkspaceService(IOptionsMonitor<APIMConfigurationOption> options,
+            ISqlDbContext sqlDbContext, ILogger<AMLWorkspaceService> logger, IKeyVaultHelper keyVaultHelper)
         {
+            _options = options ?? throw new ArgumentNullException(nameof(options));
             _context = sqlDbContext ?? throw new ArgumentNullException(nameof(sqlDbContext));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _keyVaultHelper = keyVaultHelper;
         }
 
         public async Task<List<AMLWorkspace>> GetAllAsync()
@@ -103,7 +111,16 @@ namespace Luna.Services.Data.Luna.AI
 
             workspace.Region = await ControllerHelper.GetRegion(workspace);
 
+            // Add secret to keyvault
+            if (workspace.AADApplicationSecrets == null)
+            {
+                throw new LunaBadRequestUserException("AAD Application Secrets is needed with the aml workspace", UserErrorCode.ArmTemplateNotProvided);
+            }
+            string secretName = $"aml-{workspace.WorkspaceName}-key";
+            await (_keyVaultHelper.SetSecretAsync(_options.CurrentValue.Config.VaultName, secretName, workspace.AADApplicationSecrets));
+
             // Add workspace to db
+            workspace.AADApplicationSecrets = secretName;
             _context.AMLWorkspaces.Add(workspace);
             await _context._SaveChangesAsync();
             _logger.LogInformation(LoggingUtils.ComposeResourceCreatedMessage(typeof(AMLWorkspace).Name, workspace.WorkspaceName));
@@ -131,8 +148,17 @@ namespace Luna.Services.Data.Luna.AI
                     UserErrorCode.NameMismatch);
             }
 
+            // Add secret to keyvault
+            if (workspace.AADApplicationSecrets == null)
+            {
+                throw new LunaBadRequestUserException("AAD Application Secrets is needed with the aml workspace", UserErrorCode.ArmTemplateNotProvided);
+            }
+            string secretName = $"aml-{workspace.WorkspaceName}-key";
+            await (_keyVaultHelper.SetSecretAsync(_options.CurrentValue.Config.VaultName, secretName, workspace.AADApplicationSecrets));
+
             // Copy over the changes
             workspace.Region = await ControllerHelper.GetRegion(workspace);
+            workspace.AADApplicationSecrets = secretName;
             workspaceDb.Copy(workspace);
 
             // Update workspaceDb values and save changes in db
@@ -148,6 +174,17 @@ namespace Luna.Services.Data.Luna.AI
             _logger.LogInformation(LoggingUtils.ComposeDeleteResourceMessage(typeof(AMLWorkspace).Name, workspaceName));
 
             var workspace = await GetAsync(workspaceName);
+
+            // Delete secret from key vault
+            if (workspace.AADApplicationSecrets != null)
+            {
+                string secretName = workspace.AADApplicationSecrets;
+                try
+                {
+                    await (_keyVaultHelper.DeleteSecretAsync(_options.CurrentValue.Config.VaultName, secretName));
+                }
+                catch { }
+            }
 
             // Remove the workspace from the db
             _context.AMLWorkspaces.Remove(workspace);
