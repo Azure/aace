@@ -13,6 +13,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Luna.Clients.Azure.APIM;
+using Luna.Services.Utilities.ExpressionEvaluation;
 
 namespace Luna.Services.Data.Luna.AI
 {
@@ -122,7 +123,7 @@ namespace Luna.Services.Data.Luna.AI
             {
                 throw new LunaBadRequestUserException("AAD Application Secrets is needed with the aml workspace", UserErrorCode.AuthKeyNotProvided);
             }
-            string secretName = $"aml-{workspace.WorkspaceName}-key";
+            string secretName = $"amlkey-{Context.GetRandomString(12)}";
             await (_keyVaultHelper.SetSecretAsync(_options.CurrentValue.Config.VaultName, secretName, workspace.AADApplicationSecrets));
 
             // Add workspace to db
@@ -159,12 +160,11 @@ namespace Luna.Services.Data.Luna.AI
             {
                 throw new LunaBadRequestUserException("AAD Application Secrets is needed with the aml workspace", UserErrorCode.ArmTemplateNotProvided);
             }
-            string secretName = $"aml-{workspace.WorkspaceName}-key";
+            string secretName = string.IsNullOrEmpty(workspace.AADApplicationSecretName) ? $"amlkey-{Context.GetRandomString(12)}" : workspace.AADApplicationSecretName;
             await (_keyVaultHelper.SetSecretAsync(_options.CurrentValue.Config.VaultName, secretName, workspace.AADApplicationSecrets));
 
             // Copy over the changes
             workspace.Region = await ControllerHelper.GetRegion(workspace);
-            workspace.AADApplicationSecretName = secretName;
             workspaceDb.Copy(workspace);
 
             // Update workspaceDb values and save changes in db

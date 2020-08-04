@@ -299,14 +299,14 @@ namespace Luna.Services.Data.Luna.AI
                 {
                     throw new LunaBadRequestUserException("Authentication key is needed with the key authentication type", UserErrorCode.AuthKeyNotProvided);
                 }
-                string secretName = $"{productName}-{deploymentName}-{version.VersionName}-authkey";
+                string secretName = $"authkey-{Context.GetRandomString(12)}";
                 await (_keyVaultHelper.SetSecretAsync(_options.CurrentValue.Config.VaultName, secretName, version.AuthenticationKey));
                 version.AuthenticationKeySecretName = secretName;
             }
 
             if (!string.IsNullOrEmpty(version.GitPersonalAccessToken))
             {
-                string secretName = $"{productName}-{deploymentName}-{version.VersionName}-gitpat";
+                string secretName = $"gitpat-{Context.GetRandomString(12)}";
                 await (_keyVaultHelper.SetSecretAsync(_options.CurrentValue.Config.VaultName, secretName, version.GitPersonalAccessToken));
                 version.GitPersonalAccessTokenSecretName = secretName;
             }
@@ -374,14 +374,14 @@ namespace Luna.Services.Data.Luna.AI
                 {
                     throw new LunaBadRequestUserException("Authentication key is needed with the key authentication type", UserErrorCode.AuthKeyNotProvided);
                 }
-                string secretName = $"{productName}-{deploymentName}-{version.VersionName}-authkey";
+                string secretName = string.IsNullOrEmpty(version.AuthenticationKeySecretName) ? $"authkey-{Context.GetRandomString(12)}" : version.AuthenticationKeySecretName;
                 await (_keyVaultHelper.SetSecretAsync(_options.CurrentValue.Config.VaultName, secretName, version.AuthenticationKey));
                 version.AuthenticationKeySecretName = secretName;
             }
 
             if (!string.IsNullOrEmpty(version.GitPersonalAccessToken))
             {
-                string secretName = $"{productName}-{deploymentName}-{version.VersionName}-gitpat";
+                string secretName = string.IsNullOrEmpty(version.GitPersonalAccessTokenSecretName) ? $"gitpat-{Context.GetRandomString(12)}" : version.GitPersonalAccessTokenSecretName;
                 await (_keyVaultHelper.SetSecretAsync(_options.CurrentValue.Config.VaultName, secretName, version.GitPersonalAccessToken));
                 version.GitPersonalAccessTokenSecretName = secretName;
             }
@@ -425,11 +425,14 @@ namespace Luna.Services.Data.Luna.AI
             {
                 if (version.AuthenticationKey != null)
                 {
-                    string secretName = version.AuthenticationKey;
+                    string secretName = version.AuthenticationKeySecretName;
                     try
                     {
                         await (_keyVaultHelper.DeleteSecretAsync(_options.CurrentValue.Config.VaultName, secretName));
-                    }catch { }
+                    }
+                    catch 
+                    { 
+                    }
                 }
             }
 
