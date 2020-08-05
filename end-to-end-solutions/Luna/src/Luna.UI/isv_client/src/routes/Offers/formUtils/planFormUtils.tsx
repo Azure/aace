@@ -2,7 +2,7 @@ import * as yup from "yup";
 import {ObjectSchema} from "yup";
 import {ICustomMeterDimensionsModel, IPlanModel, IRestrictedUsersModel} from "../../../models";
 import {v4 as uuid} from "uuid";
-import {aplicationID_AADTenantRegExp, planIdRegExp} from "./RegExp";
+import {guidRegExp, planIdRegExp} from "./RegExp";
 import {ErrorMessage} from "./ErrorMessage";
 
 export const getInitialPlan = (): IPlanFormValues => {
@@ -100,7 +100,7 @@ const planValidator: ObjectSchema<IPlanModel> = yup.object().shape(
               is: (val) => {
                 return !!val === false
               },
-              then: yup.string().matches(aplicationID_AADTenantRegExp,
+              then: yup.string().matches(guidRegExp,
                 {
                   message: ErrorMessage.userId,
                   excludeEmptyString: true

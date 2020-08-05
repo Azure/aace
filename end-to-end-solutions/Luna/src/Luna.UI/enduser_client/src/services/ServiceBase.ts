@@ -87,10 +87,10 @@ export abstract class ServiceBase {
       console.log(error);
 
       // parse the server's error if one was provided
-      if (error.response && error.response.data != "") {
+      if (error.response && error.response.data !== "") {
 
         // validation error
-        if (error.response.status == 400) {
+        if (error.response.status === 400) {
           if (!Array.isArray(error.response.data))
             result = new Result<T>(null, false,[{method_error: ["One or more validation errors have occurred but we were unable to parse them. Please inspect the console for more information."]}]);
           else
@@ -157,10 +157,10 @@ export abstract class ServiceBase {
       console.log(error);
 
       // parse the server's error if one was provided
-      if (error.response.data != "") {
+      if (error.response.data !== "") {
 
         // validation error
-        if (error.response.status == 400) {
+        if (error.response.status === 400) {
           if (!Array.isArray(error.response.data))
             result = new Result<T>(null, false,[{method_error: ["One or more validation errors have occurred but we were unable to parse them. Please inspect the console for more information."]}]);
           else

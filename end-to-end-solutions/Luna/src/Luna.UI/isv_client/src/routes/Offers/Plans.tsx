@@ -8,10 +8,10 @@ import ModifyPlan from "./ModifyPlan";
 import {Formik} from "formik";
 import {getInitialPlan, IPlanFormValues, planValidationSchema} from "./formUtils/planFormUtils";
 import FormLabel from '../../shared/components/FormLabel';
-import {handleSubmissionErrorsForArray, handleSubmissionErrorsForForm} from "../../shared/formUtils/utils";
+import { handleSubmissionErrorsForForm} from "../../shared/formUtils/utils";
 import {toast} from "react-toastify";
 import { useGlobalContext } from '../../shared/components/GlobalProvider';
-import CustomMetersService from "../../services/MetersService";
+//import CustomMetersService from "../../services/MetersService";
 
 const Plans: React.FunctionComponent = () => {
 
@@ -27,7 +27,7 @@ const Plans: React.FunctionComponent = () => {
   const {offerName} = useParams();
 
   const OfferName = offerName as string;
-  const PlanName = editPlanName as string;
+  //const PlanName = editPlanName as string;
   const globalContext = useGlobalContext();
 
   const getPlans = async () => {
@@ -249,7 +249,7 @@ const Plans: React.FunctionComponent = () => {
             for (let param of parametersToDelete) {
 
               var paramDeleteResult = await PlansService.deleteCustomMeterDimension(offerName as string, values.plan.planName, param.meterName);
-              var idx = values.plan.customMeterDimensions.findIndex(x => x.clientId === param.clientId);
+              //var idx = values.plan.customMeterDimensions.findIndex(x => x.clientId === param.clientId);
               //TODO: NEED TO HANDLE THE DISPLAY OF ERRORS FOR subkeys for forms
               if (!paramDeleteResult.success) {
                 globalContext.hideProcessing();
@@ -271,7 +271,7 @@ const Plans: React.FunctionComponent = () => {
               param.annualUnlimited = param.monthlyUnlimited;
 
               var paramCreateResult = await PlansService.createOrUpdateCustomMeterDimension(offerName as string, param);
-              var idx1 = values.plan.customMeterDimensions.findIndex(x => x.clientId === param.clientId);
+              //var idx1 = values.plan.customMeterDimensions.findIndex(x => x.clientId === param.clientId);
               //TODO: NEED TO HANDLE THE DISPLAY OF ERRORS FOR subkeys for forms
               if (!paramCreateResult.success) {
                 globalContext.hideProcessing();
@@ -291,7 +291,7 @@ const Plans: React.FunctionComponent = () => {
               param.annualUnlimited = param.monthlyUnlimited;
 
               var paramUpdateResult = await PlansService.createOrUpdateCustomMeterDimension(offerName as string, param);
-              var idx2 = values.plan.customMeterDimensions.findIndex(x => x.clientId === param.clientId);
+              //var idx2 = values.plan.customMeterDimensions.findIndex(x => x.clientId === param.clientId);
               //TODO: NEED TO HANDLE THE DISPLAY OF ERRORS FOR subkeys for forms
               if (!paramUpdateResult.success) {
                 globalContext.hideProcessing();

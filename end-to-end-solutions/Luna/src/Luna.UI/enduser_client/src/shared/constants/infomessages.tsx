@@ -27,3 +27,15 @@ export const Offers =
         "<br/> <br/> <b>Note: </b> This must correspond to the Restricted Audience specified on the Plan overview tab (Plan audience, check “This is a private plan.”) of the partner center."
     }
 }
+
+export const SubscriptionV2 =
+{
+    Subscription: {
+        ID:'',
+        subscriptionName:'',
+        EndPoint:'',
+        Keys:'',
+        SecondaryKey: '',
+        PrimaryKey:''
+    }    
+}

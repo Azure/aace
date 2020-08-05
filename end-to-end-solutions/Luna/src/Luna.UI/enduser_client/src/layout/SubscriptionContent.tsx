@@ -2,11 +2,8 @@ import React, {useEffect, useState} from 'react';
 import {getTheme, PrimaryButton, Stack} from 'office-ui-fabric-react';
 import {useHistory, useLocation} from 'react-router';
 
-import {WebRoute} from "../shared/constants/routes";
-import {LayoutHelper, LayoutHelperMenuItem} from "./Layout";
 import SubscriptionsService from "../services/SubscriptionsService";
-import {IOfferModel, ISubscriptionsModel} from "../models";
-import AlternateButton from "../shared/components/AlternateButton";
+import {ISubscriptionsModel} from "../models";
 import {useGlobalContext} from "../shared/components/GlobalProvider";
 
 type SubscriptionProps = {
@@ -17,14 +14,18 @@ const SubscriptionContent: React.FunctionComponent<SubscriptionProps> = (props) 
 
   const {subscriptionId} = props;
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   let title = 'New';
   if (subscriptionId) {
     title = subscriptionId;
   }
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const logo = "https://mondrian.mashable.com/uploads%252Fcard%252Fimage%252F918220%252F316bce31-4c38-4f3b-b743-a17406175286.png%252F950x534__filters%253Aquality%252880%2529.png?signature=ASyPwdNVsAIo5E7uzfpoydo-rmc=&source=https%3A%2F%2Fblueprint-api-production.s3.amazonaws.com";
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const isvName = "Slack";
 
   const history = useHistory();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const location = useLocation();
 
   const theme = getTheme();
@@ -80,18 +81,19 @@ const SubscriptionContent: React.FunctionComponent<SubscriptionProps> = (props) 
   activatedBy: '',
   });
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const globalContext = useGlobalContext();
 
   useEffect( () => {
     if (subscriptionId)
     getSubscriptionInfo(subscriptionId);
 
-  },[]);
+  }, []);
 
-  const handleFormSubmission = async(e) => {
-    if (globalContext.saveForm)
-      await globalContext.saveForm();
-  };
+  // const handleFormSubmission = async(e) => {
+  //   if (globalContext.saveForm)
+  //     await globalContext.saveForm();
+  // };
 
   const handleBackButton = () => {
     history.push(`/Subscriptions`);

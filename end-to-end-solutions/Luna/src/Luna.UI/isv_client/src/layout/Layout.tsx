@@ -26,8 +26,8 @@ const Layout: React.FunctionComponent = (props) => {
   const location = useLocation();
   let genericContentWrapper = true;
 
-  const v1Enabled = (window.Configs.ENABLE_V1.toLowerCase() == 'true' ? true : false);
-  const v2Enabled = (window.Configs.ENABLE_V2.toLowerCase() == 'true' ? true : false);
+  const v1Enabled = (window.Configs.ENABLE_V1.toLowerCase() === 'true' ? true : false);
+  const v2Enabled = (window.Configs.ENABLE_V2.toLowerCase() === 'true' ? true : false);
 
   let modifyOfferActive = (location.pathname.toLowerCase().startsWith('/modifyoffer'));
   let noVersionActive = (location.pathname.toLowerCase().startsWith('/noversion'));
@@ -42,13 +42,13 @@ const Layout: React.FunctionComponent = (props) => {
     genericContentWrapper = false;
 
   let offerName: string | null = null;
-  let productId: string | null = null;
+  let productName: string | null = null;
   if (modifyOfferActive || reviewOfferActive || subscriptionDetailActive) {
     // get offerName from the path
     var idx = location.pathname.indexOf('/', 1);
-
+    var idx2 = 0;
     if (idx > 0) {
-      var idx2 = location.pathname.indexOf('/', idx + 1);
+      idx2 = location.pathname.indexOf('/', idx + 1);
       if (idx2 > 0) {
 
         offerName = location.pathname.toLowerCase().substr(idx + 1, idx2 - (idx + 1));
@@ -59,16 +59,16 @@ const Layout: React.FunctionComponent = (props) => {
   }
 
   if (modifyProductActive) {
-    var idx = location.pathname.indexOf('/', 1);
+    idx = location.pathname.indexOf('/', 1);
 
     if (idx > 0) {
-      var idx2 = location.pathname.indexOf('/', idx + 1);
+      idx2 = location.pathname.indexOf('/', idx + 1);
       if (idx2 > 0) {
 
-        productId = location.pathname.toLowerCase().substr(idx + 1, idx2 - (idx + 1));
+        productName = location.pathname.toLowerCase().substr(idx + 1, idx2 - (idx + 1));
       }
       else
-        productId = location.pathname.toLowerCase().substr(idx + 1);
+        productName = location.pathname.toLowerCase().substr(idx + 1);
     }
   }
 
@@ -90,7 +90,7 @@ const Layout: React.FunctionComponent = (props) => {
         )}
 
         {modifyProductActive && v2Enabled && (
-          <ProductContent productId={productId}>
+          <ProductContent productName={productName}>
             {children}
           </ProductContent>
         )}

@@ -1,9 +1,6 @@
 import React from 'react';
-import {Image, Stack, Text, Link, PrimaryButton, DefaultButton, getTheme, Nav, INavLink} from 'office-ui-fabric-react';
-import { useHistory, useLocation } from 'react-router';
-import { WebRoute } from "../shared/constants/routes";
-import { LayoutHelper, LayoutHelperMenuItem } from "./Layout";
-import { IOfferModel } from "../models";
+import { Stack} from 'office-ui-fabric-react';
+
 
 const Content: React.FunctionComponent = (props) => {
 

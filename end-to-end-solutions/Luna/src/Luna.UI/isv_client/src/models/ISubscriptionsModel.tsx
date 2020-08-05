@@ -96,13 +96,18 @@ export interface ISubscriptionsWarnings {
 
 export interface ISubscriptionsV2Model {
   subscriptionId: string,
-  name: string,
+  subscriptionName: string,
   userId: string,
-  productId: string,
-  deploymentId: string,
+  productName: string,
+  deploymentName: string,
   status: string,
   baseUrl: string,
   primaryKey: string,
   secondaryKey: string
 
+}
+
+export interface ISubscriptionsV2RefreshKeyModel {  
+  subscriptionId: string,
+  keyName:string;  
 }

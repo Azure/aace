@@ -9,7 +9,7 @@ const GlobalErrorController: React.FC = () => {
 
   const [modalVisible, setModalVisible] = useState<boolean>(false);
 
-  let errorState: IGlobalError | null = null;
+  //let errorState: IGlobalError | null = null;
 
   const globalContext = useGlobalContext();
 
@@ -20,6 +20,7 @@ const GlobalErrorController: React.FC = () => {
 
 
   useEffect(() => {
+    let errorState: IGlobalError | null = null;
     Hub.listen('ErrorChannel', (data) => {
 
       errorState = Cache.getItem( ERROR_STATE );
@@ -28,7 +29,7 @@ const GlobalErrorController: React.FC = () => {
         globalContext.showGlobalError(errorState);
       }
     })
-  }, []);
+  });
 
   useEffect(() => {
 

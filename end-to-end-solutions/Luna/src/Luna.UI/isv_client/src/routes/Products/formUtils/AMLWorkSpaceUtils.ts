@@ -1,9 +1,10 @@
 import * as yup from "yup";
 import { ObjectSchema } from "yup";
-import {IAMLWorkSpaceModel } from "../../../models";
+import { IAMLWorkSpaceModel } from "../../../models";
 import { v4 as uuid } from "uuid";
-import { workSpaceIdRegExp } from "./RegExp";
+import { workSpaceNameRegExp } from "./RegExp";
 import { ErrorMessage } from "./ErrorMessage";
+import { guidRegExp } from "../../Offers/formUtils/RegExp";
 
 export const shallowCompare = (obj1, obj2) =>
   Object.keys(obj1).length === Object.keys(obj2).length &&
@@ -12,35 +13,17 @@ export const shallowCompare = (obj1, obj2) =>
   );
 
 export const initialAMLWorkSpaceValues: IAMLWorkSpaceModel = {
-  aADApplicationId: '',
-  aADApplicationSecret: '',
+  aadApplicationId: '',
+  aadTenantId: '',
+  aadApplicationSecrets: '',
   resourceId: '',
-  workspaceId: '',
+  registeredTime: new Date().toLocaleString(),
+  workspaceName: '',
   isSaved: false,
   isModified: false,
-  clientId: uuid()
+  clientId: uuid(),
+  selectedWorkspaceName: '',
 };
-
-export let initialAMLWorkSpaceList: IAMLWorkSpaceModel[] = [{
-  aADApplicationId: '1',
-  aADApplicationSecret: '1',
-  resourceId: '1',
-  workspaceId: '1',
-  isDeleted: false,
-  isSaved: false,
-  isModified: false,
-  clientId: uuid()
-},
-{
-  aADApplicationId: '2',
-  aADApplicationSecret: '2',
-  resourceId: '2',
-  workspaceId: '2',
-  isDeleted: false,
-  isSaved: false,
-  isModified: false,
-  clientId: uuid()
-}];
 
 export interface IAMLWorkSpaceFormValues {
   aMLWorkSpace: IAMLWorkSpaceModel;
@@ -53,15 +36,54 @@ export const initialAMLWorkSpaceFormValues: IAMLWorkSpaceFormValues = {
 const aMLWorkSpaceValidator: ObjectSchema<IAMLWorkSpaceModel> = yup.object().shape(
   {
     clientId: yup.string(),
-    aADApplicationId: yup.string(),
-    aADApplicationSecret: yup.string(),
-    resourceId: yup.string(),
-    workspaceId: yup.string()
-    .matches(workSpaceIdRegExp,
+    aadApplicationId: yup.string().matches(guidRegExp,
       {
-        message: ErrorMessage.workSpaceID,
+        message: ErrorMessage.aadApplicationId,
         excludeEmptyString: true
-      }).required("WorkspaceId is required"),
+      })
+      .required('AAD Application Id is required'),
+    aadTenantId: yup.string().matches(guidRegExp,
+      {
+        message: ErrorMessage.tenantId,
+        excludeEmptyString: true
+      })
+      .required('Tenant Id is required'),
+    aadApplicationSecrets: yup.string(),
+    resourceId: yup.string(),
+    registeredTime: yup.string(),
+    workspaceName: yup.string()
+      .matches(workSpaceNameRegExp,
+        {
+          message: ErrorMessage.workSpaceName,
+          excludeEmptyString: true
+        }).required("Workspace Name is required"),
+    selectedWorkspaceName: yup.string()
+  }
+);
+
+export const deleteAMLWorkSpaceValidator: ObjectSchema<IAMLWorkSpaceModel> = yup.object().shape(
+  {
+    clientId: yup.string(),
+    aadApplicationId: yup.string(),
+    aadTenantId: yup.string(),
+    aadApplicationSecrets: yup.string(),
+    resourceId: yup.string(),
+    registeredTime: yup.string(),
+    workspaceName: yup.string(),
+    selectedWorkspaceName: yup.string()
+      .matches(workSpaceNameRegExp,
+        {
+          message: ErrorMessage.workSpaceName,
+          excludeEmptyString: true
+        })
+      .test('selectedWorkspaceName', 'WorkSpace name does not match', function (value: string) {
+        const name: string = this.parent.workspaceName;
+        if (!value)
+          return true;
+
+        return value.toLowerCase() === name.toLowerCase();
+      })
+      .required("Workspace Name is required"),
   }
 );
 

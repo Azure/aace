@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import {
     Stack,
     MessageBar,
-    MessageBarType,    
+    MessageBarType,
     Dialog, DialogType,
     FontIcon,
     DetailsList, DetailsListLayoutMode, SelectionMode, IColumn,
@@ -12,23 +12,26 @@ import {
 } from 'office-ui-fabric-react';
 import { useHistory } from "react-router";
 import { Loading } from "../../shared/components/Loading";
-import { ISubscriptionsModel, ISubscriptionsWarnings } from '../../models/ISubscriptionsModel';
+import { ISubscriptionsModel, ISubscriptionsWarnings, ISubscriptionsV2Model } from '../../models/ISubscriptionsModel';
 import SubscriptionsService from '../../services/SubscriptionsService';
 import { getInitialSubscriptionsWarningsModel } from './formUtils/subscriptionFormUtils';
-import {NavLink} from "react-router-dom";
+import { NavLink } from "react-router-dom";
+//import { Formik } from 'formik';
+// import AlternateButton from '../../shared/components/AlternateButton';
+// import FormLabel from '../../shared/components/FormLabel';
 
 interface IDetailsListDocumentsExampleState {
     columns: IColumn[];
     items: ISubscriptionsModel[];
+    itemsV2: ISubscriptionsV2Model[];
 }
 
 const Subscriptions: React.FunctionComponent = () => {
     const history = useHistory();
 
-    const v1Enabled = (window.Configs.ENABLE_V1.toLowerCase() == 'true' ? true : false);
-    const v2Enabled = (window.Configs.ENABLE_V2.toLowerCase() == 'true' ? true : false);
+    const v1Enabled = (window.Configs.ENABLE_V1.toLowerCase() === 'true' ? true : false);
 
-    const [subscription, setsubscription] = useState<ISubscriptionsModel[]>([]);
+    const [subscription, setsubscription] = useState<ISubscriptionsModel[]>([]);    
     const [state, setstate] = useState<IDetailsListDocumentsExampleState>();
     const [subscriptionWarnings, setsubscriptionWarnings] = useState<ISubscriptionsWarnings[]>(getInitialSubscriptionsWarningsModel);
     const [loadingSubscription, setLoadingSubscription] = useState<boolean>(true);
@@ -37,10 +40,11 @@ const Subscriptions: React.FunctionComponent = () => {
     const [loadingWarnings, setLoadingWarnings] = useState<boolean>(true);
     const [warningDetail, setwarningDetail] = useState<string>('');
     const [warningDialogVisible, setwarningDialogVisible] = useState<boolean>(false);
+    const [subscriptionV2, setsubscriptionV2] = useState<ISubscriptionsV2Model[]>([]);
 
     const _onColumnClick = (ev: React.MouseEvent<HTMLElement>, column: IColumn): void => {
         if (column.key !== 'operation') {
-            const { columns, items } = state as IDetailsListDocumentsExampleState;
+            const { columns, items, itemsV2 } = state as IDetailsListDocumentsExampleState;
             const newColumns: IColumn[] = columns.slice();
             const currColumn: IColumn = newColumns.filter(currCol => column.key === currCol.key)[0];
             newColumns.forEach((newCol: IColumn) => {
@@ -52,8 +56,10 @@ const Subscriptions: React.FunctionComponent = () => {
                     newCol.isSortedDescending = true;
                 }
             });
-            const newItems = _copyAndSort(items, currColumn.fieldName!, currColumn.isSortedDescending);
-            setstate({ items: newItems, columns: newColumns });
+            const newItemsv1 = _copyAndSort(items, currColumn.fieldName!, currColumn.isSortedDescending)
+            const newItemsv2 = _copyAndSort(itemsV2, currColumn.fieldName!, currColumn.isSortedDescending);
+            v1Enabled ? setstate({ itemsV2: [], items: newItemsv1, columns: newColumns })
+                : setstate({ itemsV2: newItemsv2, items: [], columns: newColumns });
         }
     };
 
@@ -200,7 +206,7 @@ const Subscriptions: React.FunctionComponent = () => {
             onRender: (item: ISubscriptionsModel) => {
                 return <span>{item.status}</span>;
             }
-        },        
+        },
         {
             key: 'operation',
             name: 'Operation',
@@ -227,14 +233,133 @@ const Subscriptions: React.FunctionComponent = () => {
                             root: {}
                         }}
                     >
-                        <FontIcon style={{ lineHeight: '20px' }} iconName="Edit" className="deleteicon" onClick={() => { editdetails(item.offerName,item.subscriptionId) }} />
+                        <FontIcon style={{ lineHeight: '20px' }} iconName="Edit" className="deleteicon" onClick={() => { editdetails(item.offerName, item.subscriptionId) }} />
                     </Stack>
                 )
             }
         },
     ];
 
-        const getStatusList = async (statusarray: string[]) => {
+    const columnsV2: IColumn[] = [
+        {
+            key: 'subscriptionName',
+            name: 'Name',
+            className: '',
+            iconClassName: '',
+            ariaLabel: '',
+            iconName: '',
+            isIconOnly: false,
+            fieldName: 'subscriptionName',
+            minWidth: 100,
+            maxWidth: 100,
+            data: 'string',
+            isRowHeader: true,
+            isResizable: true,
+            isSorted: true,
+            isSortedDescending: false,
+            sortAscendingAriaLabel: 'Sorted A to Z',
+            sortDescendingAriaLabel: 'Sorted Z to A',
+            isPadded: true,
+            onRender: (item: ISubscriptionsV2Model) => {
+                // return <a style={{cursor:'pointer',color:'rgb(0, 120, 212)'}} onClick={() => { editdetailsV2(item.productName, item.subscriptionId) }}>{item.name}</a>;
+                return <span>{item.subscriptionName}</span>;
+            }
+        },
+        {
+            key: 'subscribeid',
+            name: 'Subscription ID',
+            className: '',
+            iconClassName: '',
+            ariaLabel: '',
+            iconName: '',
+            isIconOnly: false,
+            fieldName: 'subscriptionId',
+            minWidth: 210,
+            maxWidth: 350,
+            data: 'string',
+            isRowHeader: true,
+            isResizable: true,
+            isSorted: true,
+            isSortedDescending: false,
+            sortAscendingAriaLabel: 'Sorted A to Z',
+            sortDescendingAriaLabel: 'Sorted Z to A',
+            isPadded: true,
+            onRender: (item: ISubscriptionsV2Model) => {
+                return <span>{item.subscriptionId}</span>;
+            }
+        },        
+        {
+            key: 'productName',
+            name: 'Product Name',
+            className: '',
+            iconClassName: '',
+            ariaLabel: '',
+            iconName: '',
+            isIconOnly: false,
+            fieldName: 'productName',
+            minWidth: 100,
+            maxWidth: 100,
+            data: 'string',
+            isRowHeader: true,
+            isResizable: true,
+            isSorted: true,
+            isSortedDescending: false,
+            sortAscendingAriaLabel: 'Sorted A to Z',
+            sortDescendingAriaLabel: 'Sorted Z to A',
+            isPadded: true,
+            onRender: (item: ISubscriptionsV2Model) => {
+                return <span>{item.productName}</span>;
+            }
+        },
+        {
+            key: 'deploymentName',
+            name: 'Deployment Name',
+            className: '',
+            iconClassName: '',
+            ariaLabel: '',
+            iconName: '',
+            isIconOnly: false,
+            fieldName: 'deploymentNamed',
+            minWidth: 100,
+            maxWidth: 100,
+            data: 'string',
+            isRowHeader: true,
+            isResizable: true,
+            isSorted: true,
+            isSortedDescending: false,
+            sortAscendingAriaLabel: 'Sorted A to Z',
+            sortDescendingAriaLabel: 'Sorted Z to A',
+            isPadded: true,
+            onRender: (item: ISubscriptionsV2Model) => {
+                return <span>{item.deploymentName}</span>;
+            }
+        },
+        {
+            key: 'status',
+            name: 'Status',
+            className: '',
+            iconClassName: '',
+            ariaLabel: '',
+            iconName: '',
+            isIconOnly: false,
+            fieldName: 'status',
+            minWidth: 100,
+            maxWidth: 100,
+            data: 'string',
+            isRowHeader: true,
+            isResizable: true,
+            isSorted: true,
+            isSortedDescending: false,
+            sortAscendingAriaLabel: 'Sorted A to Z',
+            sortDescendingAriaLabel: 'Sorted Z to A',
+            isPadded: true,
+            onRender: (item: ISubscriptionsV2Model) => {
+                return <span>{item.status}</span>;
+            }
+        }
+    ];
+
+    const getStatusList = async (statusarray: string[]) => {
         let statusDropDown: IDropdownOption[] = [];
         statusDropDown.push(
             { key: 'all', text: 'All' },
@@ -250,7 +375,10 @@ const Subscriptions: React.FunctionComponent = () => {
 
     const getSubscriptions = async () => {
         setLoadingSubscription(true);
-        const results = await SubscriptionsService.list();
+
+        let results: any;
+        v1Enabled ? results = await SubscriptionsService.list() : results = await SubscriptionsService.listV2();
+
         if (results && !results.hasErrors && results.value) {
 
             setLoadStatus(true);
@@ -263,12 +391,13 @@ const Subscriptions: React.FunctionComponent = () => {
                 }
             }
             getStatusList(stringArray);
-            setsubscription(results.value);
-            setstate({ items: results.value, columns: columns });
+            v1Enabled ? setsubscription(results.value) : setsubscriptionV2(results.value);
+            v1Enabled ? setstate({ items: results.value, columns: columns, itemsV2: [] }) : setstate({ items: [], itemsV2: results.value, columns: columnsV2 });
         }
         else {
             setsubscription([]);
-            setstate({ items: [], columns: columns });
+            setsubscriptionV2([]);
+            v1Enabled ? setstate({ itemsV2: [], items: [], columns: columns }) : setstate({ items: [], itemsV2: [], columns: columnsV2 });
             if (results.hasErrors) {
                 // TODO: display errors
                 alert(results.errors.join(', '));
@@ -283,13 +412,13 @@ const Subscriptions: React.FunctionComponent = () => {
         setLoadingWarnings(true);
         const results = await SubscriptionsService.getAllSubscriptionWarnings();
         if (results && results.value) {
-          setsubscriptionWarnings([...results.value]);
+            setsubscriptionWarnings([...results.value]);
         }
         else {
             setsubscriptionWarnings([]);
         }
         setLoadingWarnings(false);
-      }
+    }
 
     useEffect(() => {
         getSubscriptions();
@@ -297,8 +426,8 @@ const Subscriptions: React.FunctionComponent = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    const editdetails = (offerName:string,subscriptionId: string): void => {
-        history.push('SubscriptionDetail/'+offerName+'/' + subscriptionId);
+    const editdetails = (offerName: string, subscriptionId: string): void => {
+        history.push('SubscriptionDetail/' + offerName + '/' + subscriptionId);
     };
 
     const _getKey = (item: any, index?: number) => {
@@ -306,19 +435,32 @@ const Subscriptions: React.FunctionComponent = () => {
     }
 
     const _onItemInvoked = (item: any) => {
-        alert(`Item invoked: ${item.name}`);
+        //alert(`Item invoked: ${item.name}`);
     }
 
     const _onChangeText = (ev: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>, text?: string): void => {
-
-        let data = subscription;
-        let filterdata = text ? data.filter(i =>
-            i.offerName.toLowerCase().indexOf(text.toLowerCase()) > -1 ||
-            i.planName.toLowerCase().indexOf(text.toLowerCase()) > -1 ||
-            i.quantity.toString().toLowerCase().indexOf(text.toLowerCase()) > -1 ||
-            i.subscriptionId.toLowerCase().indexOf(text.toLowerCase()) > -1 ||
-            i.name.toLowerCase().indexOf(text.toLowerCase()) > -1) : data
-        setstate({ items: filterdata, columns: columns });
+        if (v1Enabled) {
+            let data = subscription;
+            let filterdata = text ? data.filter(i =>
+              (i.offerName && i.offerName.toLowerCase().indexOf(text.toLowerCase()) > -1) ||
+              (i.planName && i.planName.toLowerCase().indexOf(text.toLowerCase()) > -1) ||
+              (i.quantity && i.quantity.toString().toLowerCase().indexOf(text.toLowerCase()) > -1) ||
+              (i.subscriptionId && i.subscriptionId.toLowerCase().indexOf(text.toLowerCase()) > -1) ||
+              (i.name && i.name.toLowerCase().indexOf(text.toLowerCase()) > -1)) : data
+            setstate({ itemsV2: [], items: filterdata, columns: columns });
+        }
+        else {
+            let data = subscriptionV2;
+            let filterdata = text ? data.filter(i =>
+              (i.productName && i.productName.toLowerCase().indexOf(text.toLowerCase()) > -1) ||
+              (i.baseUrl && i.baseUrl.toLowerCase().indexOf(text.toLowerCase()) > -1) ||
+              (i.deploymentName && i.deploymentName.toString().toLowerCase().indexOf(text.toLowerCase()) > -1) ||
+              (i.subscriptionId && i.subscriptionId.toLowerCase().indexOf(text.toLowerCase()) > -1) ||
+              (i.primaryKey && i.primaryKey.toLowerCase().indexOf(text.toLowerCase()) > -1) ||
+              (i.secondaryKey && i.secondaryKey.toLowerCase().indexOf(text.toLowerCase()) > -1) ||
+              (i.subscriptionName && i.subscriptionName.toLowerCase().indexOf(text.toLowerCase()) > -1)) : data
+            setstate({ items: [], itemsV2: filterdata, columns: columnsV2 });
+        }
     };
 
     const selectOnChange = (event: React.FormEvent<HTMLDivElement>, option?: IDropdownOption, index?: number) => {
@@ -326,14 +468,21 @@ const Subscriptions: React.FunctionComponent = () => {
             let text = (option.key as string);
 
             if (text !== 'all') {
-                let data = subscription;
+                let data: any = [];
+                if (v1Enabled) {
+                    data = subscription;
+                }
+                else {
+                    data = subscriptionV2;
+                }
                 let filterdata = text ? data.filter(i => i.status.toLowerCase() === text.toLowerCase()) : data
-                setstate({ items: filterdata, columns: columns });
+                v1Enabled ? setstate({ itemsV2: [], items: filterdata, columns: columns })
+                    : setstate({ itemsV2: filterdata, items: [], columns: columnsV2 });
             }
             else {
-                setstate({ items: subscription, columns: columns });
+                v1Enabled ? setstate({ itemsV2: [], items: subscription, columns: columns })
+                    : setstate({ itemsV2: subscriptionV2, items: [], columns: columnsV2 });
             }
-
         }
     };
 
@@ -351,6 +500,10 @@ const Subscriptions: React.FunctionComponent = () => {
     const hideWarningDialog = (): void => {
         setwarningDialogVisible(false);
     };
+
+    // const hideSubscriptionv2Dialog = (): void => {
+    //     setSubscriptionv2DialogVisible(false);
+    // };
 
     const SubscriptionWarnings = (): React.ReactElement | null => {
         if (loadingWarnings) {
@@ -383,8 +536,8 @@ const Subscriptions: React.FunctionComponent = () => {
                                         handleDeleteWarning(idx)
                                     }}>
                                     <span>Subscription Id:</span>{value.subscriptionId} - <span dangerouslySetInnerHTML={{ __html: value.warningMessage }}>
-                                    </span> Click <NavLink to="#" onClick={e => {e.preventDefault();showWarningDialog(value.details)}}>here</NavLink> for more details.
-                    </MessageBar>
+                                    </span> Click <NavLink to="#" onClick={e => { e.preventDefault(); showWarningDialog(value.details) }}>here</NavLink> for more details.
+                                </MessageBar>
                             )
                         })}
                         <Dialog
@@ -460,24 +613,124 @@ const Subscriptions: React.FunctionComponent = () => {
                                 </tbody>
                             </table>
                             <div className="subscriptionlist">
-                                <DetailsList
-                                    items={state != null ? state.items : []}
-                                    compact={false}
-                                    columns={state != null ? state.columns : []}
-                                    selectionMode={SelectionMode.none}
-                                    getKey={_getKey}
-                                    setKey="none"
-                                    layoutMode={DetailsListLayoutMode.justified}
-                                    isHeaderVisible={true}
-                                    onItemInvoked={_onItemInvoked}
-                                    onColumnHeaderClick={(event, column) => { _onColumnClick(event as React.MouseEvent<HTMLElement>, column as IColumn) }}
-                                />
+                                {
+                                    v1Enabled ?
+                                    //Subscriptionv1
+                                        <DetailsList
+                                            items={state != null ? state.items : []}
+                                            compact={false}
+                                            columns={state != null ? state.columns : []}
+                                            selectionMode={SelectionMode.none}
+                                            getKey={_getKey}
+                                            setKey="none"
+                                            layoutMode={DetailsListLayoutMode.justified}
+                                            isHeaderVisible={true}
+                                            onItemInvoked={_onItemInvoked}
+                                            onColumnHeaderClick={(event, column) => { _onColumnClick(event as React.MouseEvent<HTMLElement>, column as IColumn) }}
+                                        />                                         
+                                        :
+                                        //Subscriptionv2
+                                        <DetailsList
+                                            items={state != null ? state.itemsV2 : []}
+                                            compact={false}
+                                            columns={state != null ? state.columns : []}
+                                            selectionMode={SelectionMode.none}
+                                            getKey={_getKey}
+                                            setKey="none"
+                                            layoutMode={DetailsListLayoutMode.justified}
+                                            isHeaderVisible={true}
+                                            onItemInvoked={_onItemInvoked}
+                                            onColumnHeaderClick={(event, columnsV2) => { _onColumnClick(event as React.MouseEvent<HTMLElement>, columnsV2 as IColumn) }}
+                                        />
+                                }
                             </div>
                         </React.Fragment>
                     }
 
                 </Stack>
             </Stack>
+            {/* <Dialog
+                hidden={!Subscriptionv2DialogVisible}
+                onDismiss={hideSubscriptionv2Dialog}
+
+                dialogContentProps={{
+                    styles: {
+                        subText: {
+                            paddingTop: 0
+                        },
+                        title: {
+                        }
+
+                    },
+                    type: DialogType.normal,
+                    title: 'Subscription'
+                }}
+                modalProps={{
+                    isBlocking: true,
+                    styles: {
+                        main: {
+                            minWidth: '40% !important',
+                        }
+                    }
+                }}
+            >
+                <React.Fragment>
+                    <Stack className={"form_row"}>
+                        <FormLabel title={"ID:"} />
+                        <TextField
+                            name={'subscriptionId'}
+                            value={subscriptionV2Selected.subscriptionId}
+                            maxLength={50}
+                            readOnly={true}
+                            className={'form_textbox'} />
+                    </Stack>
+                    <Stack className={"form_row"}>
+                        <FormLabel title={"End Point:"} />
+                        <TextField
+                            name={'baseUrl'}
+                            value={subscriptionV2Selected.baseUrl}
+                            maxLength={50}
+                            readOnly={true}
+                            className={'form_textbox'} />
+                    </Stack>
+                    <Stack className={"form_row"}>
+                        <FormLabel title={"Keys:"} />
+                        <table style={{lineHeight:4}}>
+                            <tr>
+                                <td>
+                                    <span>Primary : </span>
+                                </td>
+                                <td>
+                                    <TextField                                    
+                                        name={'primaryKey'}
+                                        value={subscriptionV2Selected.primaryKey}
+                                        maxLength={50}
+                                        readOnly={true}
+                                        className={'form_textbox'} />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <span>Secondary : </span>
+                                </td>
+                                <td>
+                                    <TextField                                    
+                                        name={'secondaryKey'}
+                                        value={subscriptionV2Selected.secondaryKey}
+                                        maxLength={50}
+                                        readOnly={true}
+                                        className={'form_textbox'} />
+                                </td>
+                            </tr>
+                        </table>
+                    </Stack>
+                </React.Fragment>
+                <DialogFooter>
+                    <AlternateButton
+                        onClick={hideSubscriptionv2Dialog}
+                        text="Cancel" />
+                </DialogFooter>
+            </Dialog> */}
         </React.Fragment>
     );
 }

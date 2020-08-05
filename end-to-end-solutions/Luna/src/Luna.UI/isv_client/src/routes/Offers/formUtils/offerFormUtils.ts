@@ -3,7 +3,7 @@ import { ObjectSchema } from "yup";
 import { IOfferModel } from "../../../models";
 import { IOfferParameterModel } from "../../../models/IOfferParameterModel";
 import { v4 as uuid } from "uuid";
-import { offerIdRegExp, emailRegExp, aplicationID_AADTenantRegExp } from "./RegExp";
+import { offerIdRegExp, emailRegExp, guidRegExp } from "./RegExp";
 import { ErrorMessage } from "./ErrorMessage";
 
 export const getInitialOfferParameter = (): IOfferParameterModel => {
@@ -90,7 +90,7 @@ const offerValidator: ObjectSchema<IOfferModel> = yup.object().shape(
     offerAlias: yup.string()
       .required("Alias is a required field"),
     hostSubscription: yup.string()
-      .matches(aplicationID_AADTenantRegExp,
+      .matches(guidRegExp,
         {
           message: ErrorMessage.hostSubscription,
           excludeEmptyString: true

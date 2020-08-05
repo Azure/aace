@@ -14,6 +14,6 @@ export enum WebRoute {
   LandingPage = '/LandingPage',
   SubscriptionDetail = '/SubscriptionDetail/:offerName/:subscriptionId',
   Products = '/Products',
-  ModifyProductInfo = '/ModifyProduct/:productId/Info',
-  ProductDetail= '/ModifyProduct/:productId/ProductDetail'
+  ModifyProductInfo = '/ModifyProduct/:productName/Info',
+  ProductDetail= '/ModifyProduct/:productName/ProductDetail'
 }

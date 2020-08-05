@@ -1,8 +1,5 @@
 import * as React from 'react';
-import { IGlobalError } from "../shared/components/GlobalProvider";
-import { ErrorModal } from '../shared/components/ErrorModal';
-import { Stack, Spinner, SpinnerSize, IStackProps } from 'office-ui-fabric-react';
-
+import { Spinner, SpinnerSize, IStackProps } from 'office-ui-fabric-react';
 
 interface ParentProps {
   processingVisible: boolean;
@@ -15,7 +12,9 @@ export const GlobalProcessingModal: React.SFC<Props> = (props) => {
   const {
     processingVisible
   } = props;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const rowProps: IStackProps = { horizontal: true, verticalAlign: 'center' };
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const tokens = {
     sectionStack: {
       childrenGap: 10

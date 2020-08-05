@@ -10,6 +10,7 @@ interface ParentProps {
 type Props = ParentProps;
 
 export const NotFound: React.FC <Props> = (props) => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { title, message, statusCode } = props;
   const notFoundMessage = message || "Not Found";
   return (

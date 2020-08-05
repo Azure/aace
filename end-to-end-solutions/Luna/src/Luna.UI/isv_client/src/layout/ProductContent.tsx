@@ -1,154 +1,56 @@
 import React, { useEffect, useState } from 'react';
-import { getTheme, PrimaryButton, Stack } from 'office-ui-fabric-react';
+import { DefaultButton, FontIcon, getTheme, PrimaryButton, Stack, TextField } from 'office-ui-fabric-react';
 import { useHistory, useLocation } from 'react-router';
-import { LayoutHelper, LayoutHelperMenuItem } from "./Layout";
+//import { LaoutHelper, LayoutHelperMenuItem } from "./Layout";
 import ProductService from "../services/ProductService";
-import {initialProductList} from '../routes/Products/formUtils/ProductFormUtils'
+import { initialProductValues, deleteProductValidator } from '../routes/Products/formUtils/ProductFormUtils'
 import { IProductModel } from "../models";
 import { useGlobalContext } from "../shared/components/GlobalProvider";
 
-import { confirmAlert } from 'react-confirm-alert'; // Import
-import 'react-confirm-alert/src/react-confirm-alert.css'; // Import css
+import 'react-confirm-alert/src/react-confirm-alert.css';
+import { handleSubmissionErrorsForForm } from "../shared/formUtils/utils";
+import { toast } from "react-toastify";
+import { DialogBox } from '../shared/components/Dialog';
+import { Formik } from 'formik';
 
 type ProductProps = {
-  productId: string | null;
+  productName: string | null;
 };
 
 const ProductContent: React.FunctionComponent<ProductProps> = (props) => {
 
-  const { productId } = props;
+  const { productName } = props;
 
   const history = useHistory();
   const location = useLocation();
   const globalContext = useGlobalContext();
-  const [hideSave, setHideSave] = useState<boolean>(false);
+  const [productModel, setProductModel] = useState<IProductModel>(initialProductValues);
+  const [formError, setFormError] = useState<string | null>(null);
 
-  // const layoutHelper: LayoutHelper = {
-  //   menuItems:
-  //     [
-  //       {
-  //         title: "Info",
-  //         paths: [`/modifyproduct/${productId}/info`],
-  //         menuClick: () => {
-  //           preventDataLoss('Info');
-  //         }
-  //       },
-  //       {
-  //         title: "Parameters",
-  //         paths: [`/modifyproduct/${productId}/parameters`],
-  //         menuClick: () => {
-  //           preventDataLoss('Parameters');
-  //         }
-  //       },
-  //       {
-  //         title: "IP Addresses",
-  //         paths: [`/modifyproduct/${productId}/IpConfigs`],
-  //         menuClick: () => {
-  //           preventDataLoss('IpConfigs');
-  //         }
-  //       },
-  //       {
-  //         title: "ARM Templates",
-  //         paths: [`/modifyproduct/${productId}/ArmTemplates`],
-  //         menuClick: () => {
-  //           preventDataLoss('ArmTemplates');
-  //         }
-  //       },
-  //       {
-  //         title: "Webhooks",
-  //         paths: [`/modifyproduct/${productId}/WebHooks`],
-  //         menuClick: () => {
-  //           preventDataLoss('WebHooks');
-  //         }
-  //       },
-  //       {
-  //         title: "Meters",
-  //         paths: [`/modifyproduct/${productId}/Meters`],
-  //         menuClick: () => {
-  //           preventDataLoss('Meters');
-  //         }
-  //       },
-  //       {
-  //         title: "Plans",
-  //         paths: [`/modifyproduct/${productId}/Plans`],
-  //         menuClick: () => {
-  //           preventDataLoss('Plans');
-  //         }
-  //       }
-  //     ]
-  //  };
-
-  // const preventDataLoss = (pathName: string) => {
-
-  //   if (globalContext.isDirty || globalContext.isSecondaryDirty) {
-
-  //     confirmAlert({
-  //       title: 'Data Loss Prevention',
-  //       message: 'You have unsaved data that will be lost, do you wish to continue?',
-  //       buttons: [
-  //         {
-  //           label: 'No',
-  //           onClick: () => { }
-  //         },
-  //         {
-  //           label: 'Yes',
-  //           onClick: () => {
-  //             globalContext.setFormDirty(false);
-  //             history.push(`/modifyproduct/${productId}/${pathName}`);
-  //           }
-  //         }
-  //       ]
-  //     });
-  //   }
-  //   else {
-  //     history.push(`/modifyproduct/${productId}/${pathName}`);
-  //   }
-
-  // }
-
-  // const isNavItemActive = (paths: string[]): boolean => {
-  //   let found = false;
-  //   for (let i = 0; i < paths.length; i++) {
-  //     found = location.pathname.toLowerCase() === paths[i].toLowerCase();
-  //     if (found) {
-  //       break;
-  //     }
-  //   }
-
-  //   return found;
-  // };
+  const [ProductDeleteDialog, setProductDeleteDialog] = useState<boolean>(false);
+  const [selectedProductName, setSelectedProductName] = useState<string>('');
 
   const theme = getTheme();
 
-  const getProductInfo = async (productId: string) => {
+  const getProductInfo = async (productName: string) => {
 
-    // let response = await ProductService.get(offerName);
+    let response = await ProductService.get(productName);
 
-    let response = initialProductList.filter(p=>p.productId==productId)[0];
-    setProductModel({ ...response})
-    // if (!response.hasErrors && response.value) {
+    //let response = initialProductList.filter(p=>p.productName==productName)[0];
 
-    //   setProductModel({ ...response.value });
-    // }
+    if (!response.hasErrors && response.value) {
+      setProductModel({ ...response.value })
+    }
 
   }
 
-  const [productModel, setProductModel] = useState<IProductModel>({
-    hostType: '',
-    owner: '',
-    productId: '',
-    productType: '', isDeleted: false,
-    isSaved: false,
-    isModified: false,
-    isNew: true,
-    clientId: ""
-  });
+
 
   useEffect(() => {
-    if (productId)
-      getProductInfo(productId);
+    if (productName)
+      getProductInfo(productName);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [productId]);
+  }, [productName]);
 
   useEffect(() => {
 
@@ -157,10 +59,49 @@ const ProductContent: React.FunctionComponent<ProductProps> = (props) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [history.location, location.pathname]);
 
-  const handleFormSubmission = async (e) => {
-    if (globalContext.saveForm)
-      await globalContext.saveForm();
+  const handleProductDeletion = async (e) => {
+
+    setSelectedProductName(productName as string);
+    setProductDeleteDialog(true);
+
+    // globalContext.showProcessing();
+
+    // // determine if there are any deployments or aml workspaces, if there are, prevent the deletion
+    // var deploymentsResponse = await ProductService.getDeploymentListByProductName(productName as string);
+
+    // if (deploymentsResponse.success) {
+    //   if (deploymentsResponse.value && deploymentsResponse.value.length > 0) {
+    //     toast.error("You must delete all deployments for the product first.");
+    //     globalContext.hideProcessing();
+    //     return;
+    //   }
+    // }
+
+    // const deleteResult = await ProductService.delete(productName as string);
+
+    // if (handleSubmissionErrorsForForm((item) => {},(item) => {}, setFormError, 'product', deleteResult)) {
+    //   toast.error(formError);
+    //   globalContext.hideProcessing();
+    //   return;
+    // }
+
+    // globalContext.hideProcessing();
+    // toast.success("Product Deleted Successfully!");
+    // history.push(`/products/`);
   };
+
+  const OnCancel = async (e) => {
+    history.push(`/products/`);
+  };
+
+  const CloseProductDeleteDialog = () => {
+    setProductDeleteDialog(false);
+  }
+
+  const getDeleteProductErrorString = (touched, errors, property: string) => {
+    return (touched.selectedProductId && errors.selectedProductId && touched[property] && errors[property]) ? errors[property] : '';
+  };
+
 
   return (
     <Stack
@@ -205,7 +146,7 @@ const ProductContent: React.FunctionComponent<ProductProps> = (props) => {
               flexGrow: 0
             }
           }}>
-            <span style={{ fontWeight:'bold', marginRight: 20, fontSize: 18 }}>
+            <span style={{ fontWeight: 'bold', marginRight: 20, fontSize: 18 }}>
               Product Details
             </span>
             <span className={"offer-details-separator"}></span>
@@ -213,7 +154,7 @@ const ProductContent: React.FunctionComponent<ProductProps> = (props) => {
               ID:
             </span>
             <span style={{ marginLeft: 8 }}>
-              {productModel.productId}
+              {productModel.productName}
             </span>
             <span style={{ marginLeft: 100, fontWeight: 600 }}>
               Product Type:
@@ -238,14 +179,13 @@ const ProductContent: React.FunctionComponent<ProductProps> = (props) => {
               verticalAlign={"center"}
               verticalFill={true}
               horizontalAlign={"end"}
-              gap={8}
+              gap={15}
             >
-              {/* {!hideSave &&
-                <PrimaryButton onClick={handleFormSubmission} text={"Save"} />
-              } */}
-              
-              <PrimaryButton text={"Cancel"} />
-                            
+              <DefaultButton onClick={handleProductDeletion} className="addbutton">
+                <FontIcon iconName="Cancel" className="deleteicon" /> Delete
+              </DefaultButton>
+              <PrimaryButton text={"Go Back"} onClick={OnCancel} />
+
             </Stack>
           </Stack.Item>
         </Stack>
@@ -297,6 +237,90 @@ const ProductContent: React.FunctionComponent<ProductProps> = (props) => {
         </div>
 
       </Stack>
+
+      <DialogBox keyindex='DeploymentVersionmodal' dialogVisible={ProductDeleteDialog}
+        title="Delete Deployment WorkSpace" subText="" isDarkOverlay={true} className="" cancelButtonText="Cancel"
+        submitButtonText="Submit" maxwidth={500}
+        cancelonClick={() => {
+          CloseProductDeleteDialog();
+        }}
+        submitonClick={() => {
+          const btnsubmit = document.getElementById('btnProductDelete') as HTMLButtonElement;
+          btnsubmit.click();
+        }}
+        children={
+          <React.Fragment>
+            <Formik
+              initialValues={productModel}
+              validationSchema={deleteProductValidator}
+              enableReinitialize={true}
+              validateOnBlur={true}
+              onSubmit={async (values, { setSubmitting, setErrors }) => {
+
+                globalContext.showProcessing();
+
+                // determine if there are any deployments or aml workspaces, if there are, prevent the deletion
+                var deploymentsResponse = await ProductService.getDeploymentListByProductName(productName as string);
+
+                if (deploymentsResponse.success) {
+                  if (deploymentsResponse.value && deploymentsResponse.value.length > 0) {
+                    toast.error("You must delete all deployments for the product first.");
+                    globalContext.hideProcessing();
+                    return;
+                  }
+                }
+
+                const deleteResult = await ProductService.delete(productName as string);
+
+                if (handleSubmissionErrorsForForm((item) => {},(item) => {}, setFormError, 'product', deleteResult)) {
+                  toast.error(formError);
+                  globalContext.hideProcessing();
+                  return;
+                }
+
+                globalContext.hideProcessing();
+                toast.success("Product Deleted Successfully!");
+                history.push(`/products/`);
+              }}
+            >
+              {({ handleChange, values, handleBlur, touched, errors, handleSubmit }) => (
+                <form autoComplete={"off"} onSubmit={handleSubmit}>
+                  <input type="hidden" name={'aMLWorkSpace.workspaceName'} value={selectedProductName} />
+                  <table>
+                    <tbody>
+                      <tr>
+                        <td colSpan={2}>
+                          <span> Are you sure you want to delete Product?</span>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td colSpan={2}>
+                          {
+                            <React.Fragment>
+                              <span>Type the product Id</span>
+                              <br />
+                              <TextField
+                                name={'selectedProductId'}
+                                value={values.selectedProductId}
+                                onChange={handleChange}
+                                onBlur={handleBlur}
+                                errorMessage={getDeleteProductErrorString(touched, errors, 'selectedProductId')}
+                                placeholder={'Product Id'}
+                                className="txtFormField" />
+                            </React.Fragment>
+                          }
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                  <div style={{ display: 'none' }}>
+                    <PrimaryButton type="submit" id="btnProductDelete" text="Save" />
+                  </div>
+                </form>
+              )}
+            </Formik>
+          </React.Fragment>
+        } />
     </Stack>
   );
 };

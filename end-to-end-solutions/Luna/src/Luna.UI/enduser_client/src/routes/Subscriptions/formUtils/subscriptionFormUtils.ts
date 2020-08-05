@@ -2,8 +2,7 @@ import * as yup from "yup";
 import {ObjectSchema} from "yup";
 import {
   ICreateSubscriptionModel,
-  ILandingModel,
-  IOperationHistoryModel, IParamModel, ISubscriptionFormModel, IUpdateSubscriptionModel
+  IOperationHistoryModel, ISubscriptionsV2Model, IUpdateSubscriptionModel
 } from "../../../models";
 
 export const getInitialCreateSubscriptionModel = (): ICreateSubscriptionModel => {
@@ -31,6 +30,21 @@ export const getInitialUpdateSubscriptionModel = (): IUpdateSubscriptionModel =>
     isUpdatePlan: true
   }
 };
+
+export const getInitialSubscriptionV2 = (): ISubscriptionsV2Model => {
+  return {
+    subscriptionId: '',
+    subscriptionName: '',
+    userId: '',
+    productName: '',
+    deploymentName: '',
+    status: '',
+    baseUrl: '',
+    primaryKey: '',
+    secondaryKey: ''
+  }
+};
+
 
 export interface OperationHistoryModel {
   data: IOperationHistoryModel[]
@@ -76,7 +90,7 @@ export const subscriptionValidator: ObjectSchema<IUpdateSubscriptionModel> = yup
         const planName: string = this.parent.CurrentPlanName;
         console.log('val: ' + value);
 
-        if (!value || value == "")
+        if (!value || value === "")
           return true;
 
         return value.toLowerCase() !== planName.toLowerCase();

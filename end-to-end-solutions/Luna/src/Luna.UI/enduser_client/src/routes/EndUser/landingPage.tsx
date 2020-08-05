@@ -18,7 +18,7 @@ import { ILandingModel, IParameterModel } from '../../models/IEnduserLandingMode
 import { Loading } from '../../shared/components/Loading';
 import EndUserLandingService from "../../services/EndUserLandingService";
 import OfferParameterService from "../../services/OfferParameterService";
-import { IOfferParameterModel, ISubscriptionsModel, Result } from '../../models';
+import { IOfferParameterModel, ISubscriptionsModel } from '../../models';
 import SubscriptionsService from '../../services/SubscriptionsService';
 import { useHistory, useLocation } from 'react-router';
 import { toast } from "react-toastify";
@@ -69,19 +69,19 @@ const LandingPage: React.FunctionComponent = (props) => {
       console.log('will unmount');
       body.classList.remove('landing');
     }
-  }, [])
+  })
 
 
-  const handledSubmissionErrors = (result: Result<any>, setSubmitting: any): boolean => {
-    if (!result.success) {
-      if (result.hasErrors)
-        // TODO - display the errors here
-        toast.error(result.errors.join(', '));
-      setSubmitting(false);
-      return true;
-    }
-    return false;
-  }
+  // const handledSubmissionErrors = (result: Result<any>, setSubmitting: any): boolean => {
+  //   if (!result.success) {
+  //     if (result.hasErrors)
+  //       // TODO - display the errors here
+  //       toast.error(result.errors.join(', '));
+  //     setSubmitting(false);
+  //     return true;
+  //   }
+  //   return false;
+  // }
 
   const getinfo = async () => {
     setLoadingFormData(true);
@@ -127,7 +127,7 @@ const LandingPage: React.FunctionComponent = (props) => {
       // redirect to the subscription list because the user already has the subscription
       if ((subscriptionResponse.value && subscriptionResponse.success
         && (subscriptionResponse.value as ISubscriptionsModel[])
-        && (subscriptionResponse.value as ISubscriptionsModel[]).findIndex(x => x.subscriptionId == formData.subscriptionId) >= 0)
+        && (subscriptionResponse.value as ISubscriptionsModel[]).findIndex(x => x.subscriptionId === formData.subscriptionId) >= 0)
         || !offerParametersResponse.success) {
         history.push("/Subscriptions");
         return;
@@ -139,6 +139,7 @@ const LandingPage: React.FunctionComponent = (props) => {
         var offerParameters = offerParametersResponse.value as IOfferParameterModel[];
         let Parametersarray: IParameterModel[] = [];
         offerParameters.map((item, index) => {
+          return (
           Parametersarray.push({
             parameterName: item.parameterName,
             displayName: item.displayName,
@@ -148,7 +149,7 @@ const LandingPage: React.FunctionComponent = (props) => {
             valueList: item.valueList,
             maximum: item.maximum,
             minimum: item.minimum
-          });
+          }))
         });
         formData.inputParameters = Parametersarray;
       }
@@ -193,11 +194,12 @@ const LandingPage: React.FunctionComponent = (props) => {
   const dropDownValues = (items: string): IDropdownOption[] => {
     let listitems: IDropdownOption[] = [];
     items ? items.split(';').map((value, index) => {
+      return (
       listitems.push(
         {
           key: value,
           text: value
-        })
+        }))
     })
       : listitems.push(
         {
@@ -228,6 +230,7 @@ const LandingPage: React.FunctionComponent = (props) => {
       return new Date(Parameter.dob)
     } else {
       let currentDate = new Date();
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       let key = ((currentDate.getMonth() + 1) + '/' + currentDate.getDate() + '/' + (currentDate.getFullYear() % 100));
       //setFieldValue(fieldKey, key, true);
     }
@@ -235,8 +238,8 @@ const LandingPage: React.FunctionComponent = (props) => {
   };
 
   const renderControls = (Parameter: IParameterModel, idx: number, handleChange, handleBlur, setFieldValue, touched) => {
-    if (Parameter.valueType == 'string') {
-      if (Parameter.valueList.length == 0) {
+    if (Parameter.valueType === 'string') {
+      if (Parameter.valueList.length === 0) {
         return (
           <TextField
             id={`parameterValues.${idx}.${Parameter.parameterName}`}
@@ -254,8 +257,8 @@ const LandingPage: React.FunctionComponent = (props) => {
             }} />)
 
       }
-    } else if (Parameter.valueType == 'number') {
-      if (Parameter.valueList.length == 0) {
+    } else if (Parameter.valueType === 'number') {
+      if (Parameter.valueList.length === 0) {
         if (Parameter.maximum && Parameter.maximum > 0) {
           return (
             <TextField
@@ -284,7 +287,7 @@ const LandingPage: React.FunctionComponent = (props) => {
             }} />)
       }
 
-    } else if (Parameter.valueType == 'datetime') {
+    } else if (Parameter.valueType === 'datetime') {
       return (
 
         <React.Fragment>
@@ -307,7 +310,7 @@ const LandingPage: React.FunctionComponent = (props) => {
         </React.Fragment>
       )
     }
-    else if (Parameter.valueType == 'boolean') {
+    else if (Parameter.valueType === 'boolean') {
       return (
         <React.Fragment>
           <input name={`parameterValues.${idx}.${Parameter.parameterName}`} id={`parameterValues.${idx}.${Parameter.parameterName}`} type='hidden' />
@@ -391,7 +394,7 @@ const LandingPage: React.FunctionComponent = (props) => {
             <Loading />
           </Stack>
           :
-          !formState || !formState.planName || formState.planName.length == 0 ?
+          !formState || !formState.planName || formState.planName.length === 0 ?
             <span>Invalid Token</span>
             :
             <Formik
@@ -418,26 +421,25 @@ const LandingPage: React.FunctionComponent = (props) => {
                 console.log('rendering items');
                 console.log('param values: ', input.parameterValues);
 
-                input.inputParameters.map((item, index) => {
-                  
+                input.inputParameters.map((item, index) => {  
                   if (item.valueType === 'number') {
+                    return (
                       subscriptionsModel.InputParameters.push(
                         {
                           name: item.parameterName,
                           type: item.valueType,
                          value: '"'+parseInt(input.parameterValues[index][item.parameterName])+'"'
-                        })
+                        }))
                   }
                   else{
+                    return (
                     subscriptionsModel.InputParameters.push(
                       {
                         name: item.parameterName,
                         type: item.valueType,
                         value: input.parameterValues[index][item.parameterName]
-                      })
+                      }))
                   }
-
-
                 })
 
                 let createSubscriptionsResult = await SubscriptionsService.create(subscriptionsModel);
@@ -457,8 +459,7 @@ const LandingPage: React.FunctionComponent = (props) => {
               {({ isSubmitting, setFieldValue, values, handleChange, handleBlur, touched, errors }) => {
                 console.log('values: ' + JSON.stringify(values));
                 return (
-                  <Form style={{ marginTop: 0, width: '100%' }} autoComplete={"off"}>
-                    <h3 style={{ textAlign: 'left', fontWeight: 'normal' }}></h3>
+                  <Form style={{ marginTop: 0, width: '100%' }} autoComplete={"off"}>                    
                     {formError && <MessageBar messageBarType={MessageBarType.error} style={{ marginBottom: 15 }}>
                       {{ formError }}
                     </MessageBar>}

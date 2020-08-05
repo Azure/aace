@@ -10,8 +10,8 @@ const Content: React.FunctionComponent = (props) => {
   
   const history = useHistory();
   const location = useLocation();
-  const v1Enabled = (window.Configs.ENABLE_V1.toLowerCase() == 'true' ? true : false);
-  const v2Enabled = (window.Configs.ENABLE_V2.toLowerCase() == 'true' ? true : false);
+  const v1Enabled = (window.Configs.ENABLE_V1.toLowerCase() === 'true' ? true : false);
+  const v2Enabled = (window.Configs.ENABLE_V2.toLowerCase() === 'true' ? true : false);
 
   let offersTabActive = (location.pathname.toLowerCase().startsWith('/offers') 
   || location.pathname.toLowerCase().startsWith('/modifyoffer'));

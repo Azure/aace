@@ -1,5 +1,5 @@
 import {AdalConfig, adalGetToken, AuthenticationContext} from 'react-adal';
-import { selectProperties } from 'office-ui-fabric-react';
+//import { selectProperties } from 'office-ui-fabric-react';
 
 // Endpoint URL
 export const endpoint = window.Configs.AAD_ENDPOINT as string;

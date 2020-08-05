@@ -200,15 +200,15 @@ div.ms-TextField > span div span {
   height: 60px;
 }
 
-.fixed_header tbody{
-  display:block;
-  overflow:auto;
-  max-height:145px;
-  width:100%;
+.fixed_header tbody {
+  display: block;
+  overflow: auto;
+  max-height: 145px;
+  width: 100%;
 }
 
-.fixed_header thead tr{
-  display:block;
+.fixed_header thead tr {
+  display: block;
 }
 /*Plan ends*/
 
@@ -754,8 +754,7 @@ table.offer thead tr th {
 .reviewoffer table.offer thead tr th:last-child {
   border-right: none;
 }
-.subbutton
-{
+.subbutton {
   /* position: absolute;
   top: 10%;
   right: 5%; */
@@ -764,7 +763,7 @@ table.offer thead tr th {
   right: 0;
   margin-right: 5%;
 }
-.subscription-details-separator{
+.subscription-details-separator {
   position: relative;
   padding-left: 20px;
   box-sizing: border-box;
@@ -772,19 +771,18 @@ table.offer thead tr th {
   width: 70%;
 }
 .subscription-details-separator:after {
-  content: '';
+  content: "";
   border: solid 1px rgba(102, 102, 102, 0.5);
   left: 0;
   top: 0;
   bottom: 0;
   position: absolute;
   margin-top: 10px;
-    margin-bottom: 10px;
+  margin-bottom: 10px;
 }
 
 /*Loading css*/
-.loadingspinner .ms-Spinner-circle.ms-Spinner--large
-{
+.loadingspinner .ms-Spinner-circle.ms-Spinner--large {
   width: 100px;
   height: 100px;
 }
@@ -888,53 +886,92 @@ table.offer thead tr th {
 }
 
 /*Loading css*/
-.ms-Layer
-{
+.ms-Layer {
   z-index: 999 !important;
 }
 
-.react-confirm-alert-overlay
-{
-  z-index: 9999 !important;;
+.react-confirm-alert-overlay {
+  z-index: 9999 !important;
 }
-.react-confirm-alert-button-group > button:first-child
-{
+.react-confirm-alert-button-group > button:first-child {
   background: rgb(0, 120, 212) !important;
-  color:rgb(255, 255, 255) !important;
+  color: rgb(255, 255, 255) !important;
 }
-.react-confirm-alert-button-group > button:last-child
-{
+.react-confirm-alert-button-group > button:last-child {
   background: rgb(234, 234, 234) !important;
-  color:rgb(51, 51, 51) !important;
+  color: rgb(51, 51, 51) !important;
 }
 
-.deploymentmodalpopup
-{
-width: 100%;
+.deploymentmodalpopup {
+  width: 100%;
 }
-.deploymentmodalpopup .ms-Dialog-main
-{
-max-width: 100%;
-min-width: 45%;
+.deploymentmodalpopup .ms-Dialog-main {
+  max-width: 100%;
+  min-width: 45%;
 }
 
-.Productnav-header
-{
-  height: 10px!important;
+.Productnav-header {
+  height: 10px !important;
   border-bottom: none;
 }
-.OrangeButton
-{
-  background-color: #ED7D31 !important;
+.OrangeButton {
+  background-color: #ed7d31 !important;
 }
 .wdth_100_per {
   width: 100%;
 }
-.padd-right-10_Per
-{
+.padd-right-10_Per {
   padding-right: 10%;
 }
-.mar-right-2_Per
-{
+.mar-right-2_Per {
   margin-right: 2% !important;
+}
+
+.subv2ipinput {
+  width: 100%;
+  float: left;
+}
+.subv2ipinputw_90 {
+  width: 88%;
+}
+.subv2ipinputcopy {
+  display: flex;
+  width: 100%;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+.copied {
+  color: #1885d8;
+  background-color: #d0d0d0;
+  border-radius: 5px;
+}
+.source .ms-Dropdown-container {
+  width: 150px !important;
+}
+.versionProjectupload {
+  
+}
+.versionProjectuploadbrowsebutton {
+  background-color: #0078d7;
+  color: #fff;
+  padding: 14px;
+  vertical-align: middle;
+  padding-bottom: 11px;
+  line-height: 45px;
+}
+.filetittle {
+  width: 200px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  display: list-item;
+  float: left;
+  border: 1px solid #0e0e0e;
+  line-height: 40px;  
+}
+.versionuploadbutton {
+  padding: 10px;
+  line-height: 22px;
+  display: flex;
+  width: 40px;
 }

@@ -114,7 +114,7 @@ export const handleSubmissionErrorsGeneral = (setErrors: any, setSubmitting: any
       // need to handle multiple validation errors and or validation and method errors from the server
       //TODO address this
       //let key = Object.keys(err)[0]; // field with validation errors'
-      debugger;
+
       let errorDetailItem = err;
 
       let key = errorDetailItem.target.replace('$.', '');

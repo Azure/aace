@@ -57,7 +57,7 @@ export const handleSubmissionErrorsGeneral = (setErrors: any, setSubmitting: any
     let setupValidationElement = false;
 
     for(let err of result.errors) {
-      if (Object.keys(err).length == 0) {
+      if (Object.keys(err).length === 0) {
         alert('Encountered an error parsing the returned error values');
         return true;
       }
@@ -87,7 +87,7 @@ export const handleSubmissionErrorsGeneral = (setErrors: any, setSubmitting: any
         errorObj[formKey][key] = Object.values(err)[0].join(', ');
       }
 
-      if (key == "method_error")
+      if (key === "method_error")
         setFormError(Object.values(err)[0].join('<br/>'));
       else
         setErrors(errorObj);

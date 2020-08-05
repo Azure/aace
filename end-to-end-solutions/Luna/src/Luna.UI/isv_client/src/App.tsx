@@ -43,7 +43,6 @@ const App: React.FC = () => {
         <AuthRoute path={WebRoute.SubscriptionDetail} component={Routes.SubscriptionDetail} />
 
         <AuthRoute path={WebRoute.Products} component={Routes.Products} />
-        <AuthRoute path={WebRoute.ModifyProductInfo} component={Routes.ModifyProductInfo} />
         <AuthRoute path={WebRoute.ProductDetail} component={Routes.ProductDetail} />
 
         <Route component={NotFound}/>

@@ -59,10 +59,6 @@ export const Products = loadable(() => import('./Products/Products'), {
   LoadingComponent: Loading
 });
 
-export const ModifyProductInfo = loadable(() => import('./Products/Info'), {
-  LoadingComponent: Loading
-});
-
 export const ProductDetail = loadable(() => import('./Products/ProductDetail'), {
   LoadingComponent: Loading
 });

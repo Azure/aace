@@ -6,6 +6,7 @@ import {GlobalProcessingModal} from './GlobalProcessingModal';
 export const PROCESSING_STATE = 'processing_state';
 const GlobalProcessingController: React.FC = () => {
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [processingVisible, setProcessingVisible] = useState<boolean>(false);  
 
   const globalContext = useGlobalContext();

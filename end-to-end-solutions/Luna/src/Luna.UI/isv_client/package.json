@@ -16,7 +16,10 @@
     "office-ui-fabric-react": "^6.211.0",
     "react": "^16.13.1",
     "react-adal": "^0.5.0",
+    "react-confirm-alert": "^2.6.1",
+    "react-copy-to-clipboard": "^5.0.2",
     "react-dom": "^16.13.1",
+    "react-html-parser": "^2.0.2",
     "react-moment": "^0.9.7",
     "react-router-dom": "^5.1.2",
     "react-scripts": "^3.4.1",
@@ -24,8 +27,7 @@
     "react-toastify": "^5.5.0",
     "typescript": "3.6.4",
     "uuid": "^3.3.3",
-    "yup": "^0.27.0",
-    "react-confirm-alert": "^2.6.1"
+    "yup": "^0.27.0"
   },
   "devDependencies": {
     "@types/react-adal": "^0.4.2",
@@ -35,10 +37,10 @@
   },
   "scripts": {
     "start": "PORT=4321 HTTPS=true react-scripts start",
-    "winstart": "set HTTPS=true&&set port=44321&&react-scripts start",    
+    "winstart": "set HTTPS=true&&set port=4321&&react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"    
+    "eject": "react-scripts eject"
   },
   "eslintConfig": {
     "extends": "react-app"

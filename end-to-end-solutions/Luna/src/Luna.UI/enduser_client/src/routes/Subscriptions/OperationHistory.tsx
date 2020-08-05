@@ -29,6 +29,7 @@ function formatDate(datetime) {
 }
 
 const OperationHistory: React.FunctionComponent = () => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const globalContext = useGlobalContext();
   const [state, setstate] = useState<OperationHistoryModel>(getInitialOperationHistoryModel);
   const [loadingOperationHistory, setLoadingOperationHistory] = useState<boolean>(true);
@@ -38,7 +39,7 @@ const OperationHistory: React.FunctionComponent = () => {
   useEffect(() => {
     if (subscriptionId)
       getData(subscriptionId);
-  }, []);
+  }, [subscriptionId]);
 
   const getData = async (subscriptionId: string) => {
     setLoadingOperationHistory(true);
@@ -120,6 +121,7 @@ export type IOperationHistoryProps = {
   formError?: string | null;
 }
 export const OperationHistoryList: React.FunctionComponent<IOperationHistoryProps> = (props) => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const {isSubmitting, setFieldValue, values, handleChange, handleBlur, touched, errors, resetForm, handleSubmit, submitForm} = useFormikContext<OperationHistoryModel>(); // formikProps
   const globalContext = useGlobalContext();
 
@@ -127,10 +129,10 @@ export const OperationHistoryList: React.FunctionComponent<IOperationHistoryProp
     globalContext.modifySaveForm(async () => {
       await submitForm();
     });
-  }, []);
+  },[]);
 
   const OperationHistory = ({data}) => {
-    if (!data || data.length == 0) {
+    if (!data || data.length === 0) {
       return <tr>
         <td colSpan={3}><span>No History</span></td>
       </tr>;

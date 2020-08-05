@@ -99,6 +99,10 @@ export abstract class ServiceBase {
           else
             result = new Result<T>(null, false, error.response.data.error.details);
         }
+        else if (error.response.status === 404) {
+          ServiceBase.dispatchGlobalError("Method not found!");
+          result = new Result<T>(null, false,null);
+        }
         else {
           let message = '';
           if (error.response.data.error.code) {
@@ -176,6 +180,10 @@ export abstract class ServiceBase {
             result = new Result<T>(null, false,[{ code: '', target: 'method_error', message: 'One or more validation errors have occurred but we were unable to parse them. Please inspect the console for more information.'}]);
           else
             result = new Result<T>(null, false, error.response.data.error.details);
+        }
+        else if (error.response.status === 404) {
+          ServiceBase.dispatchGlobalError("Method not found!");
+          result = new Result<T>(null, false,null);
         }
         else {
           let message = (error.title ? error.title : error.mesage);

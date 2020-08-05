@@ -1,6 +1,3 @@
-import { IBaseModel } from "./IBaseModel";
-import { IDropdownOption } from "office-ui-fabric-react";
-
 export interface IParamModel {
   name: string,
   type: string,
@@ -90,4 +87,22 @@ export interface IOperationHistoryModel {
   requestId: string,
   statusCode: number,
   success: boolean  
+}
+
+export interface ISubscriptionsV2Model {
+  subscriptionId: string,
+  subscriptionName: string,
+  userId: string,
+  productName: string,
+  deploymentName: string,
+  status: string,
+  baseUrl: string,
+  primaryKey: string,
+  secondaryKey: string
+
+}
+
+export interface ISubscriptionsV2RefreshKeyModel {  
+  subscriptionId: string,
+  keyName:string;  
 }

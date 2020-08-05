@@ -1,6 +1,5 @@
 import * as React from 'react';
-import {Icon, Stack, TooltipHost} from "office-ui-fabric-react";
-import {v4 as uuid} from "uuid";
+import {Stack} from "office-ui-fabric-react";
 import InfoToolTip from "./InfoToolTip";
 
 type FormLabelProps = {

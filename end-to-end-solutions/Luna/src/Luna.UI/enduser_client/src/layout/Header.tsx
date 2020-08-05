@@ -1,5 +1,5 @@
 import React from 'react';
-import {Image, Link, Stack, Text, getTheme} from 'office-ui-fabric-react';
+import {Image, Link, Stack, getTheme} from 'office-ui-fabric-react';
 import {useHistory} from "react-router";
 import {WebRoute} from "../shared/constants/routes";
 import adalContext from "../adalConfig";
@@ -13,6 +13,7 @@ const Header: React.FunctionComponent = () => {
   const headerBackgroundColor = window.Configs.HEADER_BACKGROUND_COLOR;
   let userName = "";
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const theme = getTheme();
   const history = useHistory();
 

@@ -30,7 +30,7 @@
 }
 .innercontainer {
   width: 100%;
-  margin: 0 auto;    
+  margin: 0 auto;
 }
 
 .innercontainer .ms-Stack:first-child {
@@ -80,7 +80,8 @@ div.ms-TextField > span div span {
   margin-bottom: 5px;
 }
 
-.ms-Dropdown + div, .ms-Dropdown + .ms-layer + div {
+.ms-Dropdown + div,
+.ms-Dropdown + .ms-layer + div {
   background-color: #a80000;
   color: #fff;
   width: 98%;
@@ -116,15 +117,15 @@ div.ms-TextField > span div span {
   font-size: 12px;
 }
 
-.noborder.offer thead th{
-border-bottom: solid 1px var(--lightgraybg);
+.noborder.offer thead th {
+  border-bottom: solid 1px var(--lightgraybg);
 }
 .noborder.offer td {
   /* height: 100px; */
   vertical-align: top;
   text-align: left;
 }
-.noborder.offer tbody tr{
+.noborder.offer tbody tr {
   line-height: 50px;
 }
 .ms-TextField .ms-TextField-field,
@@ -134,7 +135,6 @@ border-bottom: solid 1px var(--lightgraybg);
 .ms-DetailsList-headerWrapper {
   float: left;
 }
-
 
 .errormessage {
   animation-name: css-1, css-14;
@@ -441,11 +441,10 @@ table.offer thead tr th {
   height: 40px;
   line-height: 40px;
 }
-.landingpagecontainner .headertitle{
+.landingpagecontainner .headertitle {
   padding: 0 20px 0px 20px;
 }
-.button
-{
+.button {
   background-color: #004578 !important;
 }
 .mainlanding {
@@ -476,97 +475,82 @@ table.offer thead tr th {
 .mainlanding .ms-TextField .ms-TextField-fieldGroup {
   border-color: transparent;
 }
-.mainlanding .graydropdown
-{  
+.mainlanding .graydropdown {
   color: #2288d8;
 }
-.graydropdown span{
-  background-color:#dedede;
+.graydropdown span {
+  background-color: #dedede;
   color: #2288d8;
 }
-.graydropdown .ms-Dropdown-caretDownWrapper
-{
+.graydropdown .ms-Dropdown-caretDownWrapper {
   height: 30px;
 }
-.graydropdown .ms-Dropdown-caretDownWrapper i
-{
-  color: #2288d8;  
+.graydropdown .ms-Dropdown-caretDownWrapper i {
+  color: #2288d8;
 }
-.landing .App{
+.landing .App {
   height: 100%;
   margin: 0 auto;
   background-color: rgb(234, 234, 234);
 }
-.landing .App div:last-child{
+.landing .App div:last-child {
   padding-top: 0;
   padding-bottom: 0;
 }
-.landing .ms-Layer.root-133 .ms-Callout-main
-{
+.landing .ms-Layer.root-133 .ms-Callout-main {
   background-color: #dedede;
   border: 1px solid #2288d8;
 }
-.landing .ms-Layer.root-133 .ms-Callout-main .ms-Button-flexContainer
-{
+.landing .ms-Layer.root-133 .ms-Callout-main .ms-Button-flexContainer {
   color: #2288d8;
 }
-.subscriptiontitle
-{
+.subscriptiontitle {
   width: 100%;
   text-align: left;
   line-height: 50px;
   border-bottom: 1px solid #eaeaea;
 }
 
-.mainsubscriptionlist .css-67
-{
+.mainsubscriptionlist .css-67 {
   background-color: #efefef;
 }
 
-.iconright
-{
+.iconright {
   padding-left: 5px;
   float: right;
 }
-.mainsubscriptionlist .ms-DetailsHeader-cellName
-{
+.mainsubscriptionlist .ms-DetailsHeader-cellName {
   font-weight: normal;
 }
-.updateplanmodal .ms-Dialog-main
-{
+.updateplanmodal .ms-Dialog-main {
   max-width: 500px;
 }
-.mainlanding tr:last-child td:last-child .ms-TextField-errorMessage span
-{
+.mainlanding tr:last-child td:last-child .ms-TextField-errorMessage span {
   color: #fff;
 }
-.disablecheckbox input
-{
+.disablecheckbox input {
   position: absolute;
-    opacity: 0;
-    background: none;
+  opacity: 0;
+  background: none;
 }
 /* .updateplanmodal .ms-Dialog-inner .ms-Dialog-header
 {
   display: none;
 } */
 /* Enduser*/
-.mainlanding .ms-ChoiceField
-{
+.mainlanding .ms-ChoiceField {
   float: left;
   padding-right: 10%;
 }
-.mainlanding .ms-ChoiceField-field::before
-{
-margin-top: 5px;
+.mainlanding .ms-ChoiceField-field::before {
+  margin-top: 5px;
 }
-.mainlanding .ms-ChoiceField-field::after{
+.mainlanding .ms-ChoiceField-field::after {
   margin-top: 5px;
 }
 
 /*Loading css*/
-.loadingspinner .ms-Spinner-circle.ms-Spinner--large
-{
+.loadingspinner .ms-Spinner-circle.ms-Spinner--large {
   width: 100px;
   height: 100px;
 }
@@ -670,7 +654,50 @@ margin-top: 5px;
 }
 
 /*Loading css*/
-.ms-Layer
-{
+.ms-Layer {
   z-index: 999 !important;
+}
+
+.subv2ipinput {
+  width: 100%;
+  float: left;
+}
+.subv2ipinputw_90 {
+  width: 88%;
+}
+.subv2ipinputcopy {
+  display: flex;
+  width: 100%;
+  padding-left: 5px;
+  padding-right: 5px;  
+}
+.copied {
+  color: #1885d8;
+  background-color: #d0d0d0;  
+  border-radius: 5px;
+}
+
+#keys .deleteicon {  
+  font-size: 20px;
+  /* border:none !important; */
+  /* display: contents!important; */
+}
+
+#subscriptionv2 .ms-TextField-fieldGroup
+{
+  border:none;
+}
+#subscriptionv2 .keyborder
+{
+  margin-right: 2%;
+}
+
+#subscriptionv2 .keyborder .ms-TextField-fieldGroup
+{
+  border-width: 1px;
+    border-style: solid;
+    border-image: initial;
+    background: rgb(255, 255, 255);
+    border-radius: 2px;
+    border-color: rgb(138, 136, 134);
 }

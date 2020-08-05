@@ -4,20 +4,13 @@ import {
     ISubscriptionsPostModel,
     ISubscriptionsV2Model,
     ISubscriptionsWarnings,
-    Result
+    Result,
+    ISubscriptionsV2RefreshKeyModel
 } from "../models";
 
 export default class SubscriptionsService extends ServiceBase {
 
-    public static async listV2(): Promise<Result<ISubscriptionsV2Model[]>> {
-
-        var result = await this.requestJson<ISubscriptionsV2Model[]>({
-            url: `/subscriptions`,
-            method: "GET"
-        });
-
-        return result;
-    }
+    //#region Subscription V1
 
     public static async list(): Promise<Result<ISubscriptionsModel[]>> {
 
@@ -91,4 +84,65 @@ export default class SubscriptionsService extends ServiceBase {
         return result;
     }
 
+    //#endregion
+
+    //#region SubscriptionV2
+    
+    public static async listV2(): Promise<Result<ISubscriptionsV2Model[]>> {
+
+        var result = await this.requestJson<ISubscriptionsV2Model[]>({
+            url: `/apisubscriptions`,
+            method: "GET"
+        });
+
+        return result;
+    }
+    
+    public static async getV2(subscriptionId): Promise<Result<ISubscriptionsV2Model>> {
+
+        var result = await this.requestJson<ISubscriptionsV2Model>({
+            url: `/apisubscriptions/${subscriptionId}`,
+            method: "GET"
+        });
+        return result;
+    }
+
+    public static async createV2(model: ISubscriptionsV2Model): Promise<Result<ISubscriptionsV2Model>> {
+        var result = await this.requestJson<ISubscriptionsV2Model>({
+            url: `/subscriptions/create`,
+            method: "POST",
+            data: model
+        });
+        
+        return result;
+    }
+    public static async updateV2(model: ISubscriptionsV2Model): Promise<Result<ISubscriptionsV2Model>> {
+        var result = await this.requestJson<ISubscriptionsV2Model>({
+            url: `/subscriptions/${model.subscriptionId}`,
+            method: "PUT",
+            data: model
+        });
+        
+        return result;
+    }
+
+    public static async RefreshKey(model: ISubscriptionsV2RefreshKeyModel): Promise<Result<ISubscriptionsV2RefreshKeyModel>> {
+        var result = await this.requestJson<ISubscriptionsV2RefreshKeyModel>({
+            url: `/subscriptions/${model.subscriptionId}/regenerateKey`,
+            method: "POST",
+            data: model
+        });
+        
+        return result;
+    }
+
+    public static async deleteV2(subscriptionId: string): Promise<Result<{}>> {
+        var result = await this.requestJson<Result<{}>>({
+            url: `/subscriptions/${subscriptionId}`,
+            method: "DELETE"
+        });
+        return result;
+    }
+
+    //#endregion
 }

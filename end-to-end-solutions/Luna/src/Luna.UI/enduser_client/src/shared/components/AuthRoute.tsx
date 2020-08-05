@@ -1,10 +1,11 @@
 import * as React from 'react';
-import {Redirect, Route, RouteProps} from 'react-router-dom';
+import {Route, RouteProps} from 'react-router-dom';
 //import {WebRoute} from '../constants/routes';
 
 
 export const AuthRoute: React.FC<RouteProps> = (props) => {
-
+  
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { location } = props;
 
 

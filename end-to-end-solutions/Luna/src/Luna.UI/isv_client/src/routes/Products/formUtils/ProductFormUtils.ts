@@ -2,32 +2,32 @@ import * as yup from "yup";
 import { ObjectSchema } from "yup";
 import { IProductModel } from "../../../models";
 import { v4 as uuid } from "uuid";
-import {productIdRegExp } from "./RegExp";
+import { productNameRegExp } from "./RegExp";
 import { ErrorMessage } from "./ErrorMessage";
-import { IDropdownOption } from "office-ui-fabric-react";
 
 export const shallowCompare = (obj1, obj2) =>
   Object.keys(obj1).length === Object.keys(obj2).length &&
   Object.keys(obj1).every(key =>
     obj2.hasOwnProperty(key) && obj1[key] === obj2[key]
   );
+/*
+export const ProductType: IDropdownOption[] = [
+  { key: '', text: "Select" },
+  { key: 'RTP', text: "Real-Time Prediction" },
+  { key: 'BI', text: "Batch Inference" },
+  { key: 'TYOM', text: "Train Your Own Model" }]
 
-  export const ProductType: IDropdownOption[] = [
-    { key: '', text: "Select" },
-    { key: 'realtimeprediction', text: "Real-Time Prediction" },
-    { key: 'batchinference', text: "Batch Inference" },
-    { key: 'trainyourownmodel', text: "Train Your Own Model" }]
-
-    export const HostType: IDropdownOption[] = [
-      { key: '', text: "Select" },
-      { key: 'saas', text: "SaaS" },
-      { key: 'bringyourowncompute', text: "Bring Your Own Compute" }]
-
+export const HostType: IDropdownOption[] = [
+  { key: '', text: "Select" },
+  { key: 'SAAS', text: "SaaS" },
+  { key: 'BYOC', text: "Bring Your Own Compute" }]
+*/
 export const initialProductValues: IProductModel = {
   hostType: '',
   owner: '',
-  productId: '',
-  productType: '', isDeleted: false,
+  productName: '',
+  productType: '',
+  isDeleted: false,
   isSaved: false,
   isModified: false,
   clientId: uuid()
@@ -36,8 +36,10 @@ export const initialProductValues: IProductModel = {
 export const initialProductList: IProductModel[] = [{
   hostType: 'saas',
   owner: 'v-anirc@microsoft.com',
-  productId: '1',
+  productName: '1',
   productType: 'realtimeprediction',
+  createdTime: '',
+  lastUpdatedTime: '',
   isDeleted: false,
   isSaved: false,
   isModified: false,
@@ -46,8 +48,10 @@ export const initialProductList: IProductModel[] = [{
 {
   hostType: 'bringyourowncompute',
   owner: 'zbates@affirma.com',
-  productId: '2',
+  productName: '2',
   productType: 'batchinference',
+  createdTime: '',
+  lastUpdatedTime: '',
   isDeleted: false,
   isSaved: false,
   isModified: false,
@@ -56,8 +60,10 @@ export const initialProductList: IProductModel[] = [{
 {
   hostType: 'saas',
   owner: 'zbates@affirma.com',
-  productId: '3',
+  productName: '3',
   productType: 'trainyourownmodel',
+  createdTime: '',
+  lastUpdatedTime: '',
   isDeleted: false,
   isSaved: false,
   isModified: false,
@@ -75,10 +81,10 @@ export const initialInfoFormValues: IProductInfoFormValues = {
 const productValidator: ObjectSchema<IProductModel> = yup.object().shape(
   {
     clientId: yup.string(),
-    productId: yup.string()
-    .matches(productIdRegExp,
+    productName: yup.string()
+      .matches(productNameRegExp,
         {
-          message: ErrorMessage.productID,
+          message: ErrorMessage.productName,
           excludeEmptyString: true
         }).required("Id is a required field"),
 
@@ -86,6 +92,8 @@ const productValidator: ObjectSchema<IProductModel> = yup.object().shape(
     productType: yup.string()
       .required("Product Type is a required field"),
     hostType: yup.string().required("Host Type is a required field"),
+    createdTime: yup.string(),
+    lastUpdatedTime: yup.string()
   }
 );
 
@@ -94,26 +102,27 @@ export const productInfoValidationSchema: ObjectSchema<IProductInfoFormValues> =
     product: productValidator
   });
 
-  export const deleteProductValidator: ObjectSchema<IProductModel> = yup.object().shape(
-    {
-      clientId: yup.string(),
-      productId: yup.string(),
-      selectedProductId: yup.string()
-        .test('selectedProductid', 'Product id does not match', function (value: string) {
-          
-          const productId: string = this.parent.productId;
-          if (!value)
-            return true;
-  
-          return value.toLowerCase() === productId.toLowerCase();
-        }).matches(productIdRegExp,
-          {
-            message: ErrorMessage.productID,
-            excludeEmptyString: true
-          }).required("Product id is a required field"),
-  
-      owner: yup.string(),
-      hostType:yup.string(),
-      productType:yup.string()      
-    }
-  );
+export const deleteProductValidator: ObjectSchema<IProductModel> = yup.object().shape(
+  {
+    clientId: yup.string(),
+    productName: yup.string(),
+    selectedProductId: yup.string()
+      .test('selectedProductid', 'Product name does not match', function (value: string) {
+        const productName: string = this.parent.productName;
+        if (!value)
+          return true;
+
+        return value.toLowerCase() === productName.toLowerCase();
+      }).matches(productNameRegExp,
+        {
+          message: ErrorMessage.productName,
+          excludeEmptyString: true
+        }).required("Product id is a required field"),
+
+    owner: yup.string(),
+    hostType: yup.string(),
+    productType: yup.string(),
+    createdTime: yup.string(),
+    lastUpdatedTime: yup.string()
+  }
+);

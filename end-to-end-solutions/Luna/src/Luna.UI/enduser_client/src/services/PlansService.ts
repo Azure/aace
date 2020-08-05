@@ -2,6 +2,7 @@ import { ServiceBase } from "../services/ServiceBase";
 import { IPlanModel, IPlanWarningsModel, Result, IARMTemplateModel,IRestrictedUsersModel } from "../models";
 import { v4 as uuid } from "uuid";
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 let armTemplateModellist: IARMTemplateModel[];
 export default class PlansService extends ServiceBase {
 

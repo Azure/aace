@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import {
-  ChoiceGroup, DefaultButton, DialogFooter,
+  DefaultButton, DialogFooter,
   Dropdown,
-  FontIcon,  
-  IChoiceGroupOption,
+  FontIcon, 
   IDropdownOption,
   MessageBar,
   MessageBarType,
@@ -16,7 +15,6 @@ import { FieldArray, useFormikContext } from "formik";
 import {
   getInitialCustomMeterDimension,
   getInitialPlan,
-  getInitialRestrictedUser,
   IPlanFormValues
 } from "./formUtils/planFormUtils";
 import PlansService from "../../services/PlansService";
@@ -26,16 +24,14 @@ import { Loading } from '../../shared/components/Loading';
 import {
   IARMTemplateModel,
   ICustomMeterDimensionsModel, ICustomMeterModel, IError,
-  IPlanModel,
-  IRestrictedUsersModel,
+  IPlanModel,  
   IWebHookModel, Result
 } from "../../models";
 import { Offers } from '../../shared/constants/infomessages';
 import { useGlobalContext } from '../../shared/components/GlobalProvider';
 import AlternateButton from "../../shared/components/AlternateButton";
 import {
-  arrayItemErrorMessage, arrayItemErrorMessageFromForm,
-  arrayItemErrorMessageWithoutTouch,
+  arrayItemErrorMessage, arrayItemErrorMessageFromForm,  
   handleSubmissionErrorsForForm
 } from "../../shared/formUtils/utils";
 import { toast } from "react-toastify";
@@ -55,13 +51,13 @@ export type IPlanFormProps = {
 
 const ModifyPlan: React.FunctionComponent<IPlanFormProps> = (props) => {
   const { setFieldValue, values, handleChange, handleBlur,
-    touched, errors,handleSubmit, submitForm, setErrors, setSubmitting, dirty } = useFormikContext<IPlanFormValues>(); // formikProps
+    touched, errors,handleSubmit, submitForm, setErrors, setSubmitting } = useFormikContext<IPlanFormValues>(); // formikProps
   
   const globalContext = useGlobalContext();  
   const [loadingFormData, setLoadingFormData] = useState<boolean>(true);
   const [disableValue, setDisableValue] = useState<boolean>(true);
   const [formError, setFormError] = useState<string | null>(null);  
-  const [selectedKey, setSelectedKey] = useState<string>('public');
+  //const [selectedKey, setSelectedKey] = useState<string>('public');
   const OfferName = props.offerName as string;
   const PlanName = props.planName as string;
   const IsNew = props.isNew as boolean;
@@ -219,19 +215,19 @@ const ModifyPlan: React.FunctionComponent<IPlanFormProps> = (props) => {
 
   }
 
- const privateOnChange = (fieldKey: string, setFieldValue, ev?: React.SyntheticEvent<HTMLElement>, option?: IChoiceGroupOption) => {
+//  const privateOnChange = (fieldKey: string, setFieldValue, ev?: React.SyntheticEvent<HTMLElement>, option?: IChoiceGroupOption) => {
 
-    if (option) {
-      setSelectedKey(option.key);
+//     if (option) {
+//       //setSelectedKey(option.key);
 
-      if (option.key === 'private') {
-        setFieldValue(fieldKey, true, true);
-      }
-      else {
-        setFieldValue(fieldKey, false, true);
-      }
-    }
-  };
+//       if (option.key === 'private') {
+//         setFieldValue(fieldKey, true, true);
+//       }
+//       else {
+//         setFieldValue(fieldKey, false, true);
+//       }
+//     }
+//   };
 
   const selectOnChange = (fieldKey: string, setFieldValue, event: React.FormEvent<HTMLDivElement>, option?: IDropdownOption, index?: number) => {
 
@@ -266,15 +262,15 @@ const ModifyPlan: React.FunctionComponent<IPlanFormProps> = (props) => {
     }
   };
 
-  const handleAddUser = (arrayHelpers) => {
-    arrayHelpers.insert(arrayHelpers.form.values.plan.restrictedUsers.length, getInitialRestrictedUser());
-  };
+  // const handleAddUser = (arrayHelpers) => {
+  //   arrayHelpers.insert(arrayHelpers.form.values.plan.restrictedUsers.length, getInitialRestrictedUser());
+  // };
 
-  const handleRemoveUser = (arrayHelpers, clientId) => {
+  // const handleRemoveUser = (arrayHelpers, clientId) => {
 
-    var idx = arrayHelpers.form.values.plan.restrictedUsers.findIndex(x => x.clientId === clientId);
-    arrayHelpers.form.setFieldValue(`plan.restrictedUsers.${idx}.isDeleted`, true, true);
-  };
+  //   var idx = arrayHelpers.form.values.plan.restrictedUsers.findIndex(x => x.clientId === clientId);
+  //   arrayHelpers.form.setFieldValue(`plan.restrictedUsers.${idx}.isDeleted`, true, true);
+  // };
 
   const handleAddCustomMeterDimension = (arrayHelpers) => {
     arrayHelpers.insert(arrayHelpers.form.values.plan.customMeterDimensions.length, getInitialCustomMeterDimension());

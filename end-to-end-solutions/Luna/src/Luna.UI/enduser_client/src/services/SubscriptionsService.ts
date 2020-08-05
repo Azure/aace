@@ -1,11 +1,13 @@
 import {ServiceBase} from "../services/ServiceBase";
 import {
     ICreateSubscriptionModel,
-    ILandingModel,
+    
     IOperationHistoryModel,
     ISubscriptionsModel,
     ISubscriptionWarningsModel, IUpdateSubscriptionModel,
-    Result
+    Result,
+    ISubscriptionsV2RefreshKeyModel,
+    ISubscriptionsV2Model
 } from "../models";
 
 export default class SubscriptionsService extends ServiceBase {
@@ -93,4 +95,64 @@ export default class SubscriptionsService extends ServiceBase {
         // return result;        
         return result;
     }
+
+    //#region SubscriptionV2
+    
+    public static async listV2(): Promise<Result<ISubscriptionsV2Model[]>> {
+
+        var result = await this.requestJson<ISubscriptionsV2Model[]>({
+            url: `/apisubscriptions`,
+            method: "GET"
+        });
+
+        return result;
+    }
+    
+    public static async getV2(subscriptionId): Promise<Result<ISubscriptionsV2Model>> {
+
+        var result = await this.requestJson<ISubscriptionsV2Model>({
+            url: `/apisubscriptions/${subscriptionId}`,
+            method: "GET"
+        });
+        return result;
+    }
+
+    public static async createV2(model: ISubscriptionsV2Model): Promise<Result<ISubscriptionsV2Model>> {
+        var result = await this.requestJson<ISubscriptionsV2Model>({
+            url: `/apisubscriptions/create`,
+            method: "POST",
+            data: model
+        });
+        
+        return result;
+    }
+    public static async updateV2(model: ISubscriptionsV2Model): Promise<Result<ISubscriptionsV2Model>> {
+        var result = await this.requestJson<ISubscriptionsV2Model>({
+            url: `/apisubscriptions/${model.subscriptionId}`,
+            method: "PUT",
+            data: model
+        });
+        
+        return result;
+    }
+
+    public static async RefreshKey(model: ISubscriptionsV2RefreshKeyModel): Promise<Result<ISubscriptionsV2Model>> {
+        var result = await this.requestJson<ISubscriptionsV2Model>({
+            url: `/apisubscriptions/${model.subscriptionId}/regenerateKey`,
+            method: "POST",
+            data: model
+        });
+        
+        return result;
+    }
+
+    public static async deleteV2(subscriptionId: string): Promise<Result<{}>> {
+        var result = await this.requestJson<Result<{}>>({
+            url: `/subscriptions/${subscriptionId}`,
+            method: "DELETE"
+        });
+        return result;
+    }
+
+    //#endregion
 }

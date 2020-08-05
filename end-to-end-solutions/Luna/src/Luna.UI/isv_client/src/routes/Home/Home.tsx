@@ -1,11 +1,10 @@
 import React from 'react';
 import {Redirect} from "react-router";
 import {WebRoute} from "../../shared/constants/routes";
-import OfferContent from "../../layout/OfferContent";
 
 const Home: React.FunctionComponent = () => {
-  const v1Enabled = (window.Configs.ENABLE_V1.toLowerCase() == 'true' ? true : false);
-  const v2Enabled = (window.Configs.ENABLE_V2.toLowerCase() == 'true' ? true : false);
+  const v1Enabled = (window.Configs.ENABLE_V1.toLowerCase() === 'true' ? true : false);
+  const v2Enabled = (window.Configs.ENABLE_V2.toLowerCase() === 'true' ? true : false);
 
   if (v1Enabled) {
     return (
