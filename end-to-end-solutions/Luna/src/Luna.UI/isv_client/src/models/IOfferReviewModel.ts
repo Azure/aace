@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
 import {IOfferModel} from "./IOfferModel";
 import {IOfferParameterModel} from "./IOfferParameterModel";
 import {IIpConfigModel} from "./IIpConfigModel";

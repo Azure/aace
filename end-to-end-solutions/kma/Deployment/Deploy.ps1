@@ -1,3 +1,5 @@
+## Copyright (c) Microsoft Corporation.
+## Licensed under the MIT license.
 param (
     [Parameter(Mandatory=$true)]
     [string]$uniqueName = "default", 

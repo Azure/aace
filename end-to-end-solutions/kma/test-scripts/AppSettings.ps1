@@ -1,3 +1,5 @@
+## Copyright (c) Microsoft Corporation.
+## Licensed under the MIT license.
 param (
     [string]$uniqueName = "default", 
     [string]$resourceGroup = "default",    

@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
 import * as yup from "yup";
 
 export const registerYupMethods = () => {

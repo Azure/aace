@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
 import { ServiceBase } from "../services/ServiceBase";
 import {IPlanModel, Result, IRestrictedUsersModel, ICustomMeterDimensionsModel} from "../models";
 import { v4 as uuid } from "uuid";
