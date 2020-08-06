@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
 import {AdalConfig, adalGetToken, AuthenticationContext} from 'react-adal';
 //import { selectProperties } from 'office-ui-fabric-react';
 

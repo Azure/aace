@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
 import {ServiceBase} from "./ServiceBase";
 import {
   IAMLWorkSpaceModel,

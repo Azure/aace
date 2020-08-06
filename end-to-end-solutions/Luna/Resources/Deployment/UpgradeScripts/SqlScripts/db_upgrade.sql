@@ -1,3 +1,5 @@
+-- Copyright (c) Microsoft Corporation.
+-- Licensed under the MIT license.
 DECLARE @current_version bigint
 DECLARE @target_version bigint
 DECLARE @upgrade_version bigint

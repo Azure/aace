@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
 ﻿namespace Luna.Data.Entities
 {
     /// <summary>

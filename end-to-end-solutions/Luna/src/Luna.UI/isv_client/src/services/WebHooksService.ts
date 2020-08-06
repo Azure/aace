@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
 import { ServiceBase } from "../services/ServiceBase";
 import { IWebHookModel, Result } from "../models";
 import { v4 as uuid } from "uuid";

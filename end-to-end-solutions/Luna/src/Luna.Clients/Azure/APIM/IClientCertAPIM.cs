@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
 ﻿using System;
 using Luna.Clients.Azure.Auth;
 using System.Threading.Tasks;

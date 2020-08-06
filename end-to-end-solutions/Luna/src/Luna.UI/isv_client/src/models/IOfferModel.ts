@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
 import {IBaseModel} from "./IBaseModel";
 
 export interface IOfferModel extends IBaseModel {

@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
 import * as yup from "yup";
 import { ObjectSchema } from "yup";
 import { IDeploymentsModel, IDeploymentVersionModel } from "../../../models";

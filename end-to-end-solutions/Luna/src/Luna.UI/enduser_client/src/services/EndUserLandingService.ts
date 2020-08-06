@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
 import {ServiceBase} from "../services/ServiceBase";
 import {IResolveTokenModel, Result} from "../models";
 

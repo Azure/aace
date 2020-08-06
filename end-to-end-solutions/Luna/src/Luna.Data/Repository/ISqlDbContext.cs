@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
 ﻿using System.Threading.Tasks;
 using Luna.Data.Entities;
 using Microsoft.EntityFrameworkCore;

@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
 using Luna.Data.Entities;
 using System.Collections;
 using System.Collections.Generic;
