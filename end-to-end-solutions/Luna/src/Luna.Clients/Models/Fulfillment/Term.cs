@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 ﻿using System;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;

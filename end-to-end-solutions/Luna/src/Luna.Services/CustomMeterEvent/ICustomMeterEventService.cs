@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 ﻿using Luna.Clients.Models.CustomMetering;
 using System;
 using System.Collections.Generic;

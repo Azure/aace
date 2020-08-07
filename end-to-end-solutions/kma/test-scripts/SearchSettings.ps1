@@ -1,3 +1,6 @@
+## Copyright (c) Microsoft Corporation.
+## Licensed under the MIT license.
+
 ﻿param (
     [string]$resourceGroup = "default",    
     [string]$subscriptionId = "default",
