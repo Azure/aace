@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 export * from './IARMTemplateParameterModel';
 export * from './IARMTemplateModel';
 export * from './IIpConfigModel';

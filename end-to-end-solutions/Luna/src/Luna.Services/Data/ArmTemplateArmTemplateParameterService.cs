@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 using Luna.Clients.Exceptions;
 using Luna.Data.Entities;
 using Luna.Data.Repository;

@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 import {Result} from "../models";
 import * as jsonToUrl from "json-to-url";
 import Axios, {AxiosRequestConfig, AxiosResponse} from "axios";

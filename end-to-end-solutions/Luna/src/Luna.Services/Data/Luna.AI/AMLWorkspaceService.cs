@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 ﻿using Luna.Clients.Azure.Auth;
 using Luna.Clients.Controller;
 using Luna.Clients.Exceptions;
