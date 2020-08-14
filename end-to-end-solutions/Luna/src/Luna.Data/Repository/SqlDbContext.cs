@@ -40,6 +40,10 @@ namespace Luna.Data.Repository
         public DbSet<APIVersion> APIVersions { get; set; }
         public DbSet<AMLWorkspace> AMLWorkspaces { get; set; }
         public DbSet<APISubscription> APISubscriptions { get; set; }
+        public DbSet<AIAgent> AIAgents { get; set; }
+
+        public DbSet<AgentSubscription> AgentSubscriptions { get; set; }
+        public DbSet<AgentAPIVersion> AgentAPIVersions { get; set; }
 
         // Wrappers for DbContext methods that are used
         public async Task<int> _SaveChangesAsync()
@@ -62,6 +66,10 @@ namespace Luna.Data.Repository
         /// <param name="modelBuilder"></param>
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<AgentSubscription>().HasNoKey();
+
+            modelBuilder.Entity<AgentAPIVersion>().HasNoKey();
+
             modelBuilder.Entity<ArmTemplateArmTemplateParameter>()
                 .HasKey(x => new { x.ArmTemplateId, x.ArmTemplateParameterId });
 

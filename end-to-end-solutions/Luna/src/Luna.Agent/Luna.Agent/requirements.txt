@@ -1,0 +1,9 @@
+azureml-sdk
+flask
+requests
+luna-publish-utils
+sqlalchemy
+pyodbc
+azure-keyvault-secrets
+azure.identity
+azure-storage-blob

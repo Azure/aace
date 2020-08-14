@@ -15,6 +15,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Luna.Services", "Luna.Servi
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Identity.Web", "Microsoft.Identity.Web\Microsoft.Identity.Web.csproj", "{B07A9390-CF9C-41B8-B1D0-E844EF6FAAF2}"
 EndProject
+Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "Luna.Agent", "Luna.Agent\Luna.Agent\Luna.Agent.pyproj", "{6F1C1AD3-F319-4F0F-9827-CFADDF1B63C6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -45,6 +47,10 @@ Global
 		{B07A9390-CF9C-41B8-B1D0-E844EF6FAAF2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B07A9390-CF9C-41B8-B1D0-E844EF6FAAF2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B07A9390-CF9C-41B8-B1D0-E844EF6FAAF2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6F1C1AD3-F319-4F0F-9827-CFADDF1B63C6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6F1C1AD3-F319-4F0F-9827-CFADDF1B63C6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6F1C1AD3-F319-4F0F-9827-CFADDF1B63C6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6F1C1AD3-F319-4F0F-9827-CFADDF1B63C6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

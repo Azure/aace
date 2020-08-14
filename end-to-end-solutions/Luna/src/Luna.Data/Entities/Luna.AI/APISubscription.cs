@@ -61,5 +61,7 @@ namespace Luna.Data.Entities
 
         public DateTime LastUpdatedTime { get; set; }
 
+        public Guid? AgentId { get; set; }
+
     }
 }

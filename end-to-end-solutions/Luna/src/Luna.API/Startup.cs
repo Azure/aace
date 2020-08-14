@@ -12,6 +12,7 @@ using Luna.Clients.Exceptions;
 using Luna.Clients.Fulfillment;
 using Luna.Clients.Models;
 using Luna.Clients.Provisioning;
+using Luna.Data.Entities;
 using Luna.Data.Repository;
 using Luna.Services;
 using Luna.Services.CustomMeterEvent;
@@ -324,6 +325,7 @@ namespace Luna.API
             services.TryAddScoped<IArmTemplateArmTemplateParameterService, ArmTemplateArmTemplateParameterService>();
             services.TryAddScoped<ITelemetryDataConnectorService, TelemetryDataConnectorService>();
             services.TryAddScoped<ISubscriptionCustomMeterUsageService, SubscriptionCustomMeterUsageService>();
+            services.TryAddScoped<IAIAgentService, AIAgentService>();
 
             services.TryAddScoped<ICustomMeterEventService, CustomMeterEventService>();
             // Register luna db client
@@ -366,6 +368,7 @@ namespace Luna.API
                 o.Conventions.Controller<APIVersionController>().HasApiVersion(latest);
                 o.Conventions.Controller<DeploymentController>().HasApiVersion(latest);
                 o.Conventions.Controller<ProductController>().HasApiVersion(latest);
+                o.Conventions.Controller<AIAgentController>().HasApiVersion(latest);
             });
 
             // Register the Swagger generator, defining 1 or more Swagger documents

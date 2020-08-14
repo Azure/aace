@@ -22,6 +22,20 @@ END
 EXEC sp_addrolemember N'db_owner', @username
 GO
 
+-- Drop views
+IF EXISTS (select * from sys.views tb join sys.schemas sch on tb.schema_id = sch.schema_id where tb.name = 'agent_subscriptions' AND sch.name = 'dbo')
+BEGIN
+DROP VIEW [dbo].[agent_subscriptions]
+END
+GO
+
+IF EXISTS (select * from sys.views tb join sys.schemas sch on tb.schema_id = sch.schema_id where tb.name = 'agent_apiversions' AND sch.name = 'dbo')
+BEGIN
+DROP VIEW [dbo].[agent_apiversions]
+END
+GO
+
+-- Drop tables
 
 IF EXISTS (select * from sys.tables tb join sys.schemas sch on tb.schema_id = sch.schema_id where tb.name = 'WebhookWebhookParameters' AND sch.name = 'dbo')
 BEGIN
@@ -177,6 +191,12 @@ GO
 IF EXISTS (select * from sys.tables tb join sys.schemas sch on tb.schema_id = sch.schema_id where tb.name = 'AMLWorkspaces' AND sch.name = 'dbo')
 BEGIN
 DROP TABLE [dbo].[AMLWorkspaces]
+END
+GO
+
+IF EXISTS (select * from sys.tables tb join sys.schemas sch on tb.schema_id = sch.schema_id where tb.name = 'AIAgents' AND sch.name = 'dbo')
+BEGIN
+DROP TABLE [dbo].[AIAgents]
 END
 GO
 
@@ -567,4 +587,36 @@ CREATE TABLE [dbo].[APISubscriptions](
 )
 GO
 
+CREATE TABLE [dbo].[AIAgents](
+	[Id] [bigint] IDENTITY(1,1) NOT NULL,
+	[AgentId] [uniqueidentifier] NOT NULL,
+	[AgentKeySecretName] [nvarchar](64) NOT NULL,
+	[CreatedBy] [nvarchar](256) NOT NULL,
+	[LastHeartbeatReportedTime] [datetime2](7) NOT NULL,
+	[CreatedTime] [datetime2](7) NULL,
+	PRIMARY KEY (Id)
+)
+GO
 
+-- Create Views
+
+CREATE VIEW [dbo].[agent_apiversions]
+AS
+SELECT dbo.Deployments.DeploymentName, dbo.Products.ProductName, dbo.APIVersions.VersionName, dbo.APIVersions.RealTimePredictAPI, dbo.APIVersions.TrainModelAPI, dbo.APIVersions.BatchInferenceAPI, dbo.APIVersions.DeployModelAPI, dbo.APIVersions.AuthenticationType, dbo.APIVersions.CreatedTime, dbo.APIVersions.LastUpdatedTime, dbo.APIVersions.VersionSourceType, dbo.APIVersions.ProjectFileUrl, 
+          dbo.APIVersions.Id, dbo.APIVersions.AMLWorkspaceId, dbo.APISubscriptions.AgentId, dbo.APISubscriptions.SubscriptionId, dbo.Publishers.PublisherId
+FROM   dbo.APIVersions INNER JOIN
+          dbo.Deployments ON dbo.APIVersions.DeploymentId = dbo.Deployments.Id INNER JOIN
+          dbo.Products ON dbo.Deployments.ProductId = dbo.Products.Id INNER JOIN
+          dbo.APISubscriptions ON dbo.Deployments.Id = dbo.APISubscriptions.DeploymentId CROSS JOIN
+          dbo.Publishers
+GO
+
+CREATE VIEW [dbo].[agent_subscriptions]
+AS
+SELECT dbo.APISubscriptions.Id, dbo.APISubscriptions.SubscriptionId, dbo.Deployments.DeploymentName, dbo.Products.ProductName, dbo.Products.ProductType, dbo.APISubscriptions.userId, dbo.APISubscriptions.SubscriptionName, dbo.APISubscriptions.Status, dbo.Products.HostType, dbo.APISubscriptions.CreatedTime, dbo.APISubscriptions.BaseUrl, dbo.APISubscriptions.PrimaryKey, dbo.APISubscriptions.SecondaryKey, 
+          dbo.APISubscriptions.AgentId, dbo.Publishers.PublisherId
+FROM   dbo.APISubscriptions INNER JOIN
+          dbo.Deployments ON dbo.APISubscriptions.DeploymentId = dbo.Deployments.Id INNER JOIN
+          dbo.Products ON dbo.Deployments.ProductId = dbo.Products.Id CROSS JOIN
+          dbo.Publishers
+GO

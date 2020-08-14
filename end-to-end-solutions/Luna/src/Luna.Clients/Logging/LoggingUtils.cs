@@ -96,6 +96,15 @@ namespace Luna.Clients.Logging
             return message.ToString();
         }
 
+        public static string ComposeReturnValueMessage(string resourceType, string resourceName)
+        {
+            StringBuilder message = new StringBuilder();
+            message.Append($"{resourceType} {resourceName}");
+            message.Append($" returned.");
+
+            return message.ToString();
+        }
+
 
         /// <summary>
         /// Compose a message of getting all resources

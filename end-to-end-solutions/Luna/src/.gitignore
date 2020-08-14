@@ -349,3 +349,9 @@ Test/coverage.json
 Luna.API/Properties/launchSettings.json
 /Luna.UI/isv_client/yarn.lock
 /Luna.UI/enduser_client/yarn.lock
+
+# Python environment
+env-64/
+
+# downloaded project code
+lunaCode/
