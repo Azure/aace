@@ -27,6 +27,8 @@ class AMLWorkspace(Base):
 
     DeploymentClusters = []
 
+    DeploymentTargetTypes = []
+
     @staticmethod
     def Create(workspace):
         session = Session()
@@ -54,6 +56,14 @@ class AMLWorkspace(Base):
         workspace.ComputeClusters = util.getComputeClusters()
         workspace.DeploymentClusters = util.getDeploymentClusters()
         workspace.AADApplicationSecret = ""
+        workspace.DeploymentTargetTypes = [{
+                'id': 'aks',
+                'displayName': 'Azure Kubernates Service'
+            },
+            {
+                'id': 'aci',
+                'displayName': 'Azure Container Instances'
+            }]
         session.close()
         return workspace
 

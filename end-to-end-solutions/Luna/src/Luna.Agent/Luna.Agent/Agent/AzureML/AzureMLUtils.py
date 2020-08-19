@@ -53,7 +53,7 @@ class AzureMLUtils(object):
         exp.submit(pipeline, tags)
         return operationId
 
-    def runProject(self, productName, deploymentName, apiVersion, operationVerb, userInput, predecessorOperationId, userId, subscriptionId):
+    def runProject(self, productName, deploymentName, apiVersion, operationVerb, userInput, predecessorOperationId, userId, subscriptionId, computeCluster="default"):
         operationId = str('a' + uuid4().hex[1:])
         experimentName = subscriptionId
         entryPoint = utils.GetOperationNameByVerb(operationVerb)

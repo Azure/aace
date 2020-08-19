@@ -634,10 +634,13 @@ GO
 CREATE VIEW [dbo].[agent_subscriptions]
 AS
 SELECT dbo.APISubscriptions.Id, dbo.APISubscriptions.SubscriptionId, dbo.Deployments.DeploymentName, dbo.Products.ProductName, dbo.Products.ProductType, dbo.APISubscriptions.userId, dbo.APISubscriptions.SubscriptionName, dbo.APISubscriptions.Status, dbo.Products.HostType, dbo.APISubscriptions.CreatedTime, dbo.APISubscriptions.BaseUrl, dbo.APISubscriptions.PrimaryKey, dbo.APISubscriptions.SecondaryKey, 
-          dbo.APISubscriptions.AgentId, dbo.Publishers.PublisherId, 0 AS AMLWorkspaceId, '' AS AMLWorkspaceComputeClusterName, '' AS AMLWorkspaceDeploymentTargetType, '' AS AMLWorkspaceDeploymentClusterName
+          dbo.APISubscriptions.AgentId, dbo.Publishers.PublisherId, 0 AS AMLWorkspaceId, '' AS AMLWorkspaceComputeClusterName, '' AS AMLWorkspaceDeploymentTargetType, '' AS AMLWorkspaceDeploymentClusterName, dbo.Offers.OfferName, dbo.Plans.PlanName
 FROM   dbo.APISubscriptions INNER JOIN
           dbo.Deployments ON dbo.APISubscriptions.DeploymentId = dbo.Deployments.Id INNER JOIN
-          dbo.Products ON dbo.Deployments.ProductId = dbo.Products.Id CROSS JOIN
+          dbo.Products ON dbo.Deployments.ProductId = dbo.Products.Id INNER JOIN
+          dbo.Subscriptions ON dbo.APISubscriptions.SubscriptionId = dbo.Subscriptions.SubscriptionId INNER JOIN
+          dbo.Offers ON dbo.Subscriptions.OfferId = dbo.Offers.Id INNER JOIN
+          dbo.Plans ON dbo.Subscriptions.PlanId = dbo.Plans.Id AND dbo.Offers.Id = dbo.Plans.OfferId CROSS JOIN
           dbo.Publishers
 GO
 

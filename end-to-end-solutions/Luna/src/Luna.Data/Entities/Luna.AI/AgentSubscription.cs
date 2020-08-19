@@ -54,5 +54,11 @@ namespace Luna.Data.Entities
 
         [JsonPropertyName("PublisherId")]
         public Guid PublisherId { get; set; }
+
+        [JsonPropertyName("OfferName")]
+        public string OfferName { get; set; }
+
+        [JsonPropertyName("PlanName")]
+        public string PlanName { get; set; }
     }
 }

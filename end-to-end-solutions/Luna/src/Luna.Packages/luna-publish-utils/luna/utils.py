@@ -163,7 +163,7 @@ def DeployModel():
         service = Model.deploy(ws, endpoint_id, [model], inference_config, deployment_config)
         service.wait_for_deployment(show_output = True)
 
-def RunProject(azureml_workspace, entry_point, experiment_name, parameters, tags):
+def RunProject(azureml_workspace, entry_point, experiment_name, parameters, tags, compute_cluster="default"):
 
     luna_config = Init()
     if azureml_workspace:

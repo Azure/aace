@@ -1,6 +1,7 @@
 from sqlalchemy import Column, Integer, String, DateTime
 from Agent import Base, Session
 from Agent.Data.AMLWorkspace import AMLWorkspace
+from Agent.Data.AgentUser import AgentUser
 
 class APISubscription(Base):
     """description of class"""
@@ -44,8 +45,18 @@ class APISubscription(Base):
     AgentId = Column(String)
 
     PublisherId = Column(String)
+    
+    OfferName = Column(String)
+
+    PlanName = Column(String)
 
     AMLWorkspaceName = ""
+
+    AvailablePlans = []
+
+    Users = []
+
+    Admins = []
     
     @staticmethod
     def Update(subscription):
@@ -66,6 +77,9 @@ class APISubscription(Base):
         session = Session()
         subscription = session.query(APISubscription).filter_by(SubscriptionId = subscriptionId).first()
         session.close()
+        subscription.Admins = AgentUser.ListAllAdmin()
+        subscription.Users = AgentUser.ListAllBySubscriptionId(subscriptionId)
+        subscription.AvailablePlans = ["Basic", "Premium"]
         return subscription
 
     def ListAllByWorkspaceName(workspaceName):
