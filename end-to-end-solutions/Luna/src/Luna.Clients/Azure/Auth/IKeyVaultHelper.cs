@@ -1,8 +1,9 @@
-// Copyright (c) Microsoft Corporation.
+﻿// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
 ﻿using System.Threading.Tasks;
 using Microsoft.Azure.KeyVault.WebKey;
+using Microsoft.Azure.KeyVault.Models;
 
 namespace Luna.Clients.Azure.Auth
 {
@@ -11,6 +12,9 @@ namespace Luna.Clients.Azure.Auth
         Task<string> SetSecretAsync(string vaultName, string secretName, string value);
         Task<string> GetSecretAsync(string vaultName, string secretName);
         Task<string> DeleteSecretAsync(string vaultName, string secretName);
+        Task<SecretBundle> GetSecretVersionsAsync(string vaultName, string secretName);
+        Task<string> DisableVersionAsync(string secretIdentifier, SecretAttributes secretAttributes);
+        Task<string> EnableVersionAsync(string secretIdentifier, SecretAttributes secretAttributes);
 
         Task<JsonWebKey> GetKeyAsync(string vaultName, string keyName);
     

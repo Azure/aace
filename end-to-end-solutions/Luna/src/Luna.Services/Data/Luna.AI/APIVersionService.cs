@@ -4,6 +4,7 @@
 ﻿using Luna.Clients.Azure.APIM;
 using Luna.Clients.Exceptions;
 using Luna.Clients.Logging;
+using Luna.Clients.Controller;
 using Luna.Data.Entities;
 using Luna.Data.Repository;
 using Luna.Clients.Azure.Auth;
@@ -17,6 +18,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Azure.KeyVault.Models;
 
 
 namespace Luna.Services.Data.Luna.AI
@@ -252,6 +254,13 @@ namespace Luna.Services.Data.Luna.AI
                     UserErrorCode.PayloadNotProvided);
             }
 
+            // Check if VersionName is valid
+            if (await ControllerHelper.CheckNameValidity(version.VersionName, nameof(APIVersion)))
+            {
+                throw new LunaBadRequestUserException(LoggingUtils.ComposeNameInvalidErrorMessage(nameof(APIVersion), version.VersionName),
+                    UserErrorCode.PayloadNameInvalid);
+            }
+
             // Check that the product and the deployment does not already have an apiVersion with the same versionName
             if (await ExistsAsync(productName, deploymentName, version.VersionName))
             {
@@ -263,7 +272,7 @@ namespace Luna.Services.Data.Luna.AI
             {
                 throw new LunaConflictUserException($"Parameter {version.VersionName} is reserved. Please use a different name.");
             }
-            _logger.LogInformation(LoggingUtils.ComposeCreateResourceMessage(typeof(APIVersion).Name, version.VersionName, payload: JsonSerializer.Serialize(version)));
+            _logger.LogInformation(LoggingUtils.ComposeCreateResourceMessage(typeof(APIVersion).Name, version.VersionName));
 
             // Get the product associated with the productName provided
             var product = await _productService.GetAsync(productName);
@@ -298,7 +307,7 @@ namespace Luna.Services.Data.Luna.AI
             // add athentication key to keyVault if authentication type is key
             if (version.AuthenticationType.Equals("Key", StringComparison.InvariantCultureIgnoreCase))
             {
-                if (version.AuthenticationKey == null)
+                if (string.IsNullOrEmpty(version.AuthenticationKey))
                 {
                     throw new LunaBadRequestUserException("Authentication key is needed with the key authentication type", UserErrorCode.AuthKeyNotProvided);
                 }
@@ -327,9 +336,24 @@ namespace Luna.Services.Data.Luna.AI
             }
 
             // Add apiVersion to db
-            _context.APIVersions.Add(version);
-            await _context._SaveChangesAsync();
-            _logger.LogInformation(LoggingUtils.ComposeResourceCreatedMessage(typeof(APIVersion).Name, version.VersionName));
+            try
+            {
+                _context.APIVersions.Add(version);
+                await _context._SaveChangesAsync();
+                _logger.LogInformation(LoggingUtils.ComposeResourceCreatedMessage(typeof(APIVersion).Name, version.VersionName));
+            }
+            catch (Exception e)
+            {
+                if (version.AuthenticationType.Equals("Key", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    await (_keyVaultHelper.DeleteSecretAsync(_options.CurrentValue.Config.VaultName, version.AuthenticationKeySecretName));                    
+                }
+                if (!string.IsNullOrEmpty(version.GitPersonalAccessToken))
+                {
+                    await (_keyVaultHelper.SetSecretAsync(_options.CurrentValue.Config.VaultName, version.GitPersonalAccessTokenSecretName, version.GitPersonalAccessToken));
+                }
+                throw new LunaDbSaveException(e.InnerException.Message, e);
+            }
 
             return version;
         }
@@ -358,7 +382,10 @@ namespace Luna.Services.Data.Luna.AI
                     UserErrorCode.NameMismatch);
             }
 
-            _logger.LogInformation(LoggingUtils.ComposeUpdateResourceMessage(typeof(APIVersion).Name, versionName, payload: JsonSerializer.Serialize(version)));
+            _logger.LogInformation(LoggingUtils.ComposeUpdateResourceMessage(typeof(APIVersion).Name, versionName));
+
+            // Get the apiVersion that matches the productName, deploymentName and versionName provided
+            var versionDb = await GetAsync(productName, deploymentName, versionName);
 
             //check if amlworkspace is required
             if (!string.IsNullOrEmpty(version.AMLWorkspaceName))
@@ -370,36 +397,77 @@ namespace Luna.Services.Data.Luna.AI
                 version = UpdateUrl(version, amlWorkspace);
             }
 
+            SecretBundle oldVersionAuthenticationSecret = new SecretBundle();
+            SecretBundle oldVersionGitPersonalAccessTokenSecret = new SecretBundle();
+
             // add athentication key to keyVault if authentication type is key
             if (version.AuthenticationType.Equals("Key", StringComparison.InvariantCultureIgnoreCase))
             {
-                if (version.AuthenticationKey == null)
+                if (string.IsNullOrEmpty(version.AuthenticationKey))
                 {
                     throw new LunaBadRequestUserException("Authentication key is needed with the key authentication type", UserErrorCode.AuthKeyNotProvided);
                 }
-                string secretName = string.IsNullOrEmpty(version.AuthenticationKeySecretName) ? $"authkey-{Context.GetRandomString(12)}" : version.AuthenticationKeySecretName;
+                                
+                string secretName = string.IsNullOrEmpty(versionDb.AuthenticationKeySecretName) ? $"authkey-{Context.GetRandomString(12)}" : versionDb.AuthenticationKeySecretName;
+                
+                // Get old version from keyvault
+                oldVersionAuthenticationSecret = await _keyVaultHelper.GetSecretVersionsAsync(_options.CurrentValue.Config.VaultName, secretName);
+                
                 await (_keyVaultHelper.SetSecretAsync(_options.CurrentValue.Config.VaultName, secretName, version.AuthenticationKey));
                 version.AuthenticationKeySecretName = secretName;
             }
 
             if (!string.IsNullOrEmpty(version.GitPersonalAccessToken))
             {
-                string secretName = string.IsNullOrEmpty(version.GitPersonalAccessTokenSecretName) ? $"gitpat-{Context.GetRandomString(12)}" : version.GitPersonalAccessTokenSecretName;
+                string secretName = string.IsNullOrEmpty(versionDb.GitPersonalAccessTokenSecretName) ? $"gitpat-{Context.GetRandomString(12)}" : versionDb.GitPersonalAccessTokenSecretName;
+
+                // Get old version from keyvault
+                oldVersionGitPersonalAccessTokenSecret = await _keyVaultHelper.GetSecretVersionsAsync(_options.CurrentValue.Config.VaultName, secretName);
+
                 await (_keyVaultHelper.SetSecretAsync(_options.CurrentValue.Config.VaultName, secretName, version.GitPersonalAccessToken));
                 version.GitPersonalAccessTokenSecretName = secretName;
             }
-
-            // Get the apiVersion that matches the productName, deploymentName and versionName provided
-            var versionDb = await GetAsync(productName, deploymentName, versionName);
-            
+           
             // Copy over the changes
             versionDb.Copy(version);
             versionDb.LastUpdatedTime = DateTime.UtcNow;
 
             // Update version values and save changes in db
-            _context.APIVersions.Update(versionDb);
-            await _context._SaveChangesAsync();
-            _logger.LogInformation(LoggingUtils.ComposeResourceUpdatedMessage(typeof(APIVersion).Name, versionName));
+            try
+            {
+                _context.APIVersions.Update(versionDb);
+                await _context._SaveChangesAsync();
+
+                // Disable old version secret
+                if (version.AuthenticationType.Equals("Key", StringComparison.InvariantCultureIgnoreCase))
+                {                    
+                    await _keyVaultHelper.DisableVersionAsync(oldVersionAuthenticationSecret.SecretIdentifier.Identifier, oldVersionAuthenticationSecret.Attributes);
+                }
+
+                if (!string.IsNullOrEmpty(version.GitPersonalAccessToken))
+                { 
+                    await _keyVaultHelper.DisableVersionAsync(oldVersionGitPersonalAccessTokenSecret.SecretIdentifier.Identifier, oldVersionGitPersonalAccessTokenSecret.Attributes);
+                }
+
+                _logger.LogInformation(LoggingUtils.ComposeResourceUpdatedMessage(typeof(APIVersion).Name, versionName));
+            }
+            catch (Exception e)
+            {
+                // Disable new version secret
+                if (version.AuthenticationType.Equals("Key", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    var newVersion = await _keyVaultHelper.GetSecretVersionsAsync(_options.CurrentValue.Config.VaultName, version.AuthenticationKeySecretName);
+                    await _keyVaultHelper.DisableVersionAsync(newVersion.SecretIdentifier.Identifier, newVersion.Attributes);
+                }
+
+                if (!string.IsNullOrEmpty(version.GitPersonalAccessToken))
+                {
+                    var newVersion = await _keyVaultHelper.GetSecretVersionsAsync(_options.CurrentValue.Config.VaultName, version.GitPersonalAccessTokenSecretName);
+                    await _keyVaultHelper.DisableVersionAsync(newVersion.SecretIdentifier.Identifier, newVersion.Attributes);
+                }
+
+                throw new LunaDbSaveException(e.InnerException.Message, e);
+            }
 
             return versionDb;
         }
@@ -423,29 +491,70 @@ namespace Luna.Services.Data.Luna.AI
             version.ProductName = productName;
             version.DeploymentName = deploymentName;
 
-            // delete athentication key from keyVault if authentication type is key
+            SecretBundle currentVersionAuthenticationKey = new SecretBundle();
+            SecretBundle currentVersionGitPersonalAccessToken = new SecretBundle();
+
+            // Disable athentication key from keyVault if authentication type is key
             if (version.AuthenticationType.Equals("Key", StringComparison.InvariantCultureIgnoreCase))
             {
-                if (version.AuthenticationKey != null)
+                if (!string.IsNullOrEmpty(version.AuthenticationKeySecretName))
                 {
-                    string secretName = version.AuthenticationKeySecretName;
-                    try
-                    {
-                        await (_keyVaultHelper.DeleteSecretAsync(_options.CurrentValue.Config.VaultName, secretName));
-                    }
-                    catch 
-                    { 
-                    }
+                    // Disable current version secret
+                    currentVersionAuthenticationKey = await _keyVaultHelper.GetSecretVersionsAsync(_options.CurrentValue.Config.VaultName, version.AuthenticationKeySecretName);
+                    await _keyVaultHelper.DisableVersionAsync(currentVersionAuthenticationKey.SecretIdentifier.Identifier, currentVersionAuthenticationKey.Attributes);                                      
                 }
+            }
+
+            //Disable GitPersonalAccessToken
+            if (!string.IsNullOrEmpty(version.GitPersonalAccessToken))
+            {
+                currentVersionGitPersonalAccessToken = await _keyVaultHelper.GetSecretVersionsAsync(_options.CurrentValue.Config.VaultName, version.GitPersonalAccessTokenSecretName);
+                await _keyVaultHelper.DisableVersionAsync(currentVersionGitPersonalAccessToken.SecretIdentifier.Identifier, currentVersionGitPersonalAccessToken.Attributes);               
             }
 
             // Remove the apiVersion from the APIM
             await _apiVersionAPIM.DeleteAsync(version);
 
             // Remove the apiVersion from the db
-            _context.APIVersions.Remove(version);
-            await _context._SaveChangesAsync();
-            _logger.LogInformation(LoggingUtils.ComposeResourceDeletedMessage(typeof(APIVersion).Name, versionName));
+            try
+            {
+                _context.APIVersions.Remove(version);
+                await _context._SaveChangesAsync();
+
+                // Delete secret from key vault
+                if (version.AuthenticationType.Equals("Key", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    if (!string.IsNullOrEmpty(version.AuthenticationKeySecretName))
+                    {           
+                        await _keyVaultHelper.DeleteSecretAsync(_options.CurrentValue.Config.VaultName, version.AuthenticationKeySecretName);
+                    }
+                }
+
+                if (!string.IsNullOrEmpty(version.GitPersonalAccessToken))
+                {
+                    await _keyVaultHelper.DeleteSecretAsync(_options.CurrentValue.Config.VaultName, version.GitPersonalAccessTokenSecretName);
+                }
+
+                _logger.LogInformation(LoggingUtils.ComposeResourceDeletedMessage(typeof(APIVersion).Name, versionName));
+            }
+            catch (Exception e)
+            {
+                // Enable current version secret
+                if (version.AuthenticationType.Equals("Key", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    if (!string.IsNullOrEmpty(version.AuthenticationKeySecretName))
+                    {
+                        await _keyVaultHelper.EnableVersionAsync(currentVersionAuthenticationKey.SecretIdentifier.Identifier, currentVersionAuthenticationKey.Attributes);
+                    }
+                }
+
+                if (!string.IsNullOrEmpty(version.GitPersonalAccessToken))
+                {
+                    await _keyVaultHelper.EnableVersionAsync(currentVersionGitPersonalAccessToken.SecretIdentifier.Identifier, currentVersionGitPersonalAccessToken.Attributes);
+                }
+
+                throw new LunaDbSaveException(e.InnerException.Message, e);
+            }
 
             return version;
         }

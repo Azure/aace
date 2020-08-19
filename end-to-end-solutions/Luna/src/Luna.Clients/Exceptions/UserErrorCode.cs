@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation.
+﻿// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
 ﻿namespace Luna.Clients.Exceptions
@@ -14,6 +14,7 @@
         ArmTemplateNotProvided,
         InvalidParameter,
         Unauthorized,
-        AuthKeyNotProvided
+        AuthKeyNotProvided,
+        PayloadNameInvalid
     }
 }

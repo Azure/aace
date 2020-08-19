@@ -1,10 +1,12 @@
-// Copyright (c) Microsoft Corporation.
+﻿// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
 ﻿using System;
 using System.Collections.Generic;
+using System.IO.Compression;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Luna.Clients.Controller.Auth;
 using Luna.Clients.Exceptions;
@@ -923,6 +925,22 @@ namespace Luna.Clients.Controller
             if (!response.IsSuccessStatusCode)
             {
                 throw new LunaServerException($"Query failed with response {responseContent}");
+            }
+        }
+
+        public static async Task<bool> CheckNameValidity(string resourceName, string resource)
+        {
+            if (resource.Equals("APIVersion", StringComparison.InvariantCultureIgnoreCase))
+            {
+                Regex regex = new Regex(@"[^0-9a-zA-Z-.]");
+                Match match = regex.Match(resourceName);
+                return match.Success;
+            }
+            else
+            {
+                Regex regex = new Regex(@"[^0-9a-zA-Z-]");
+                Match match = regex.Match(resourceName);
+                return match.Success;
             }
         }
     }

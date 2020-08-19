@@ -249,7 +249,7 @@ namespace Luna.Services.Data.Luna.AI
         /// <returns>The subscription.</returns>
         public async Task<APISubscription> DeleteAsync(Guid apiSubscriptionId)
         {
-            _logger.LogInformation(LoggingUtils.ComposeDeleteResourceMessage(typeof(Product).Name, apiSubscriptionId.ToString()));
+            _logger.LogInformation(LoggingUtils.ComposeDeleteResourceMessage(typeof(APISubscription).Name, apiSubscriptionId.ToString()));
 
             // Get the offer that matches the offerName provide
             var apiSubscription = await GetAsync(apiSubscriptionId);
@@ -260,7 +260,7 @@ namespace Luna.Services.Data.Luna.AI
             // Remove the product from the db
             _context.APISubscriptions.Remove(apiSubscription);
             await _context._SaveChangesAsync();
-            _logger.LogInformation(LoggingUtils.ComposeResourceDeletedMessage(typeof(Product).Name, apiSubscriptionId.ToString()));
+            _logger.LogInformation(LoggingUtils.ComposeResourceDeletedMessage(typeof(APISubscription).Name, apiSubscriptionId.ToString()));
 
             return apiSubscription;
         }
@@ -320,7 +320,7 @@ namespace Luna.Services.Data.Luna.AI
             }
             else
             {
-                _logger.LogInformation(LoggingUtils.ComposeResourceExistsOrNotMessage(typeof(Product).Name, apiSubscriptionId.ToString(), true));
+                _logger.LogInformation(LoggingUtils.ComposeResourceExistsOrNotMessage(typeof(APISubscription).Name, apiSubscriptionId.ToString(), true));
                 // count = 1
                 return true;
             }
