@@ -44,6 +44,7 @@ KEY_VAULT_NAME=lunaaidep-keyvault</Environment>
     <Compile Include="Agent\Code\__init__.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Agent\Data\Publisher.py" />
     <Compile Include="Agent\Data\AlchemyEncoder.py">
       <SubType>Code</SubType>
     </Compile>

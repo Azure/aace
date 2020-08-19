@@ -19,6 +19,7 @@ from azure.keyvault.secrets import SecretClient
 from azure.identity import DefaultAzureCredential
 from Agent.Data.AMLWorkspace import AMLWorkspace
 from Agent.Data.AgentUser import AgentUser
+from Agent.Data.Publisher import Publisher
 import json
 
 
@@ -220,6 +221,36 @@ def removeAdmin(userId):
     if not AgentUser.GetAdmin(userId):
         return "The admin with user id {userId} doesn't exist.".format(userId = userId), 404
     AgentUser.DeleteAdmin(userId)
+    return jsonify({}), 204
+
+@app.route('/api/management/publishers', methods=['GET'])
+def listAllPublishers():
+    publishers = Publisher.ListAll()
+    return jsonify(publishers), 200
+
+@app.route('/api/management/publishers/<publisherId>', methods=['GET'])
+def getPublisher(publisherId):
+    publisher = Publisher.Get(publisherId)
+    if not publisher:
+        return "The publisher with id {publisherId} doesn't exist.".format(publisherId = publisherId), 404
+    return jsonify(publisher), 200
+
+@app.route('/api/management/publishers/<publisherId>', methods=['PUT'])
+def addPublisher(publisherId):
+    if Publisher.Get(publisherId):
+        return "The publisher with id {publisherId} already exists.".format(publisherId = publisherId), 409
+    publisher = Publisher(**request.json)
+
+    if publisherId != publisher.PublisherId:
+        return "The id in request body doesn't match the publisher id in request url.", 400
+    Publisher.Create(publisher)
+    return jsonify(request.json), 202
+
+@app.route('/api/management/publishers/<publisherId>', methods=['DELETE'])
+def removePublisher(publisherId):
+    if not Publisher.Get(publisherId):
+        return "The publisher with id {publisherId} doesn't exist.".format(publisherId = publisherId), 404
+    Publisher.Delete(publisherId)
     return jsonify({}), 204
 
 @app.route('/api/management/amlworkspaces', methods=['GET'])
