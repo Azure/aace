@@ -4,7 +4,8 @@ import requests
 import zipfile
 import shutil
 
-from Agent import controlPlane
+from Agent.Mgmt.ControlPlane import ControlPlane
+from Agent import app
 
 class CodeUtils(object):
     """The class provides Git utilitiy functions"""
@@ -22,10 +23,9 @@ class CodeUtils(object):
     @staticmethod
     def downloadAndUnzipToLocal(subscriptionId, apiVersion, codeDir):
         
-        if not os.path.exists(codeDir):
-            os.makedirs(codeDir)
         zipFileName = os.path.join(codeDir, 'code.zip')
-
+        
+        controlPlane = ControlPlane(app.config['CONTROL_PLANE_URL'], app.config['AGENT_ID'], app.config['AGENT_KEY'])
         url = controlPlane.GetProjectFileUrl(subscriptionId, apiVersion)
         response = requests.get(url, allow_redirects=True)
 

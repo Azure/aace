@@ -29,7 +29,7 @@ class MLflowLunaUtils(BaseLunaUtils):
                         'deploymentName': self._args.deploymentName, 
                         'apiVersion':self._args.apiVersion,
                         'subscriptionId':self._args.subscriptionId, 
-                        'modelId': self._args.modelId}
+                        'modelId': self._args.operationId}
             mlflow.set_tags(tags)
             mlflow.pyfunc.log_model(artifact_path=model_path, 
             python_model=luna_python_model, 
@@ -38,7 +38,7 @@ class MLflowLunaUtils(BaseLunaUtils):
             model_uri = "runs:/{run_id}/{artifact_path}".format(run_id=mlFlowRun.info.run_id, artifact_path=model_path)
             mlflow.register_model(
                 model_uri,
-                self._args.modelId
+                self._args.operationId
             )
 
     def DeployModel(self):
@@ -46,7 +46,7 @@ class MLflowLunaUtils(BaseLunaUtils):
         
     def DownloadModel(self, model_path=""):
         currentRun = mlflow.active_run()
-        filter_string = 'tags."modelId" = "{model_id}"'.format(model_id = self._args.modelId)
+        filter_string = 'tags."modelId" = "{model_id}"'.format(model_id = self._args.predecessorOperationId)
         client = MlflowClient(tracking_uri='databricks')
         runs = client.search_runs(experiment_ids=currentRun.info.experiment_id, filter_string=filter_string)
         

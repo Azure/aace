@@ -1,5 +1,6 @@
 from luna.logging.baseLunaLogger import BaseLunaLogger
 from azureml.core import Workspace, Run, Experiment
+import os
 
 class AzureMLLunaLogger(BaseLunaLogger):
     
@@ -14,4 +15,7 @@ class AzureMLLunaLogger(BaseLunaLogger):
 
     def upload_artifacts(self, local_path, upload_path):
         run = Run.get_context(allow_offline=False)
-        run.upload_file(upload_path, local_path)
+        if os.path.isdir(local_path):
+            run.upload_folder(upload_path, local_path)
+        elif os.path.isfile(local_path):
+            run.upload_file(upload_path, local_path)

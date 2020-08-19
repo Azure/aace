@@ -1,5 +1,5 @@
 from sqlalchemy import Column, Integer, String
-from Agent import Base
+from Agent import Base, Session
 
 class APIVersion(Base):
     """description of class"""
@@ -34,3 +34,8 @@ class APIVersion(Base):
 
     AMLWorkspaceId = Column(Integer)
 
+    @staticmethod
+    def Get(productName, deploymentName, versionName):
+        session = Session()
+        version = session.query(APIVersion).filter_by(ProductName = productName, DeploymentName = deploymentName, VersionName = versionName).first()
+        return version

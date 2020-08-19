@@ -10,7 +10,7 @@ README = (HERE / "README.md").read_text()
 # This call to setup() does all the work
 setup(
     name="luna-publish-utils",
-    version="0.3.11",
+    version="0.4.8",
     description="Publishing utilities for project Luna",
     long_description=README,
     long_description_content_type="text/markdown",

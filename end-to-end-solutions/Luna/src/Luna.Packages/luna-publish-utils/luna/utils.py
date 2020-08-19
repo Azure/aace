@@ -33,7 +33,7 @@ def RegisterModel(model_path, description, args):
         ws = experiment.workspace
 
         Model.register(model_path = model_path,
-                       model_name = args.modelId,
+                       model_name = args.operationId,
                        description = description,
                        workspace = ws,
                        tags={'userId': args.userId, 
@@ -51,7 +51,7 @@ def RegisterModel(model_path, description, args):
             print(model_uri)
             result = mlflow.register_model(
                 model_uri,
-                args.modelId
+                args.operationId
             )
             print(result)
 
@@ -62,6 +62,9 @@ def DownloadModel(model_id, model_path):
         ws = experiment.workspace
         model = Model(ws, model_id)
         model.download(target_dir = model_path, exist_ok=True)
+
+def DownloadOutputFromPredecessorOperation(predecessor_op_id, folder_path):
+    return
 
 def GetModelPath():
     # get model path if the model is deployed using AML
@@ -128,8 +131,8 @@ def DeployModel():
     args, userInput = ParseArguments("deployment")
 
     dns_name_label = userInput["dns_name_label"]
-    model_id = args.modelId
-    endpoint_id = args.endpointId
+    model_id = args.predecessorOperationId
+    endpoint_id = args.operationId
 
     print(dns_name_label)
 
@@ -201,3 +204,34 @@ def GetPipelineArguments(mlproject_file_path, run_type, parameters):
                 pipelineParam = PipelineParameter(name=param, default_value=documents['entry_points'][run_type]['parameters'][param]['default'])
             arguments.append(pipelineParam)
         return arguments
+
+def GetOperationNameByVerb(operationVerb):
+    
+    luna_config = Init()
+    with open(luna_config['MLproject']) as file:
+        documents = yaml.full_load(file)
+        for operation in documents['entry_points']:
+            if documents['entry_points'][operation]['verb'] == operationVerb:
+                return operation
+
+    return None
+
+
+def GetOperationNameByNoun(operationNoun):
+    
+    luna_config = Init()
+    with open(luna_config['MLproject']) as file:
+        documents = yaml.full_load(file)
+        for operation in documents['entry_points']:
+            if documents['entry_points'][operation]['noun'] == operationNoun:
+                return operation
+
+    return None
+
+
+def GetOutputType(operationName):
+    
+    luna_config = Init()
+    with open(luna_config['MLproject']) as file:
+        documents = yaml.full_load(file)
+        return documents['entry_points'][operationName]['output']

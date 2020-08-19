@@ -10,8 +10,7 @@ Declare @sqlstmt nvarchar(512)
 
 SET @password = $(password)
 SET @username = $(username)
-print @username
-print @password
+SET @publisherId = $(publisherId)
 
 IF NOT EXISTS (SELECT * FROM sys.sysusers WHERE name = @username)
 BEGIN
@@ -32,6 +31,12 @@ GO
 IF EXISTS (select * from sys.views tb join sys.schemas sch on tb.schema_id = sch.schema_id where tb.name = 'agent_apiversions' AND sch.name = 'dbo')
 BEGIN
 DROP VIEW [dbo].[agent_apiversions]
+END
+GO
+
+IF EXISTS (select * from sys.views tb join sys.schemas sch on tb.schema_id = sch.schema_id where tb.name = 'agent_amlworkspaces' AND sch.name = 'dbo')
+BEGIN
+DROP VIEW [dbo].[agent_amlworkspaces]
 END
 GO
 
@@ -197,6 +202,12 @@ GO
 IF EXISTS (select * from sys.tables tb join sys.schemas sch on tb.schema_id = sch.schema_id where tb.name = 'AIAgents' AND sch.name = 'dbo')
 BEGIN
 DROP TABLE [dbo].[AIAgents]
+END
+GO
+
+IF EXISTS (select * from sys.tables tb join sys.schemas sch on tb.schema_id = sch.schema_id where tb.name = 'Publishers' AND sch.name = 'dbo')
+BEGIN
+DROP TABLE [dbo].[Publishers]
 END
 GO
 
@@ -598,6 +609,15 @@ CREATE TABLE [dbo].[AIAgents](
 )
 GO
 
+CREATE TABLE [dbo].[Publishers](
+	[PublisherId] [uniqueidentifier] NOT NULL,
+	PRIMARY KEY (PublisherId)
+)
+GO
+
+INSERT INTO [dbo].[Publishers] VALUES(@publisherId)
+GO
+
 -- Create Views
 
 CREATE VIEW [dbo].[agent_apiversions]
@@ -614,9 +634,15 @@ GO
 CREATE VIEW [dbo].[agent_subscriptions]
 AS
 SELECT dbo.APISubscriptions.Id, dbo.APISubscriptions.SubscriptionId, dbo.Deployments.DeploymentName, dbo.Products.ProductName, dbo.Products.ProductType, dbo.APISubscriptions.userId, dbo.APISubscriptions.SubscriptionName, dbo.APISubscriptions.Status, dbo.Products.HostType, dbo.APISubscriptions.CreatedTime, dbo.APISubscriptions.BaseUrl, dbo.APISubscriptions.PrimaryKey, dbo.APISubscriptions.SecondaryKey, 
-          dbo.APISubscriptions.AgentId, dbo.Publishers.PublisherId
+          dbo.APISubscriptions.AgentId, dbo.Publishers.PublisherId, 0 AS AMLWorkspaceId, '' AS AMLWorkspaceComputeClusterName, '' AS AMLWorkspaceDeploymentTargetType, '' AS AMLWorkspaceDeploymentClusterName
 FROM   dbo.APISubscriptions INNER JOIN
           dbo.Deployments ON dbo.APISubscriptions.DeploymentId = dbo.Deployments.Id INNER JOIN
           dbo.Products ON dbo.Deployments.ProductId = dbo.Products.Id CROSS JOIN
           dbo.Publishers
+GO
+
+CREATE VIEW [dbo].[agent_amlworkspaces]
+AS
+SELECT Id, WorkspaceName, ResourceId, AADApplicationId, AADTenantId, AADApplicationSecretName, Region, '' AS AADApplicationSecret
+FROM   dbo.AMLWorkspaces
 GO

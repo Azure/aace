@@ -32,7 +32,7 @@ class AzureMLLunaUtils(BaseLunaUtils):
         ws = self.GetAMLWorkspace()
 
         Model.register(model_path = model_path,
-                       model_name = self._args.modelId,
+                       model_name = self._args.operationId,
                        description = description,
                        workspace = ws,
                        tags={'userId': self._args.userId, 
@@ -40,15 +40,17 @@ class AzureMLLunaUtils(BaseLunaUtils):
                         'deploymentName': self._args.deploymentName, 
                         'apiVersion':self._args.apiVersion,
                         'subscriptionId':self._args.subscriptionId,
-                        'modelId': self._args.modelId})
+                        'modelId': self._args.operationId})
 
-    def GetDeploymentConfig(self, tags):
-        with open(self._luna_config['azureml']['workspace_config']) as file:
-            documents = yaml.full_load(file)
-            deployment_target = documents['deployment_target']
-            if deployment_target == 'aks':
-                aks_cluster = documents['aks_cluster']
+    def GetDeploymentConfig(self, tags, deployment_target=None, aks_cluster=None):
 
+        # Read default deployment target and aks cluster info from the config files
+        if not deployment_target:
+            with open(self._luna_config['azureml']['workspace_config']) as file:
+                documents = yaml.full_load(file)
+                deployment_target = documents['deployment_target']
+                if deployment_target == 'aks':
+                    aks_cluster = documents['aks_cluster']
 
         with open(self._luna_config['deploy_config']) as file:
             documents = yaml.full_load(file)
@@ -69,14 +71,8 @@ class AzureMLLunaUtils(BaseLunaUtils):
     def DeployModel(self):
         
         ws = self.GetAMLWorkspace()
-        model = Model(ws, self._args.modelId)
-
-        print(model)
-
+        model = Model(ws, self._args.predecessorOperationId)
         myenv = Environment.from_conda_specification('scoring', self.luna_config['conda_env'])
-
-        print(self.luna_config['code']['score'])
-        print(os.getcwd())
 
         inference_config = InferenceConfig(entry_script=self.luna_config['code']['score'], source_directory = os.getcwd(), environment=myenv)
 
@@ -86,14 +82,14 @@ class AzureMLLunaUtils(BaseLunaUtils):
                 'deploymentName': self._args.deploymentName, 
                 'apiVersion':self._args.apiVersion,
                 'subscriptionId':self._args.subscriptionId,
-                'modelId': self._args.modelId})
+                'modelId': self._args.predecessorOperationId})
         
-        service = Model.deploy(ws, self._args.endpointId, [model], inference_config, deployment_config)
+        service = Model.deploy(ws, self._args.predecessorOperationId, [model], inference_config, deployment_config)
         service.wait_for_deployment(show_output = True)
 
     def DownloadModel(self, model_path=""):
         ws = self.GetAMLWorkspace()
-        model = Model(ws, self._args.modelId)
+        model = Model(ws, self._args.predecessorOperationId)
         full_model_path = os.path.join(os.getcwd(), model_path, "models/artifacts")
         
         os.makedirs(full_model_path, exist_ok=True)

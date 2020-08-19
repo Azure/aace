@@ -3,7 +3,6 @@ The flask application package.
 """
 
 from flask import Flask
-from Agent.Mgmt.ControlPlane import ControlPlane
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import create_engine
 import urllib
@@ -11,10 +10,12 @@ from sqlalchemy.orm import sessionmaker
 from azure.keyvault.secrets import SecretClient
 from azure.identity import DefaultAzureCredential
 from azure.storage.blob import BlobServiceClient
+from Agent.Data.AlchemyEncoder import AlchemyEncoder
 
 
 app = Flask(__name__)
 app.config.from_object('config')
+app.json_encoder = AlchemyEncoder
 
 Base = declarative_base()
 
@@ -27,8 +28,7 @@ params = urllib.parse.quote_plus(odbc_connection_string.value)
 
 engine = create_engine("mssql+pyodbc:///?odbc_connect=%s" % params)
 
-Session = sessionmaker(bind=engine)
+Session = sessionmaker(bind=engine, autoflush=False)
 
-controlPlane = ControlPlane(app.config['CONTROL_PLANE_URL'], app.config['AGENT_ID'], app.config['AGENT_KEY'])
 
 import Agent.views

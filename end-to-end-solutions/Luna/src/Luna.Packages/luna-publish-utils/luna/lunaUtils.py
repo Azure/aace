@@ -14,15 +14,11 @@ MLFLOW_MODEL_PATH = "MLFLOW_MODELS"
 class LunaUtils(object):
     
     @staticmethod
-    def Create(luna_config_file='luna_config.yml', run_mode='default', run_type='default', parameters={}):
+    def Create(luna_config_file='luna_config.yml', run_mode='default', parameters={}):
         with open(luna_config_file) as file:
             luna_config = yaml.full_load(file)
         
-        if run_type != 'default':
-            args, userInput = LunaUtils.ParseArgument(run_type)
-        else:
-            args = parameters
-            userInput = {}
+        args, userInput = LunaUtils.ParseArgument()
         
         if run_mode == 'default':
             run_mode = luna_config['run_mode']
@@ -38,29 +34,19 @@ class LunaUtils(object):
         return utils
 
     @staticmethod
-    def ParseArgument(run_type):
+    def ParseArgument():
         
-        parser = argparse.ArgumentParser(run_type)
+        parser = argparse.ArgumentParser("lunaOperation")
 
         parser.add_argument("--runMode", type=str, help="run mode")
         parser.add_argument("--userInput", type=str, help="input data")
-        parser.add_argument("--modelId", type=str, help="model key")
-
-        if run_type == 'inference' or run_type == 'batchinference':
-            parser.add_argument("--operationId", type=str, help="run id")
-        elif run_type == 'training' or run_type == 'train':
-            parser.add_argument("--userId", type=str, help="user id")
-            parser.add_argument("--productName", type=str, help="product name")
-            parser.add_argument("--deploymentName", type=str, help="deployment name")
-            parser.add_argument("--apiVersion", type=str, help="api version")
-            parser.add_argument("--subscriptionId", type=str, help="subscription id")
-        elif run_type == 'deployment' or run_type == 'deploy':
-            parser.add_argument("--userId", type=str, help="user id")
-            parser.add_argument("--productName", type=str, help="product name")
-            parser.add_argument("--deploymentName", type=str, help="deployment name")
-            parser.add_argument("--apiVersion", type=str, help="api version")
-            parser.add_argument("--subscriptionId", type=str, help="subscription id")
-            parser.add_argument("--endpointId", type=str, help="endpoint id")
+        parser.add_argument("--userId", type=str, help="user id")
+        parser.add_argument("--operationId", type=str, help="predecessor id")
+        parser.add_argument("--predecessorOperationId", type=str, help="predecessor operation id")
+        parser.add_argument("--productName", type=str, help="product name")
+        parser.add_argument("--deploymentName", type=str, help="deployment name")
+        parser.add_argument("--apiVersion", type=str, help="api version")
+        parser.add_argument("--subscriptionId", type=str, help="subscription id")
 
         args = parser.parse_args()
         userInput = json.loads(args.userInput)
