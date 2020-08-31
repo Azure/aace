@@ -34,9 +34,9 @@ namespace Luna.Data.Entities
             this.TrainModelAPI = version.TrainModelAPI;
             this.DeployModelAPI = version.DeployModelAPI;
             this.AuthenticationType = version.AuthenticationType;
-            this.AuthenticationKey = version.AuthenticationKey;
+            this.AuthenticationKeySecretName = version.AuthenticationKeySecretName;
             this.VersionSourceType = version.VersionSourceType;
-            this.GitPersonalAccessToken = version.GitPersonalAccessToken;
+            this.GitPersonalAccessTokenSecretName = version.GitPersonalAccessTokenSecretName;
             this.GitUrl = version.GitUrl;
             this.GitVersion = version.GitVersion;
         }
@@ -47,9 +47,9 @@ namespace Luna.Data.Entities
         }
 
         [Key]
-        [System.Text.Json.Serialization.JsonIgnore]
+        [JsonIgnore]
         public long Id { get; set; }
-        [System.Text.Json.Serialization.JsonIgnore]
+        [JsonIgnore]
         public long DeploymentId { get; set; }
         [NotMapped]
         public string ProductName { get; set; }
@@ -80,7 +80,7 @@ namespace Luna.Data.Entities
         [JsonIgnore]
         public string AuthenticationKeySecretName { get; set; }
 
-        [System.Text.Json.Serialization.JsonIgnore]
+        [JsonIgnore]
         public long AMLWorkspaceId { get; set; }
 
         [NotMapped]

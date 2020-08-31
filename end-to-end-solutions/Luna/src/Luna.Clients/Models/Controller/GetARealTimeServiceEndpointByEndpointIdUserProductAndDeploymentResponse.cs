@@ -7,7 +7,7 @@ using System.Text;
 
 namespace Luna.Clients.Models.Controller
 {
-    public class GetARealTimeServiceEndpointByEndpointIdUserProductAndDeploymentResponse
+    public class GetRealTimeServiceEndpointByEndpointIdUserProductAndDeploymentResponse
     {
         public string endpointId { get; set; }
         public string startTimeUtc { get; set; }

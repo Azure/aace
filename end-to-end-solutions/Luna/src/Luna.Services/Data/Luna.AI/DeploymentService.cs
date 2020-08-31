@@ -1,10 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-﻿using Luna.Clients.Azure;
 using Luna.Clients.Azure.APIM;
 using Luna.Clients.Exceptions;
 using Luna.Clients.Logging;
+using Luna.Clients.Controller;
 using Luna.Data.Entities;
 using Luna.Data.Repository;
 using Luna.Services.Utilities.ExpressionEvaluation;
@@ -113,6 +113,13 @@ namespace Luna.Services.Data.Luna.AI
             {
                 throw new LunaBadRequestUserException(LoggingUtils.ComposePayloadNotProvidedErrorMessage(typeof(Deployment).Name),
                     UserErrorCode.PayloadNotProvided);
+            }
+
+            // Check if DeploymentName is valid
+            if (await ControllerHelper.CheckNameValidity(deployment.DeploymentName, nameof(Deployment)))
+            {
+                throw new LunaBadRequestUserException(LoggingUtils.ComposeNameInvalidErrorMessage(nameof(Deployment), deployment.DeploymentName),
+                    UserErrorCode.PayloadNameInvalid);
             }
 
             // Check that the deployment does not already have an DeploymentName with the same productName

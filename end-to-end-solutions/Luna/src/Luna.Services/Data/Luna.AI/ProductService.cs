@@ -4,6 +4,7 @@
 ﻿using Luna.Clients.Azure.APIM;
 using Luna.Clients.Exceptions;
 using Luna.Clients.Logging;
+using Luna.Clients.Controller;
 using Luna.Data.Entities;
 using Luna.Data.Enums;
 using Luna.Data.Repository;
@@ -72,6 +73,13 @@ namespace Luna.Services.Data.Luna.AI
                     UserErrorCode.PayloadNotProvided);
             }
 
+            // Check if ProductName is valid
+            if (await ControllerHelper.CheckNameValidity(product.ProductName, nameof(Product)))
+            {
+                throw new LunaBadRequestUserException(LoggingUtils.ComposeNameInvalidErrorMessage(nameof(Product), product.ProductName),
+                    UserErrorCode.PayloadNameInvalid);
+            }
+
             // Check that an offer with the same name does not already exist
             if (await ExistsAsync(product.ProductName))
             {
@@ -91,7 +99,7 @@ namespace Luna.Services.Data.Luna.AI
             // Add product to db
             _context.Products.Add(product);
             await _context._SaveChangesAsync();
-            _logger.LogInformation(LoggingUtils.ComposeResourceCreatedMessage(typeof(Offer).Name, product.ProductName));
+            _logger.LogInformation(LoggingUtils.ComposeResourceCreatedMessage(typeof(Product).Name, product.ProductName));
 
             return product;
         }

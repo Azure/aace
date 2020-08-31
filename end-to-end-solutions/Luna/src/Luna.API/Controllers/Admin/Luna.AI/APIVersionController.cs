@@ -101,14 +101,14 @@ namespace Luna.API.Controllers.Admin
 
             if(await _apiVersionService.ExistsAsync(productName, deploymentName, versionName))
             {
-                _logger.LogInformation($"Update apiVersion {versionName} in deployment {deploymentName} in product {productName} with payload {JsonSerializer.Serialize(apiVersion)}.");
+                _logger.LogInformation($"Update apiVersion {versionName} in deployment {deploymentName} in product {productName}.");
                 apiVersion = await _apiVersionService.UpdateAsync(productName, deploymentName, versionName, apiVersion);
                 return Ok(apiVersion);
             }
             else
             {
-                _logger.LogInformation($"Create apiVersion {versionName} in deployment {deploymentName} in product {productName} with payload {JsonSerializer.Serialize(apiVersion)}.");
-                await _apiVersionService.CreateAsync(productName, deploymentName, apiVersion);
+                _logger.LogInformation($"Create apiVersion {versionName} in deployment {deploymentName} in product {productName}.");
+                apiVersion = await _apiVersionService.CreateAsync(productName, deploymentName, apiVersion);
                 return CreatedAtRoute(nameof(GetAsync) + nameof(APIVersion), new { productName = productName, deploymentName = deploymentName, versionName = versionName }, apiVersion);
             }
 

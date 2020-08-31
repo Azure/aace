@@ -1,10 +1,12 @@
-// Copyright (c) Microsoft Corporation.
+﻿// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
 ﻿using System;
 using System.Collections.Generic;
+using System.IO.Compression;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Luna.Clients.Controller.Auth;
 using Luna.Clients.Exceptions;
@@ -145,7 +147,7 @@ namespace Luna.Clients.Controller
             return new BatchInferenceResponse { operationId = batchInferenceId };
         }
 
-        public static async Task<Models.Controller.GetABatchInferenceOperationResponse> GetABatchInferenceOperationWithDefaultModel(Product product, Deployment deployment, APIVersion version, AMLWorkspace workspace, APISubscription apiSubscription, Guid operationId)
+        public static async Task<Models.Controller.GetBatchInferenceOperationResponse> GetBatchInferenceOperationWithDefaultModel(Product product, Deployment deployment, APIVersion version, AMLWorkspace workspace, APISubscription apiSubscription, Guid operationId)
         {
             var region = await GetRegion(workspace);
 
@@ -156,7 +158,7 @@ namespace Luna.Clients.Controller
             var token = await ControllerAuthHelper.GetToken(workspace.AADTenantId.ToString(), workspace.AADApplicationId.ToString(), workspace.AADApplicationSecrets);
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-            var getABatchInferenceOperationRequest = new Models.Controller.Backend.GetABatchInferenceOperationRequest();
+            var getABatchInferenceOperationRequest = new Models.Controller.Backend.GetBatchInferenceOperationRequest();
             getABatchInferenceOperationRequest.filter = $"runType eq azureml.PipelineRun and tags/operationType eq inference and tags/userId eq {apiSubscription.UserId} and tags/subscriptionId eq {apiSubscription.SubscriptionId} and tags/operationId eq {operationId.ToString("N")}";
 
             request.Content = new StringContent(JsonConvert.SerializeObject(getABatchInferenceOperationRequest));
@@ -176,14 +178,14 @@ namespace Luna.Clients.Controller
                 throw new LunaServerException($"Query failed with response {responseContent}");
             }
 
-            List<Models.Controller.Backend.GetABatchInferenceOperationResponse> operations = (List<Models.Controller.Backend.GetABatchInferenceOperationResponse>)System.Text.Json.JsonSerializer.Deserialize(result["value"].ToString(), typeof(List<Models.Controller.Backend.GetABatchInferenceOperationResponse>));
+            List<Models.Controller.Backend.GetBatchInferenceOperationResponse> operations = (List<Models.Controller.Backend.GetBatchInferenceOperationResponse>)System.Text.Json.JsonSerializer.Deserialize(result["value"].ToString(), typeof(List<Models.Controller.Backend.GetBatchInferenceOperationResponse>));
             if (operations == null || operations.Count == 0)
             {
                 throw new LunaServerException($"Query result in bad format. The response is {responseContent}.");
             }
 
             var operation = operations[0];
-            Models.Controller.GetABatchInferenceOperationResponse getABatchInferenceOperationResponse = new Models.Controller.GetABatchInferenceOperationResponse() 
+            Models.Controller.GetBatchInferenceOperationResponse getABatchInferenceOperationResponse = new Models.Controller.GetBatchInferenceOperationResponse() 
             {
                 operationId = operation.tags.operationId,
                 status = operation.status,
@@ -340,7 +342,7 @@ namespace Luna.Clients.Controller
             return listAllTrainingOperationsByUserResponse;
         }
 
-        public static async Task<Models.Controller.GetATrainingOperationsByModelIdUserResponse> GetATrainingOperationsByModelIdUser(Product product, Deployment deployment, APIVersion version, AMLWorkspace workspace, APISubscription apiSubscription, Guid modelId)
+        public static async Task<Models.Controller.GetTrainingOperationByModelIdUserResponse> GetTrainingOperationByModelIdUser(Product product, Deployment deployment, APIVersion version, AMLWorkspace workspace, APISubscription apiSubscription, Guid modelId)
         {
             var region = await GetRegion(workspace);
 
@@ -351,7 +353,7 @@ namespace Luna.Clients.Controller
             var token = await ControllerAuthHelper.GetToken(workspace.AADTenantId.ToString(), workspace.AADApplicationId.ToString(), workspace.AADApplicationSecrets);
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-            var getAllTrainingOperationsByModelIdUserRequest = new Models.Controller.Backend.GetATrainingOperationsByModelIdUserRequest();
+            var getAllTrainingOperationsByModelIdUserRequest = new Models.Controller.Backend.GetTrainingOperationByModelIdUserRequest();
             getAllTrainingOperationsByModelIdUserRequest.filter = $"tags/operationType eq training and runType eq azureml.PipelineRun and tags/userId eq {apiSubscription.UserId} and tags/subscriptionId eq {apiSubscription.SubscriptionId} and tags/modelId eq {modelId.ToString("N")}";
 
             request.Content = new StringContent(JsonConvert.SerializeObject(getAllTrainingOperationsByModelIdUserRequest));
@@ -371,13 +373,13 @@ namespace Luna.Clients.Controller
                 throw new LunaServerException($"Query failed with response {responseContent}");
             }
 
-            List<Models.Controller.Backend.GetATrainingOperationsByModelIdUserResponse> operations = (List<Models.Controller.Backend.GetATrainingOperationsByModelIdUserResponse>)System.Text.Json.JsonSerializer.Deserialize(result["value"].ToString(), typeof(List<Models.Controller.Backend.GetATrainingOperationsByModelIdUserResponse>));
+            List<Models.Controller.Backend.GetTrainingOperationByModelIdUserResponse> operations = (List<Models.Controller.Backend.GetTrainingOperationByModelIdUserResponse>)System.Text.Json.JsonSerializer.Deserialize(result["value"].ToString(), typeof(List<Models.Controller.Backend.GetTrainingOperationByModelIdUserResponse>));
             if (operations == null || operations.Count == 0)
             {
                 throw new LunaServerException($"Query result in bad format. The response is {responseContent}.");
             }
 
-            Models.Controller.GetATrainingOperationsByModelIdUserResponse getATrainingOperationsByModelIdUserResponse = new Models.Controller.GetATrainingOperationsByModelIdUserResponse()
+            Models.Controller.GetTrainingOperationByModelIdUserResponse getATrainingOperationsByModelIdUserResponse = new Models.Controller.GetTrainingOperationByModelIdUserResponse()
             {
                 operationType = operations[0].tags.operationType,
                 modelId = operations[0].tags.modelId,
@@ -391,7 +393,7 @@ namespace Luna.Clients.Controller
             return getATrainingOperationsByModelIdUserResponse;
         }
 
-        public static async Task<Models.Controller.GetAModelByModelIdUserProductDeploymentResponse> GetAModelByModelIdUserProductDeployment(Product product, Deployment deployment, APIVersion version, AMLWorkspace workspace, APISubscription apiSubscription, Guid modelId)
+        public static async Task<Models.Controller.GetModelByModelIdUserProductDeploymentResponse> GetModelByModelIdUserProductDeployment(Product product, Deployment deployment, APIVersion version, AMLWorkspace workspace, APISubscription apiSubscription, Guid modelId)
         {
             var region = await GetRegion(workspace);
 
@@ -416,13 +418,13 @@ namespace Luna.Clients.Controller
                 throw new LunaServerException($"Query failed with response {responseContent}");
             }
 
-            List<Models.Controller.Backend.GetAModelByModelIdUserProductDeploymentResponse> models = (List<Models.Controller.Backend.GetAModelByModelIdUserProductDeploymentResponse>)System.Text.Json.JsonSerializer.Deserialize(result["value"].ToString(), typeof(List<Models.Controller.Backend.GetAModelByModelIdUserProductDeploymentResponse>));
+            List<Models.Controller.Backend.GetModelByModelIdUserProductDeploymentResponse> models = (List<Models.Controller.Backend.GetModelByModelIdUserProductDeploymentResponse>)System.Text.Json.JsonSerializer.Deserialize(result["value"].ToString(), typeof(List<Models.Controller.Backend.GetModelByModelIdUserProductDeploymentResponse>));
             if (models == null || models.Count == 0)
             {
                 throw new LunaServerException($"Query result in bad format. The response is {responseContent}.");
             }
 
-            Models.Controller.GetAModelByModelIdUserProductDeploymentResponse getAModelByModelIdUserProductDeploymentResponse = new Models.Controller.GetAModelByModelIdUserProductDeploymentResponse() 
+            Models.Controller.GetModelByModelIdUserProductDeploymentResponse getAModelByModelIdUserProductDeploymentResponse = new Models.Controller.GetModelByModelIdUserProductDeploymentResponse() 
             {
                 modelId = models[0].name,
                 startTimeUtc = models[0].createdTime,
@@ -478,7 +480,7 @@ namespace Luna.Clients.Controller
             return results;
         }
 
-        public static async Task DeleteAModel(AMLWorkspace workspace, Guid modelId)
+        public static async Task DeleteModel(AMLWorkspace workspace, Guid modelId)
         {
             var region = await GetRegion(workspace);
 
@@ -533,7 +535,7 @@ namespace Luna.Clients.Controller
             return new BatchInferenceResponse { operationId = operationId };
         }
 
-        public static async Task<Models.Controller.GetABatchInferenceOperationResponse> GetABatchInferenceOperation(Product product, Deployment deployment, APIVersion version, AMLWorkspace workspace, APISubscription apiSubscription, Guid operationId)
+        public static async Task<Models.Controller.GetBatchInferenceOperationResponse> GetBatchInferenceOperation(Product product, Deployment deployment, APIVersion version, AMLWorkspace workspace, APISubscription apiSubscription, Guid operationId)
         {
             var region = await GetRegion(workspace);
 
@@ -544,7 +546,7 @@ namespace Luna.Clients.Controller
             var token = await ControllerAuthHelper.GetToken(workspace.AADTenantId.ToString(), workspace.AADApplicationId.ToString(), workspace.AADApplicationSecrets);
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-            var getABatchInferenceOperationRequest = new Models.Controller.Backend.GetABatchInferenceOperationRequest();
+            var getABatchInferenceOperationRequest = new Models.Controller.Backend.GetBatchInferenceOperationRequest();
             getABatchInferenceOperationRequest.filter = $"runType eq azureml.PipelineRun and tags/operationType eq inference and tags/userId eq {apiSubscription.UserId} and tags/subscriptionId eq {apiSubscription.SubscriptionId} and tags/operationId eq {operationId.ToString("N")}";
 
             request.Content = new StringContent(JsonConvert.SerializeObject(getABatchInferenceOperationRequest));
@@ -564,13 +566,13 @@ namespace Luna.Clients.Controller
                 throw new LunaServerException($"Query failed with response {responseContent}");
             }
 
-            List<Models.Controller.Backend.GetABatchInferenceOperationResponse> operations = (List<Models.Controller.Backend.GetABatchInferenceOperationResponse>)System.Text.Json.JsonSerializer.Deserialize(result["value"].ToString(), typeof(List<Models.Controller.Backend.GetABatchInferenceOperationResponse>));
+            List<Models.Controller.Backend.GetBatchInferenceOperationResponse> operations = (List<Models.Controller.Backend.GetBatchInferenceOperationResponse>)System.Text.Json.JsonSerializer.Deserialize(result["value"].ToString(), typeof(List<Models.Controller.Backend.GetBatchInferenceOperationResponse>));
             if (operations == null || operations.Count == 0)
             {
                 throw new LunaServerException($"Query result in bad format. The response is {responseContent}.");
             }
 
-            Models.Controller.GetABatchInferenceOperationResponse getABatchInferenceOperationResponse = new Models.Controller.GetABatchInferenceOperationResponse() 
+            Models.Controller.GetBatchInferenceOperationResponse getABatchInferenceOperationResponse = new Models.Controller.GetBatchInferenceOperationResponse() 
             {
                 operationId = operations[0].tags.operationId,
                 operationType = operations[0].tags.operationType,
@@ -679,7 +681,7 @@ namespace Luna.Clients.Controller
             return new Models.Controller.DeployRealTimePredictionEndpointResponse { endpointId = endpointId };
         }
         
-        public static async Task<Models.Controller.GetADeployOperationByEndpointIdUserResponse> GetADeployOperationByEndpointIdUser(Product product, Deployment deployment, APIVersion version, AMLWorkspace workspace, APISubscription apiSubscription, Guid endpointId)
+        public static async Task<Models.Controller.GetDeployOperationByEndpointIdUserResponse> GetDeployOperationByEndpointIdUser(Product product, Deployment deployment, APIVersion version, AMLWorkspace workspace, APISubscription apiSubscription, Guid endpointId)
         {
             var region = await GetRegion(workspace);
 
@@ -690,7 +692,7 @@ namespace Luna.Clients.Controller
             var token = await ControllerAuthHelper.GetToken(workspace.AADTenantId.ToString(), workspace.AADApplicationId.ToString(), workspace.AADApplicationSecrets);
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-            var getAllDeployOperationsByEndpointIdUserRequest = new Models.Controller.Backend.GetADeployOperationByEndpointIdUserRequest();
+            var getAllDeployOperationsByEndpointIdUserRequest = new Models.Controller.Backend.GetDeployOperationByEndpointIdUserRequest();
             getAllDeployOperationsByEndpointIdUserRequest.filter = $"runType eq azureml.PipelineRun and tags/operationType eq deployment and tags/userId eq {apiSubscription.UserId} and tags/subscriptionId eq {apiSubscription.SubscriptionId} and tags/endpointId eq {endpointId.ToString("N")}";
 
             request.Content = new StringContent(JsonConvert.SerializeObject(getAllDeployOperationsByEndpointIdUserRequest));
@@ -710,14 +712,14 @@ namespace Luna.Clients.Controller
                 throw new LunaServerException($"Query failed with response {responseContent}");
             }
 
-            List<Models.Controller.Backend.GetADeployOperationByEndpointIdUserResponse> endpoints = (List<Models.Controller.Backend.GetADeployOperationByEndpointIdUserResponse>)System.Text.Json.JsonSerializer.Deserialize(result["value"].ToString(), typeof(List<Models.Controller.Backend.GetADeployOperationByEndpointIdUserResponse>));
+            List<Models.Controller.Backend.GetDeployOperationByEndpointIdUserResponse> endpoints = (List<Models.Controller.Backend.GetDeployOperationByEndpointIdUserResponse>)System.Text.Json.JsonSerializer.Deserialize(result["value"].ToString(), typeof(List<Models.Controller.Backend.GetDeployOperationByEndpointIdUserResponse>));
             if (endpoints == null || endpoints.Count == 0)
             {
                 throw new LunaServerException($"Query result in bad format. The response is {responseContent}.");
             }
 
             var endpoint = endpoints[0];
-            Models.Controller.GetADeployOperationByEndpointIdUserResponse getAllDeployOperationsByEndpointIdAndVerifyUserResponse = new Models.Controller.GetADeployOperationByEndpointIdUserResponse() 
+            Models.Controller.GetDeployOperationByEndpointIdUserResponse getAllDeployOperationsByEndpointIdAndVerifyUserResponse = new Models.Controller.GetDeployOperationByEndpointIdUserResponse() 
             {
                 operationType = endpoint.tags.operationType,
                 endpointId = endpoint.tags.endpointId,
@@ -860,7 +862,7 @@ namespace Luna.Clients.Controller
             return getAllRealTimeServiceEndpointsByUserProductAndDeploymentResponse;
         }
             
-        public static async Task<Models.Controller.GetARealTimeServiceEndpointByEndpointIdUserProductAndDeploymentResponse> GetARealTimeServiceEndpointByEndpointIdUserProductDeployment(Product product, Deployment deployment, APIVersion version, AMLWorkspace workspace, APISubscription apiSubscription, Guid endpointId)
+        public static async Task<Models.Controller.GetRealTimeServiceEndpointByEndpointIdUserProductAndDeploymentResponse> GetARealTimeServiceEndpointByEndpointIdUserProductDeployment(Product product, Deployment deployment, APIVersion version, AMLWorkspace workspace, APISubscription apiSubscription, Guid endpointId)
         {
             var region = await GetRegion(workspace);
 
@@ -885,7 +887,7 @@ namespace Luna.Clients.Controller
                 throw new LunaServerException($"Query failed with response {responseContent}");
             }
 
-            List<Models.Controller.Backend.GetARealTimeServiceEndpointByEndpointIdUserProductAndDeploymentResponse> endpoints = (List<Models.Controller.Backend.GetARealTimeServiceEndpointByEndpointIdUserProductAndDeploymentResponse>)System.Text.Json.JsonSerializer.Deserialize(result["value"].ToString(), typeof(List<Models.Controller.Backend.GetARealTimeServiceEndpointByEndpointIdUserProductAndDeploymentResponse>));
+            List<Models.Controller.Backend.GetRealTimeServiceEndpointByEndpointIdUserProductAndDeploymentResponse> endpoints = (List<Models.Controller.Backend.GetRealTimeServiceEndpointByEndpointIdUserProductAndDeploymentResponse>)System.Text.Json.JsonSerializer.Deserialize(result["value"].ToString(), typeof(List<Models.Controller.Backend.GetRealTimeServiceEndpointByEndpointIdUserProductAndDeploymentResponse>));
             if (endpoints == null || endpoints.Count == 0)
             {
                 throw new LunaServerException($"Query result in bad format. The response is {responseContent}.");
@@ -893,7 +895,7 @@ namespace Luna.Clients.Controller
 
             var endpoint = endpoints[0];
             var getServiceKeysResponse = await GetServiceKeys(product, deployment, version, workspace, apiSubscription, new Guid(endpoint.name));
-            Models.Controller.GetARealTimeServiceEndpointByEndpointIdUserProductAndDeploymentResponse getARealTimeServiceEndpointByEndpointIdUserProductAndDeploymentResponse = new Models.Controller.GetARealTimeServiceEndpointByEndpointIdUserProductAndDeploymentResponse() 
+            Models.Controller.GetRealTimeServiceEndpointByEndpointIdUserProductAndDeploymentResponse getARealTimeServiceEndpointByEndpointIdUserProductAndDeploymentResponse = new Models.Controller.GetRealTimeServiceEndpointByEndpointIdUserProductAndDeploymentResponse() 
             {
                 endpointId = endpoint.name,
                 startTimeUtc = endpoint.createdTime,
@@ -906,7 +908,7 @@ namespace Luna.Clients.Controller
             return getARealTimeServiceEndpointByEndpointIdUserProductAndDeploymentResponse;
         }
 
-        public static async Task DeleteAEndpoint(AMLWorkspace workspace, Guid endpointId)
+        public static async Task DeleteEndpoint(AMLWorkspace workspace, Guid endpointId)
         {
             var region = await GetRegion(workspace);
 
@@ -923,6 +925,22 @@ namespace Luna.Clients.Controller
             if (!response.IsSuccessStatusCode)
             {
                 throw new LunaServerException($"Query failed with response {responseContent}");
+            }
+        }
+
+        public static async Task<bool> CheckNameValidity(string resourceName, string resource)
+        {
+            if (resource.Equals("APIVersion", StringComparison.InvariantCultureIgnoreCase))
+            {
+                Regex regex = new Regex(@"[^0-9a-zA-Z-.]");
+                Match match = regex.Match(resourceName);
+                return match.Success;
+            }
+            else
+            {
+                Regex regex = new Regex(@"[^0-9a-zA-Z-]");
+                Match match = regex.Match(resourceName);
+                return match.Success;
             }
         }
     }

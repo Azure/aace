@@ -7,7 +7,7 @@ using System.Text;
 
 namespace Luna.Clients.Models.Controller
 {
-    public class GetAModelByModelIdUserProductDeploymentResponse
+    public class GetModelByModelIdUserProductDeploymentResponse
     {
         public string modelId { get; set; }
         public string startTimeUtc { get; set; }

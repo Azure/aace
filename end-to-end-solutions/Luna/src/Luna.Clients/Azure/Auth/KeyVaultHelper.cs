@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation.
+﻿// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
 ﻿using System;
@@ -8,6 +8,7 @@ using Microsoft.Azure.KeyVault.WebKey;
 using Microsoft.Azure.Services.AppAuthentication;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Clients.ActiveDirectory;
+using Microsoft.Azure.KeyVault.Models;
 
 namespace Luna.Clients.Azure.Auth
 {
@@ -106,5 +107,51 @@ namespace Luna.Clients.Azure.Auth
             }            
         }
 
+        public async Task<SecretBundle> GetSecretVersionsAsync(string vaultName, string secretName)
+        {
+            try
+            {
+                _logger.LogInformation("GetSecretVersionsAsync from KeyVault");
+                var secret = await keyVaultClient.GetSecretAsync($"https://{vaultName}.vault.azure.net/", secretName);
+                _logger.LogInformation("GetSecretVersionsAsync operation completed");
+                return secret;
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException(ex.Message);
+            }            
+        }
+
+        public async Task<string> DisableVersionAsync(string secretIdentifier, SecretAttributes secretAttributes)
+        {
+            try
+            {
+                _logger.LogInformation("Disable a specified version secret with secretIdentifier");
+                secretAttributes.Enabled = false;
+                var secretUpdate = await keyVaultClient.UpdateSecretAsync(secretIdentifier, default, secretAttributes);
+                _logger.LogInformation($"Disable the {secretIdentifier} version operation completed");
+                return secretUpdate.Value;
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException(ex.Message);
+            }
+        }
+
+        public async Task<string> EnableVersionAsync(string secretIdentifier, SecretAttributes secretAttributes)
+        {
+            try
+            {
+                _logger.LogInformation("Enable a specified version secret with secretIdentifier");
+                secretAttributes.Enabled = true;
+                var secretUpdate = await keyVaultClient.UpdateSecretAsync(secretIdentifier, default, secretAttributes);
+                _logger.LogInformation($"Enable the {secretIdentifier} version operation completed");
+                return secretUpdate.Value;
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException(ex.Message);
+            }
+        }
     }
 }

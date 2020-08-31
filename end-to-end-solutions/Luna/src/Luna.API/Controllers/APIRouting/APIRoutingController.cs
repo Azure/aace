@@ -105,7 +105,7 @@ namespace Luna.API.Controllers.Admin
 
         [HttpGet("products/{productName}/deployments/{deploymentName}/operations/{operationId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult> GetABatchInferenceOperationWithDefaultModel(string productName, string deploymentName, Guid operationId, [FromQuery(Name = "api-version")] string versionName, [FromBody] BatchInferenceRequest request)
+        public async Task<ActionResult> GetBatchInferenceOperationWithDefaultModel(string productName, string deploymentName, Guid operationId, [FromQuery(Name = "api-version")] string versionName, [FromBody] BatchInferenceRequest request)
         {
             var apiSubcription = await _apiSubscriptionService.GetAsync(request.subscriptionId);
             if (apiSubcription == null)
@@ -122,7 +122,7 @@ namespace Luna.API.Controllers.Admin
             
             
 
-            return Ok(await ControllerHelper.GetABatchInferenceOperationWithDefaultModel(product, deployment, version, workspace, apiSubcription, operationId));
+            return Ok(await ControllerHelper.GetBatchInferenceOperationWithDefaultModel(product, deployment, version, workspace, apiSubcription, operationId));
         }
 
         [HttpGet("products/{productName}/deployments/{deploymentName}/operations")]
@@ -171,7 +171,7 @@ namespace Luna.API.Controllers.Admin
 
         [HttpGet("products/{productName}/deployments/{deploymentName}/subscriptions/{subscriptionId}/operations/training/{modelId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult> GetATrainingOperationsByModelIdUser(string productName, string deploymentName, Guid subscriptionId, Guid modelId, [FromQuery(Name = "userid")] string userId, [FromQuery(Name = "api-version")] string versionName)
+        public async Task<ActionResult> GetTrainingOperationByModelIdUser(string productName, string deploymentName, Guid subscriptionId, Guid modelId, [FromQuery(Name = "userid")] string userId, [FromQuery(Name = "api-version")] string versionName)
         {
             var apiSubcription = await _apiSubscriptionService.GetAsync(subscriptionId);
             if (apiSubcription == null)
@@ -189,7 +189,7 @@ namespace Luna.API.Controllers.Admin
             
             
 
-            return Ok(await ControllerHelper.GetATrainingOperationsByModelIdUser(product, deployment, version, workspace, apiSubcription, modelId));
+            return Ok(await ControllerHelper.GetTrainingOperationByModelIdUser(product, deployment, version, workspace, apiSubcription, modelId));
         }
 
         [HttpGet("products/{productName}/deployments/{deploymentName}/subscriptions/{subscriptionId}/operations/training")]
@@ -216,7 +216,7 @@ namespace Luna.API.Controllers.Admin
 
         [HttpGet("products/{productName}/deployments/{deploymentName}/subscriptions/{subscriptionId}/models/{modelId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult> GetAModelByModelIdUserProductDeployment(string productName, string deploymentName, Guid subscriptionId, Guid modelId, [FromQuery(Name = "userid")] string userId, [FromQuery(Name = "api-version")] string versionName)
+        public async Task<ActionResult> GetModelByModelIdUserProductDeployment(string productName, string deploymentName, Guid subscriptionId, Guid modelId, [FromQuery(Name = "userid")] string userId, [FromQuery(Name = "api-version")] string versionName)
         {
             var apiSubcription = await _apiSubscriptionService.GetAsync(subscriptionId);
             if (apiSubcription == null)
@@ -233,7 +233,7 @@ namespace Luna.API.Controllers.Admin
             
             
 
-            return Ok(await ControllerHelper.GetAModelByModelIdUserProductDeployment(product, deployment, version, workspace, apiSubcription, modelId));
+            return Ok(await ControllerHelper.GetModelByModelIdUserProductDeployment(product, deployment, version, workspace, apiSubcription, modelId));
         }
 
         [HttpGet("products/{productName}/deployments/{deploymentName}/subscriptions/{subscriptionId}/models")]
@@ -260,7 +260,7 @@ namespace Luna.API.Controllers.Admin
 
         [HttpDelete("products/{productName}/deployments/{deploymentName}/subscriptions/{subscriptionId}/models/{modelId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult> DeleteAModel(string productName, string deploymentName, Guid subscriptionId, Guid modelId, [FromQuery(Name = "userid")] string userId, [FromQuery(Name = "api-version")] string versionName)
+        public async Task<ActionResult> DeleteModel(string productName, string deploymentName, Guid subscriptionId, Guid modelId, [FromQuery(Name = "userid")] string userId, [FromQuery(Name = "api-version")] string versionName)
         {
             var apiSubcription = await _apiSubscriptionService.GetAsync(subscriptionId);
             if (apiSubcription == null)
@@ -274,7 +274,7 @@ namespace Luna.API.Controllers.Admin
             var workspace = await _amlWorkspaceService.GetAsync(version.AMLWorkspaceName);
             
             
-            await ControllerHelper.DeleteAModel(workspace, modelId);
+            await ControllerHelper.DeleteModel(workspace, modelId);
 
             return Ok();
         }
@@ -301,7 +301,7 @@ namespace Luna.API.Controllers.Admin
 
         [HttpGet("products/{productName}/deployments/{deploymentName}/subscriptions/{subscriptionId}/operations/inference/{operationId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult> GetABatchInferenceOperation(string productName, string deploymentName, Guid subscriptionId, Guid operationId, [FromQuery(Name = "userid")] string userId, [FromQuery(Name = "api-version")] string versionName)
+        public async Task<ActionResult> GetBatchInferenceOperation(string productName, string deploymentName, Guid subscriptionId, Guid operationId, [FromQuery(Name = "userid")] string userId, [FromQuery(Name = "api-version")] string versionName)
         {
             var apiSubcription = await _apiSubscriptionService.GetAsync(subscriptionId);
             if (apiSubcription == null)
@@ -318,7 +318,7 @@ namespace Luna.API.Controllers.Admin
             
             
 
-            return Ok(await ControllerHelper.GetABatchInferenceOperation(product, deployment, version, workspace, apiSubcription, operationId));
+            return Ok(await ControllerHelper.GetBatchInferenceOperation(product, deployment, version, workspace, apiSubcription, operationId));
         }
 
         [HttpGet("products/{productName}/deployments/{deploymentName}/subscriptions/{subscriptionId}/operations/inference")]
@@ -367,7 +367,7 @@ namespace Luna.API.Controllers.Admin
 
         [HttpGet("products/{productName}/deployments/{deploymentName}/subscriptions/{subscriptionId}/operations/deployment/{endpointId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult> GetADeployOperationByEndpointIdUser(string productName, string deploymentName, Guid subscriptionId, Guid endpointId, [FromQuery(Name = "userid")] string userId, [FromQuery(Name = "api-version")] string versionName)
+        public async Task<ActionResult> GetDeployOperationByEndpointIdUser(string productName, string deploymentName, Guid subscriptionId, Guid endpointId, [FromQuery(Name = "userid")] string userId, [FromQuery(Name = "api-version")] string versionName)
         {
             var apiSubcription = await _apiSubscriptionService.GetAsync(subscriptionId);
             if (apiSubcription == null)
@@ -384,7 +384,7 @@ namespace Luna.API.Controllers.Admin
             
             
 
-            return Ok(await ControllerHelper.GetADeployOperationByEndpointIdUser(product, deployment, version, workspace, apiSubcription, endpointId));
+            return Ok(await ControllerHelper.GetDeployOperationByEndpointIdUser(product, deployment, version, workspace, apiSubcription, endpointId));
         }
 
         [HttpGet("products/{productName}/deployments/{deploymentName}/subscriptions/{subscriptionId}/operations/deployment")]
@@ -433,7 +433,7 @@ namespace Luna.API.Controllers.Admin
 
         [HttpGet("products/{productName}/deployments/{deploymentName}/subscriptions/{subscriptionId}/endpoints/{endpointId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult> GetARealTimeServiceEndpointByEndpointIdUserProductAndDeployment(string productName, string deploymentName, Guid subscriptionId, Guid endpointId, [FromQuery(Name = "userid")] string userId, [FromQuery(Name = "api-version")] string versionName)
+        public async Task<ActionResult> GetRealTimeServiceEndpointByEndpointIdUserProductAndDeployment(string productName, string deploymentName, Guid subscriptionId, Guid endpointId, [FromQuery(Name = "userid")] string userId, [FromQuery(Name = "api-version")] string versionName)
         {
             var apiSubcription = await _apiSubscriptionService.GetAsync(subscriptionId);
             if (apiSubcription == null)
@@ -456,7 +456,7 @@ namespace Luna.API.Controllers.Admin
 
         [HttpDelete("products/{productName}/deployments/{deploymentName}/subscriptions/{subscriptionId}/endpoints/{endpointId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult> DeleteAEndpoint(string productName, string deploymentName, Guid subscriptionId, Guid endpointId, [FromQuery(Name = "userid")] string userId, [FromQuery(Name = "api-version")] string versionName)
+        public async Task<ActionResult> DeleteEndpoint(string productName, string deploymentName, Guid subscriptionId, Guid endpointId, [FromQuery(Name = "userid")] string userId, [FromQuery(Name = "api-version")] string versionName)
         {
             var apiSubcription = await _apiSubscriptionService.GetAsync(subscriptionId);
             if (apiSubcription == null)
@@ -471,7 +471,7 @@ namespace Luna.API.Controllers.Admin
             
             
             
-            await ControllerHelper.DeleteAEndpoint(workspace, endpointId);
+            await ControllerHelper.DeleteEndpoint(workspace, endpointId);
 
             return Ok();
         }

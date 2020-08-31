@@ -28,18 +28,18 @@ namespace Luna.API.Controllers.Admin
     {
         private readonly IDeploymentService _deploymentService;
         private readonly ILogger<RestrictedUserController> _logger;
-        private readonly IAPIVersionService _apiVersionService;
+        private readonly IAPISubscriptionService _apiSubscriptionService;
 
         /// <summary>
         /// Constructor that uses dependency injection.
         /// </summary>
         /// <param name="deploymentService">The service to inject.</param>
         /// <param name="logger">The logger.</param>
-        public DeploymentController(IDeploymentService deploymentService, ILogger<RestrictedUserController> logger, IAPIVersionService apiVersionService)
+        public DeploymentController(IDeploymentService deploymentService, ILogger<RestrictedUserController> logger, IAPISubscriptionService apiSubscriptionService)
         {
             _deploymentService = deploymentService ?? throw new ArgumentNullException(nameof(deploymentService));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _apiVersionService = apiVersionService ?? throw new ArgumentNullException(nameof(apiVersionService));
+            _apiSubscriptionService = apiSubscriptionService ?? throw new ArgumentNullException(nameof(apiSubscriptionService));
         }
 
         /// <summary>
@@ -122,11 +122,17 @@ namespace Luna.API.Controllers.Admin
             AADAuthHelper.VerifyUserAccess(this.HttpContext, _logger, true);
             _logger.LogInformation($"Delete deployment {deploymentName} from product {productName}.");
 
-            // check if there exist apiversions
-            var apiVersions = await _apiVersionService.GetAllAsync(productName, deploymentName);
-            if (apiVersions.Count != 0)
+            // check if there exist api subscriptions
+            var apiSubscriptions = await _apiSubscriptionService.GetAllAsync();
+            if (apiSubscriptions.Count != 0)
             {
-                throw new LunaConflictUserException($"Unable to delete {deploymentName} with subscription");
+                foreach (var apiSubscription in apiSubscriptions)
+                {
+                    if (apiSubscription.ProductName.Equals(productName, StringComparison.InvariantCultureIgnoreCase) && apiSubscription.DeploymentName.Equals(deploymentName, StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        throw new LunaConflictUserException($"Unable to delete {deploymentName} with subscription");
+                    }
+                }               
             }
 
             await _deploymentService.DeleteAsync(productName, deploymentName);

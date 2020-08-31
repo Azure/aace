@@ -13,23 +13,23 @@ namespace Luna.Clients.Models.Azure
         RealTimePrediction,
         // BI
         BatchInferenceWithDefaultModel,
-        GetABatchInferenceOperationWithDefaultModel,
+        GetBatchInferenceOperationWithDefaultModel,
         ListAllInferenceOperationsByUserWithDefaultModel,
         // TYOM
         TrainModel,
         ListAllTrainingOperationsByUser,
-        GetATrainingOperationsByModelIdUser,
-        GetAModelByModelIdUserProductDeployment,
+        GetTrainingOperationByModelIdUser,
+        GetModelByModelIdUserProductDeployment,
         GetAllModelsByUserProductDeployment,
-        DeleteAModel,
+        DeleteModel,
         BatchInference,
-        GetABatchInferenceOperation,
+        GetBatchInferenceOperation,
         ListAllInferenceOperationsByUser,
         DeployRealTimePredictionEndpoint,
-        GetADeployOperationByEndpointIdUser,
+        GetDeployOperationByEndpointIdUser,
         ListAllDeployOperationsByUser,
         GetAllRealTimeServiceEndpointsByUserProductDeployment,
         GetARealTimeServiceEndpointByEndpointIdUserProductDeployment,
-        DeleteAEndpoint
+        DeleteEndpoint
     }
 }

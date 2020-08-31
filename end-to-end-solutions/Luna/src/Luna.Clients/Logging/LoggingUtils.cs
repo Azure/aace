@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation.
+﻿// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
 ﻿using System;
@@ -515,6 +515,11 @@ namespace Luna.Clients.Logging
             }
 
             return message.ToString().Trim();
+        }
+
+        public static string ComposeNameInvalidErrorMessage(string resource, string resourceName)
+        {
+            return $"The name {resourceName} of {resource} is invalid.";
         }
     }
 

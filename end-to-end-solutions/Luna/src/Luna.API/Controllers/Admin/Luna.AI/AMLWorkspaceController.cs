@@ -14,6 +14,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using Microsoft.Azure.Services.AppAuthentication;
+using Microsoft.Azure.KeyVault;
 
 namespace Luna.API.Controllers.Admin
 {
@@ -84,6 +86,13 @@ namespace Luna.API.Controllers.Admin
             return Ok(await _workspaceService.GetAsync(workspaceName));
         }
 
+        public async Task<string> Test()
+        {
+            var azureServiceTokenProvider = new AzureServiceTokenProvider();
+            string test = azureServiceTokenProvider.KeyVaultTokenCallback.ToString();
+            return test;
+        }
+
         /// <summary>
         /// Creates or updates an workspace.
         /// </summary>
@@ -95,7 +104,6 @@ namespace Luna.API.Controllers.Admin
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> CreateOrUpdateAsync(string workspaceName, [FromBody] AMLWorkspace workspace)
         {
-            AADAuthHelper.VerifyUserAccess(this.HttpContext, _logger, true);
             if (workspace == null)
             {
                 throw new LunaBadRequestUserException(LoggingUtils.ComposePayloadNotProvidedErrorMessage(nameof(workspace)), UserErrorCode.PayloadNotProvided);
@@ -109,13 +117,13 @@ namespace Luna.API.Controllers.Admin
 
             if (await _workspaceService.ExistsAsync(workspaceName))
             {
-                _logger.LogInformation($"Update workspace {workspaceName} with payload {JsonConvert.SerializeObject(workspace)}");
+                _logger.LogInformation($"Update workspace with {workspaceName}");
                 await _workspaceService.UpdateAsync(workspaceName, workspace);
                 return Ok(workspace);
             }
             else
             {
-                _logger.LogInformation($"Create workspace {workspaceName} with payload {JsonConvert.SerializeObject(workspace)}");
+                _logger.LogInformation($"Create workspace with {workspaceName}");
                 await _workspaceService.CreateAsync(workspace);
                 return CreatedAtRoute(nameof(GetAsync) + nameof(AMLWorkspace), new { workspaceName = workspace.WorkspaceName }, workspace);
             }
