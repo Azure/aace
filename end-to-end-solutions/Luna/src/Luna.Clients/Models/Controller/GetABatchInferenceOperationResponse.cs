@@ -8,7 +8,7 @@ using System.Text;
 
 namespace Luna.Clients.Models.Controller
 {
-    public class GetABatchInferenceOperationResponse
+    public class GetBatchInferenceOperationResponse
     {
         public string operationType { get; set; }
         public string operationId { get; set; }

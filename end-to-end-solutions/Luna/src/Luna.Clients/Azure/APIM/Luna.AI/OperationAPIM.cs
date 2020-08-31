@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation.
+﻿// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
 ﻿using System;
@@ -73,7 +73,7 @@ namespace Luna.Clients.Azure.APIM
             return operation;
         }
 
-        private Models.Azure.Operation GetABatchInferenceOperationWithDefaultModel()
+        private Models.Azure.Operation GetBatchInferenceOperationWithDefaultModel()
         {
             Models.Azure.Operation operation = new Models.Azure.Operation();
 
@@ -125,7 +125,7 @@ namespace Luna.Clients.Azure.APIM
             return operation;
         }
 
-        private Models.Azure.Operation GetATrainingOperationsByModelIdUser()
+        private Models.Azure.Operation GetTrainingOperationByModelIdUser()
         {
             Models.Azure.Operation operation = new Models.Azure.Operation();
 
@@ -141,7 +141,7 @@ namespace Luna.Clients.Azure.APIM
             return operation;
         }
         
-        private Models.Azure.Operation GetAModelByModelIdUserProductDeployment()
+        private Models.Azure.Operation GetModelByModelIdUserProductDeployment()
         {
             Models.Azure.Operation operation = new Models.Azure.Operation();
 
@@ -169,7 +169,7 @@ namespace Luna.Clients.Azure.APIM
             return operation;
         }
 
-        private Models.Azure.Operation DeleteAModel()
+        private Models.Azure.Operation DeleteModel()
         {
             Models.Azure.Operation operation = new Models.Azure.Operation();
 
@@ -201,7 +201,7 @@ namespace Luna.Clients.Azure.APIM
             return operation;
         }
 
-        private Models.Azure.Operation GetABatchInferenceOperation()
+        private Models.Azure.Operation GetBatchInferenceOperation()
         {
             Models.Azure.Operation operation = new Models.Azure.Operation();
 
@@ -245,7 +245,7 @@ namespace Luna.Clients.Azure.APIM
             return operation;
         }
 
-        private Models.Azure.Operation GetADeployOperationByEndpointIdUser()
+        private Models.Azure.Operation GetDeployOperationByEndpointIdUser()
         {
             Models.Azure.Operation operation = new Models.Azure.Operation();
 
@@ -301,7 +301,7 @@ namespace Luna.Clients.Azure.APIM
             return operation;
         }
         
-        private Models.Azure.Operation DeleteAEndpoint()
+        private Models.Azure.Operation DeleteEndpoint()
         {
             Models.Azure.Operation operation = new Models.Azure.Operation();
 
@@ -344,40 +344,40 @@ namespace Luna.Clients.Azure.APIM
                     return RealTimePrediction();
                 case Models.Azure.OperationTypeEnum.BatchInferenceWithDefaultModel:
                     return BatchInferenceWithDefaultModel();
-                case Models.Azure.OperationTypeEnum.GetABatchInferenceOperationWithDefaultModel:
-                    return GetABatchInferenceOperationWithDefaultModel();
+                case Models.Azure.OperationTypeEnum.GetBatchInferenceOperationWithDefaultModel:
+                    return GetBatchInferenceOperationWithDefaultModel();
                 case Models.Azure.OperationTypeEnum.ListAllInferenceOperationsByUserWithDefaultModel:
                     return ListAllInferenceOperationsByUserWithDefaultModel();
                 case Models.Azure.OperationTypeEnum.TrainModel:
                     return TrainModel();
                 case Models.Azure.OperationTypeEnum.ListAllTrainingOperationsByUser:
                     return ListAllTrainingOperationsByUser();
-                case Models.Azure.OperationTypeEnum.GetATrainingOperationsByModelIdUser:
-                    return GetATrainingOperationsByModelIdUser();
-                case Models.Azure.OperationTypeEnum.GetAModelByModelIdUserProductDeployment:
-                    return GetAModelByModelIdUserProductDeployment();
+                case Models.Azure.OperationTypeEnum.GetTrainingOperationByModelIdUser:
+                    return GetTrainingOperationByModelIdUser();
+                case Models.Azure.OperationTypeEnum.GetModelByModelIdUserProductDeployment:
+                    return GetModelByModelIdUserProductDeployment();
                 case Models.Azure.OperationTypeEnum.GetAllModelsByUserProductDeployment:
                     return GetAllModelsByUserProductDeployment();
-                case Models.Azure.OperationTypeEnum.DeleteAModel:
-                    return DeleteAModel();
+                case Models.Azure.OperationTypeEnum.DeleteModel:
+                    return DeleteModel();
                 case Models.Azure.OperationTypeEnum.BatchInference:
                     return BatchInference();
-                case Models.Azure.OperationTypeEnum.GetABatchInferenceOperation:
-                    return GetABatchInferenceOperation();
+                case Models.Azure.OperationTypeEnum.GetBatchInferenceOperation:
+                    return GetBatchInferenceOperation();
                 case Models.Azure.OperationTypeEnum.ListAllInferenceOperationsByUser:
                     return ListAllInferenceOperationsByUser();
                 case Models.Azure.OperationTypeEnum.DeployRealTimePredictionEndpoint:
                     return DeployRealTimePredictionEndpoint();
-                case Models.Azure.OperationTypeEnum.GetADeployOperationByEndpointIdUser:
-                    return GetADeployOperationByEndpointIdUser();
+                case Models.Azure.OperationTypeEnum.GetDeployOperationByEndpointIdUser:
+                    return GetDeployOperationByEndpointIdUser();
                 case Models.Azure.OperationTypeEnum.ListAllDeployOperationsByUser:
                     return ListAllDeployOperationsByUser();
                 case Models.Azure.OperationTypeEnum.GetAllRealTimeServiceEndpointsByUserProductDeployment:
                     return GetAllRealTimeServiceEndpointsByUserProductDeployment();
                 case Models.Azure.OperationTypeEnum.GetARealTimeServiceEndpointByEndpointIdUserProductDeployment:
                     return GetARealTimeServiceEndpointByEndpointIdUserProductDeployment();
-                case Models.Azure.OperationTypeEnum.DeleteAEndpoint:
-                    return DeleteAEndpoint();
+                case Models.Azure.OperationTypeEnum.DeleteEndpoint:
+                    return DeleteEndpoint();
                 default:
                     throw new LunaServerException($"Invalid operation type. The type is {nameof(operationType)}.");
             }

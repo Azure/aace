@@ -7,7 +7,7 @@ using System.Text;
 
 namespace Luna.Clients.Models.Controller.Backend
 {
-    public class GetADeployOperationByEndpointIdUserResponse
+    public class GetDeployOperationByEndpointIdUserResponse
     {
         public string status { get; set; }
         public string startTimeUtc { get; set; }
@@ -19,7 +19,7 @@ namespace Luna.Clients.Models.Controller.Backend
             public string operationType { get; set; }
             public string endpointId { get; set; }
         }
-        public GetADeployOperationByEndpointIdUserResponse()
+        public GetDeployOperationByEndpointIdUserResponse()
         {
 
         }

@@ -7,7 +7,7 @@ using System.Text;
 
 namespace Luna.Clients.Models.Controller
 {
-    public class GetATrainingOperationsByModelIdUserResponse
+    public class GetTrainingOperationByModelIdUserResponse
     {
         public string operationType { get; set; }
         public string modelId { get; set; }

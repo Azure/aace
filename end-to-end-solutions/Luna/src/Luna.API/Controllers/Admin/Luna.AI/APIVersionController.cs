@@ -108,7 +108,7 @@ namespace Luna.API.Controllers.Admin
             else
             {
                 _logger.LogInformation($"Create apiVersion {versionName} in deployment {deploymentName} in product {productName}.");
-                await _apiVersionService.CreateAsync(productName, deploymentName, apiVersion);
+                apiVersion = await _apiVersionService.CreateAsync(productName, deploymentName, apiVersion);
                 return CreatedAtRoute(nameof(GetAsync) + nameof(APIVersion), new { productName = productName, deploymentName = deploymentName, versionName = versionName }, apiVersion);
             }
 

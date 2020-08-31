@@ -7,7 +7,7 @@ using System.Text;
 
 namespace Luna.Clients.Models.Controller.Backend
 {
-    public class GetABatchInferenceOperationRequest
+    public class GetBatchInferenceOperationRequest
     {
         public string filter { get; set; }
     }

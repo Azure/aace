@@ -7,7 +7,7 @@ using System.Text;
 
 namespace Luna.Clients.Models.Controller.Backend
 {
-    public class GetABatchInferenceOperationResponse
+    public class GetBatchInferenceOperationResponse
     {
         public string status { get; set; }
         public string startTimeUtc { get; set; }
@@ -20,7 +20,7 @@ namespace Luna.Clients.Models.Controller.Backend
             public string operationId { get; set; }
             public string operationType { get; set; }
         }
-        public GetABatchInferenceOperationResponse()
+        public GetBatchInferenceOperationResponse()
         {
             this.tags = new Tags();
         }
