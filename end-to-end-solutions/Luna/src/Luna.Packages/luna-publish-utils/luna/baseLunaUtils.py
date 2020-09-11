@@ -56,3 +56,27 @@ class BaseLunaUtils(object):
         """
         download model
         """
+
+    @abstractmethod
+    def GetJsonOutputFromPredecessorRun(self):
+        """
+        Get JSON output from predecessor run
+        """
+    
+    @abstractmethod
+    def DownloadOutputFilesFromPredecessorRun(self, targetFolder):
+        """
+        Download output files from predecessor run
+        """
+
+    @abstractmethod
+    def WriteJsonOutput(self, content):
+        """
+        Write json output to current run
+        """
+    
+    @abstractmethod
+    def UploadOutputFiles(self, sourceFolder):
+        """
+        Upload files to output of current run
+        """

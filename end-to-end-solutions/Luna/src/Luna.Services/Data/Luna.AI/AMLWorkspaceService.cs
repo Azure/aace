@@ -12,8 +12,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Luna.Clients.Azure.APIM;
 using Luna.Services.Utilities.ExpressionEvaluation;
+using Luna.Clients.Azure;
+using Microsoft.WindowsAzure.Storage.Blob.Protocol;
 
 namespace Luna.Services.Data.Luna.AI
 {
@@ -22,14 +23,14 @@ namespace Luna.Services.Data.Luna.AI
         private readonly ISqlDbContext _context;
         private readonly ILogger<AMLWorkspaceService> _logger;
         private readonly IKeyVaultHelper _keyVaultHelper;
-        private readonly IOptionsMonitor<APIMConfigurationOption> _options;
+        private readonly IOptionsMonitor<AzureConfigurationOption> _options;
 
         /// <summary>
         /// Constructor that uses dependency injection.
         /// </summary>
         /// <param name="sqlDbContext">The context to be injected.</param>
         /// <param name="logger">The logger.</param>
-        public AMLWorkspaceService(IOptionsMonitor<APIMConfigurationOption> options,
+        public AMLWorkspaceService(IOptionsMonitor<AzureConfigurationOption> options,
             ISqlDbContext sqlDbContext, ILogger<AMLWorkspaceService> logger, IKeyVaultHelper keyVaultHelper)
         {
             _options = options ?? throw new ArgumentNullException(nameof(options));
@@ -46,7 +47,7 @@ namespace Luna.Services.Data.Luna.AI
             var workspaces = await _context.AMLWorkspaces.ToListAsync();
             foreach (var workspace in workspaces)
             {
-                workspace.AADApplicationSecrets = await _keyVaultHelper.GetSecretAsync(_options.CurrentValue.Config.VaultName, workspace.AADApplicationSecretName);
+                workspace.AADApplicationSecrets = "notchanged";
             }
             _logger.LogInformation(LoggingUtils.ComposeReturnCountMessage(typeof(AMLWorkspace).Name, workspaces.Count()));
 
@@ -57,19 +58,26 @@ namespace Luna.Services.Data.Luna.AI
         {
             if (!await ExistsAsync(workspaceName))
             {
-                throw new LunaNotFoundUserException(LoggingUtils.ComposeNotFoundErrorMessage(typeof(Product).Name,
+                throw new LunaNotFoundUserException(LoggingUtils.ComposeNotFoundErrorMessage(typeof(AMLWorkspace).Name,
                     workspaceName));
             }
-            _logger.LogInformation(LoggingUtils.ComposeGetSingleResourceMessage(typeof(Product).Name, workspaceName));
+            _logger.LogInformation(LoggingUtils.ComposeGetSingleResourceMessage(typeof(AMLWorkspace).Name, workspaceName));
 
             // Get the product that matches the provided productName
             var workspace = await _context.AMLWorkspaces.SingleOrDefaultAsync(o => (o.WorkspaceName == workspaceName));
 
-            workspace.AADApplicationSecrets = await _keyVaultHelper.GetSecretAsync(_options.CurrentValue.Config.VaultName, workspace.AADApplicationSecretName);
-            _logger.LogInformation(LoggingUtils.ComposeReturnValueMessage(typeof(Product).Name,
+            workspace.AADApplicationSecrets = "notchanged";
+            _logger.LogInformation(LoggingUtils.ComposeReturnValueMessage(typeof(AMLWorkspace).Name,
                workspaceName,
                JsonSerializer.Serialize(workspace)));
 
+            return workspace;
+        }
+
+        public async Task<AMLWorkspace> GetWithSecretsAsync(string workspaceName)
+        {
+            var workspace = await GetAsync(workspaceName);
+            workspace.AADApplicationSecrets = await _keyVaultHelper.GetSecretAsync(_options.CurrentValue.Config.VaultName, workspace.AADApplicationSecretName);
             return workspace;
         }
 
@@ -144,12 +152,9 @@ namespace Luna.Services.Data.Luna.AI
             }
             _logger.LogInformation(LoggingUtils.ComposeUpdateResourceMessage(typeof(Product).Name, workspace.WorkspaceName, payload: JsonSerializer.Serialize(workspace)));
 
-            // Get the offer that matches the offerName provided
             var workspaceDb = await GetAsync(workspaceName);
 
-            // Check if (the offerName has been updated) && 
-            //          (an offer with the same new name does not already exist)
-            if ((workspaceName != workspace.WorkspaceName) && (await ExistsAsync(workspace.WorkspaceName)))
+            if (workspaceName != workspace.WorkspaceName)
             {
                 throw new LunaBadRequestUserException(LoggingUtils.ComposeNameMismatchErrorMessage(typeof(AMLWorkspace).Name),
                     UserErrorCode.NameMismatch);
@@ -160,11 +165,21 @@ namespace Luna.Services.Data.Luna.AI
             {
                 throw new LunaBadRequestUserException("AAD Application Secrets is needed with the aml workspace", UserErrorCode.ArmTemplateNotProvided);
             }
-            string secretName = string.IsNullOrEmpty(workspace.AADApplicationSecretName) ? $"amlkey-{Context.GetRandomString(12)}" : workspace.AADApplicationSecretName;
-            await (_keyVaultHelper.SetSecretAsync(_options.CurrentValue.Config.VaultName, secretName, workspace.AADApplicationSecrets));
+
+            // update the secrets
+            if (!workspace.AADApplicationSecrets.Equals("notchanged"))
+            {
+                await (_keyVaultHelper.SetSecretAsync(_options.CurrentValue.Config.VaultName, workspaceDb.AADApplicationSecretName, workspace.AADApplicationSecrets));
+            }
+            else
+            {
+                // Get secrets so we can connect to the workspace to get region info in the next step.
+                workspace.AADApplicationSecrets = await _keyVaultHelper.GetSecretAsync(_options.CurrentValue.Config.VaultName, workspaceDb.AADApplicationSecretName);
+            }
+
+            workspace.Region = await ControllerHelper.GetRegion(workspace);
 
             // Copy over the changes
-            workspace.Region = await ControllerHelper.GetRegion(workspace);
             workspaceDb.Copy(workspace);
 
             // Update workspaceDb values and save changes in db

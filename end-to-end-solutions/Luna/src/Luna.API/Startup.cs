@@ -4,12 +4,14 @@ using System.Net;
 using System.Reflection;
 using Luna.API.Controllers.Admin;
 using Luna.Clients;
+using Luna.Clients.Azure;
 using Luna.Clients.Azure.APIM;
 using Luna.Clients.Azure.Auth;
 using Luna.Clients.Azure.Storage;
 using Luna.Clients.CustomMetering;
 using Luna.Clients.Exceptions;
 using Luna.Clients.Fulfillment;
+using Luna.Clients.GitUtils;
 using Luna.Clients.Models;
 using Luna.Clients.Provisioning;
 using Luna.Data.Entities;
@@ -282,6 +284,13 @@ namespace Luna.API
                     this.configuration.Bind("SecuredCredentials:APIM", options);
                 });
 
+
+            services.AddOptions<AzureConfigurationOption>().Configure(
+                options =>
+                {
+                    this.configuration.Bind("SecuredCredentials:Azure", options);
+                });
+
             services.AddHttpClient<IProductAPIM, ProductAPIM>();
             services.AddHttpClient<IAPIVersionSetAPIM, APIVersionSetAPIM>();
             services.AddHttpClient<IAPIVersionAPIM, APIVersionAPIM>();
@@ -291,6 +300,7 @@ namespace Luna.API
             services.AddHttpClient<IAPISubscriptionAPIM, APISubscriptionAPIM>();
             services.AddHttpClient<IUserAPIM, UserAPIM>();
             services.AddHttpClient<IClientCertAPIM, ClientCertAPIM>();
+            services.AddHttpClient<IGitUtility, GitUtility>();
 
             services.AddOptions<StorageAccountConfigurationOption>().Configure(
                options => {

@@ -15,7 +15,7 @@ namespace Luna.Data.Entities
 
         public void Copy(AIAgent agent)
         {
-
+            IsSaaSAgent = agent.IsSaaSAgent;
         }
 
         [Key]
@@ -35,5 +35,7 @@ namespace Luna.Data.Entities
         public DateTime LastHeartbeatReportedTime { get; set; }
 
         public DateTime CreatedTime { get; set; }
+
+        public bool IsSaaSAgent { get; set; }
     }
 }

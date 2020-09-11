@@ -24,6 +24,14 @@ namespace Luna.Services.Data
         Task<AMLWorkspace> GetAsync(string workspaceName);
 
         /// <summary>
+        /// Gets an workspace by name. will return secrets
+        /// </summary>
+        /// <param name="workspaceName">The name of the workspace to get.</param>
+        /// <returns>The workspace.</returns>
+        Task<AMLWorkspace> GetWithSecretsAsync(string workspaceName);
+
+
+        /// <summary>
         /// Creates an workspace.
         /// </summary>
         /// <param name="workspace">The workspace to create.</param>

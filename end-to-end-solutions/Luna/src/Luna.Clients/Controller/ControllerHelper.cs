@@ -8,6 +8,7 @@ using Luna.Clients.Exceptions;
 using Luna.Clients.Models.Controller;
 using Luna.Data.DataContracts.Luna.AI;
 using Luna.Data.Entities;
+using Microsoft.IdentityModel.Clients.ActiveDirectory;
 using Newtonsoft.Json;
 
 namespace Luna.Clients.Controller
@@ -26,14 +27,21 @@ namespace Luna.Clients.Controller
             var requestUri = new Uri("https://management.azure.com" + workspace.ResourceId + "?api-version=2019-05-01");
             var request = new HttpRequestMessage { RequestUri = requestUri, Method = HttpMethod.Get };
 
-            var token = await ControllerAuthHelper.GetToken(workspace.AADTenantId.ToString(), workspace.AADApplicationId.ToString(), workspace.AADApplicationSecrets);
-            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            try
+            {
+                var token = await ControllerAuthHelper.GetToken(workspace.AADTenantId.ToString(), workspace.AADApplicationId.ToString(), workspace.AADApplicationSecrets);
+                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            }
+            catch (AdalServiceException)
+            {
+                throw new LunaBadRequestUserException($"Cannot find the AML workspace. Invalid client secret is provided", UserErrorCode.InvalidParameter);
+            }
 
             var response = await HttpClient.SendAsync(request);
             string responseContent = await response.Content.ReadAsStringAsync();
             if (!response.IsSuccessStatusCode)
             {
-                throw new LunaServerException($"Query failed with response {responseContent}");
+                throw new LunaBadRequestUserException($"Cannot find the AML workspace {workspace.WorkspaceName}", UserErrorCode.InvalidParameter);
             }
 
             IDictionary<string, object> workspaceDetails = (IDictionary<string, object>)System.Text.Json.JsonSerializer.Deserialize(responseContent, typeof(IDictionary<string, object>));

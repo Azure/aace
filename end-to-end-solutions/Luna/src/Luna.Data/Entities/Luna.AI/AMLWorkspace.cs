@@ -27,7 +27,6 @@ namespace Luna.Data.Entities
             Region = workspace.Region;
             ResourceId = workspace.ResourceId;
             AADApplicationId = workspace.AADApplicationId;
-            AADApplicationSecretName = workspace.AADApplicationSecretName;
             AADTenantId = workspace.AADTenantId;
         }
     

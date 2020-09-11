@@ -43,11 +43,13 @@ namespace Luna.Data.Entities
         [JsonPropertyName("BaseUrl")]
         public string BaseUrl { get; set; }
 
-        [JsonPropertyName("PrimaryKey")]
-        public string PrimaryKey { get; set; }
+        [JsonPropertyName("PrimaryKeySecretName")]
+        [JsonIgnore]
+        public string PrimaryKeySecretName { get; set; }
 
-        [JsonPropertyName("SecondaryKey")]
-        public string SecondaryKey { get; set; }
+        [JsonPropertyName("SecondaryKeySecretName")]
+        [JsonIgnore]
+        public string SecondaryKeySecretName { get; set; }
 
         [JsonPropertyName("AgentId")]
         public Guid? AgentId { get; set; }
@@ -60,5 +62,11 @@ namespace Luna.Data.Entities
 
         [JsonPropertyName("PlanName")]
         public string PlanName { get; set; }
+
+        [NotMapped]
+        public string PrimaryKey { get; set; }
+
+        [NotMapped]
+        public string SecondaryKey { get; set; }
     }
 }

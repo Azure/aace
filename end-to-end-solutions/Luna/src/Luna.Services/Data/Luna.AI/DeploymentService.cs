@@ -1,5 +1,4 @@
 ﻿using Luna.Clients.Azure;
-using Luna.Clients.Azure.APIM;
 using Luna.Clients.Exceptions;
 using Luna.Clients.Logging;
 using Luna.Data.Entities;
@@ -20,8 +19,6 @@ namespace Luna.Services.Data.Luna.AI
         private readonly ISqlDbContext _context;
         private readonly IProductService _productService;
         private readonly ILogger<DeploymentService> _logger;
-        private readonly IAPIVersionSetAPIM _apiVersionSetAPIM;
-        private readonly IAPIVersionAPIM _apiVersionAPIM;
 
         /// <summary>
         /// Constructor that uses dependency injection.
@@ -31,14 +28,11 @@ namespace Luna.Services.Data.Luna.AI
         /// <param name="logger">The logger.</param>
         /// <param name="apiVersionSetAPIM">The apim service.</param>
         /// <param name="apiVersionAPIM">The apim service.</param>
-        public DeploymentService(ISqlDbContext sqlDbContext, IProductService productService, ILogger<DeploymentService> logger,
-            IAPIVersionSetAPIM apiVersionSetAPIM, IAPIVersionAPIM apiVersionAPIM)
+        public DeploymentService(ISqlDbContext sqlDbContext, IProductService productService, ILogger<DeploymentService> logger)
         {
             _context = sqlDbContext ?? throw new ArgumentNullException(nameof(sqlDbContext));
             _productService = productService ?? throw new ArgumentNullException(nameof(productService));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _apiVersionSetAPIM = apiVersionSetAPIM ?? throw new ArgumentNullException(nameof(apiVersionSetAPIM));
-            _apiVersionAPIM = apiVersionAPIM ?? throw new ArgumentNullException(nameof(apiVersionAPIM));
         }
 
         /// <summary>
@@ -137,10 +131,6 @@ namespace Luna.Services.Data.Luna.AI
 
             // Update the deployment last updated time
             deployment.LastUpdatedTime = deployment.CreatedTime;
-            
-            // Add deployment to APIM
-            await _apiVersionSetAPIM.CreateAsync(deployment);
-            await _apiVersionAPIM.CreateAsync(deployment);
 
             // Add deployment to db
             _context.Deployments.Add(deployment);
@@ -184,10 +174,6 @@ namespace Luna.Services.Data.Luna.AI
             // Update the deployment last updated time
             deploymentDB.LastUpdatedTime = DateTime.UtcNow;
 
-            // Update deployment values and save changes in APIM
-            await _apiVersionSetAPIM.UpdateAsync(deploymentDB);
-            await _apiVersionAPIM.UpdateAsync(deployment);
-
             // Update deployment values and save changes in db
             _context.Deployments.Update(deploymentDB);
             await _context._SaveChangesAsync();
@@ -208,9 +194,6 @@ namespace Luna.Services.Data.Luna.AI
 
             // Get the deployment that matches the productName and deploymentName provided
             var deployment = await GetAsync(productName, deploymentName);
-
-            // Remove the deployment from the APIM
-            await _apiVersionAPIM.DeleteAsync(deployment);
 
             // Remove the deployment from the db
             _context.Deployments.Remove(deployment);

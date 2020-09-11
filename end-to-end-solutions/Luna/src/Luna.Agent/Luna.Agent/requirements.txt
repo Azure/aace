@@ -1,9 +1,9 @@
 azureml-sdk
 flask
 requests
-luna-publish-utils
-sqlalchemy
+luna-publish-utils==0.4.9
+sqlalchemy==1.3.13
 pyodbc
 azure-keyvault-secrets
-azure.identity
+azure.identity==1.2.0
 azure-storage-blob

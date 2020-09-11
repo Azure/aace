@@ -1,4 +1,4 @@
-﻿using Luna.Clients.Azure.APIM;
+﻿using Luna.Clients.Azure;
 using Luna.Clients.Azure.Auth;
 using Luna.Clients.Azure.Storage;
 using Luna.Clients.Exceptions;
@@ -23,10 +23,10 @@ namespace Luna.Services.Data
         private readonly ISqlDbContext _context;
         private readonly ILogger<AIAgentService> _logger;
         private readonly IKeyVaultHelper _keyVaultHelper;
-        private readonly IOptionsMonitor<APIMConfigurationOption> _options;
+        private readonly IOptionsMonitor<AzureConfigurationOption> _options;
         private readonly IStorageUtility _storageUtility;
 
-        public AIAgentService(IOptionsMonitor<APIMConfigurationOption> options,
+        public AIAgentService(IOptionsMonitor<AzureConfigurationOption> options,
             ISqlDbContext sqlDbContext, ILogger<AIAgentService> logger, IKeyVaultHelper keyVaultHelper, IStorageUtility storageUtility)
         {
             _options = options ?? throw new ArgumentNullException(nameof(options));
@@ -62,6 +62,8 @@ namespace Luna.Services.Data
             await (_keyVaultHelper.SetSecretAsync(_options.CurrentValue.Config.VaultName, secretName, agent.AgentKey));
 
             agent.AgentKeySecretName = secretName;
+            // Don't allow creating a SaaS agent
+            agent.IsSaaSAgent = false;
             try
             {
                 _context.AIAgents.Add(agent);
@@ -150,6 +152,19 @@ namespace Luna.Services.Data
             return agents;
         }
 
+        public async Task<AIAgent> GetSaaSAgentAsync()
+        {
+            _logger.LogInformation(LoggingUtils.ComposeGetSingleResourceMessage(typeof(AIAgent).Name, "SaaS"));
+
+            var agent = await _context.AIAgents.SingleOrDefaultAsync(o => (o.IsSaaSAgent));
+
+            agent.AgentKey = await _keyVaultHelper.GetSecretAsync(_options.CurrentValue.Config.VaultName, agent.AgentKeySecretName);
+            _logger.LogInformation(LoggingUtils.ComposeReturnValueMessage(typeof(AIAgent).Name,
+               "SaaS"));
+
+            return agent;
+        }
+
         public async Task<AIAgent> GetAsync(Guid agentId)
         {
             if (!await ExistsAsync(agentId))
@@ -194,6 +209,11 @@ namespace Luna.Services.Data
 
             // Get all subscriptions by agent id
             var subs = await _context.AgentSubscriptions.Where(sub => (sub.AgentId == agentId)).ToListAsync();
+            foreach(var sub in subs)
+            {
+                sub.PrimaryKey = await _keyVaultHelper.GetSecretAsync(_options.CurrentValue.Config.VaultName, sub.PrimaryKeySecretName);
+                sub.SecondaryKey = await _keyVaultHelper.GetSecretAsync(_options.CurrentValue.Config.VaultName, sub.SecondaryKeySecretName);
+            }
             _logger.LogInformation(LoggingUtils.ComposeReturnCountMessage(typeof(AgentSubscription).Name, subs.Count()));
 
             return subs;

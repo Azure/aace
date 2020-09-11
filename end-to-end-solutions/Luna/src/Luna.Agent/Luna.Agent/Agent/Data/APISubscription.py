@@ -1,7 +1,8 @@
-from sqlalchemy import Column, Integer, String, DateTime
-from Agent import Base, Session
+from sqlalchemy import Column, Integer, String, DateTime, or_
+from Agent import Base, Session, app, key_vault_helper
 from Agent.Data.AMLWorkspace import AMLWorkspace
 from Agent.Data.AgentUser import AgentUser
+import os
 
 class APISubscription(Base):
     """description of class"""
@@ -30,9 +31,9 @@ class APISubscription(Base):
 
     BaseUrl = Column(String)
 
-    PrimaryKey = Column(String)
+    PrimaryKeySecretName = Column(String)
 
-    SecondaryKey = Column(String)
+    SecondaryKeySecretName = Column(String)
 
     AMLWorkspaceId = Column(Integer)
 
@@ -57,6 +58,10 @@ class APISubscription(Base):
     Users = []
 
     Admins = []
+
+    PrimaryKey = ""
+
+    SecondaryKey = ""
     
     @staticmethod
     def Update(subscription):
@@ -74,14 +79,30 @@ class APISubscription(Base):
 
     @staticmethod
     def Get(subscriptionId):
+        """ the function will should only be called in local mode, otherwise, the keys might be out of date! """
         session = Session()
         subscription = session.query(APISubscription).filter_by(SubscriptionId = subscriptionId).first()
         session.close()
-        subscription.Admins = AgentUser.ListAllAdmin()
-        subscription.Users = AgentUser.ListAllBySubscriptionId(subscriptionId)
-        subscription.AvailablePlans = ["Basic", "Premium"]
+        subscription.PrimaryKey = key_vault_helper.get_secret(subscription.PrimaryKeySecretName)
+        subscription.SecondaryKey = key_vault_helper.get_secret(subscription.SecondaryKeySecretName)
+        if os.environ["AGENT_MODE"] == "LOCAL":
+            subscription.Admins = AgentUser.ListAllAdmin()
+            subscription.Users = AgentUser.ListAllBySubscriptionId(subscriptionId)
+            subscription.AvailablePlans = ["Basic", "Premium"]
         return subscription
 
+    @staticmethod
+    def GetByKey(subscriptionKey):
+        session = Session()
+        secret_name = key_vault_helper.find_secret_name_by_value(subscriptionKey)
+        if secret_name:
+            subscription = session.query(APISubscription).filter(or_(APISubscription.PrimaryKeySecretName == secret_name, APISubscription.SecondaryKeySecretName == secret_name)).first()            
+        else:
+            subscription = None
+        session.close()
+        return subscription
+
+    @staticmethod
     def ListAllByWorkspaceName(workspaceName):
         session = Session()
         workspace = AMLWorkspace.Get(workspaceName)
@@ -112,6 +133,10 @@ class APISubscription(Base):
 
             for subscription in subscriptions:
                 dbSubscription = APISubscription(**subscription)
+                dbSubscription.PrimaryKeySecretName = 'primarykey-{}'.format(dbSubscription.SubscriptionId)
+                dbSubscription.SecondaryKeySecretName = 'secondarykey-{}'.format(dbSubscription.SubscriptionId)
+                key_vault_helper.set_secret(dbSubscription.PrimaryKeySecretName, dbSubscription.PrimaryKey)
+                key_vault_helper.set_secret(dbSubscription.SecondaryKeySecretName, dbSubscription.SecondaryKey)
                 session.merge(dbSubscription)
 
             session.commit()

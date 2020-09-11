@@ -36,6 +36,7 @@ namespace Luna.Data.Entities
             this.GitPersonalAccessToken = version.GitPersonalAccessToken;
             this.GitUrl = version.GitUrl;
             this.GitVersion = version.GitVersion;
+            this.ProjectFileUrl = version.ProjectFileUrl;
         }
 
         public string GetVersionIdFormat()
@@ -99,6 +100,8 @@ namespace Luna.Data.Entities
         public string GitVersion { get; set; }
 
         public string VersionSourceType { get; set; }
+
+        public string ProjectFileUrl { get; set; }
 
     }
 }

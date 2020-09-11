@@ -10,6 +10,8 @@ namespace Luna.Services.Data
     {
         Task<List<AIAgent>> GetAllAsync();
 
+        Task<AIAgent> GetSaaSAgentAsync();
+
         Task<AIAgent> GetAsync(Guid agentId);
 
         Task<AIAgent> CreateAsync(Guid agentId, AIAgent agent);

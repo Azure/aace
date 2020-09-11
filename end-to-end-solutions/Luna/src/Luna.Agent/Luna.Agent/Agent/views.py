@@ -14,121 +14,208 @@ import pathlib
 from Agent.Data.APISubscription import APISubscription
 from Agent.Data.APIVersion import APIVersion
 from sqlalchemy.orm import sessionmaker
-from Agent import engine, Session, app
+from Agent import engine, Session, app, key_vault_client
 from azure.keyvault.secrets import SecretClient
 from azure.identity import DefaultAzureCredential
 from Agent.Data.AMLWorkspace import AMLWorkspace
 from Agent.Data.AgentUser import AgentUser
 from Agent.Data.Publisher import Publisher
-import json
+from Agent.Exception.LunaExceptions import LunaServerException, LunaUserException
+import json, os
+from http import HTTPStatus
+import requests
 
 
 @app.route('/api/agentinfo')
 def getAgentInfo():
     return jsonify({'name':'myagent', 'key':'mykey'})
 
+def handleExceptions(e):
+    if isinstance(e, LunaUserException):
+        return e.message, e.http_status_code
+    else:
+        return 'The server encountered an internal error and was unable to complete your request.', 500
+
+def getMetadata(subscriptionId, isRealTimePredict = False):
+    
+    apiVersion = request.args.get('api-version')
+    if not apiVersion:
+        raise LunaUserException(HTTPStatus.BAD_REQUEST, 'The api-version query parameter is not provided.')
+
+    if subscriptionId == 'default':
+        subscriptionKey = request.headers.get('api-key')
+        if not subscriptionKey:
+            raise LunaUserException(HTTPStatus.UNAUTHORIZED, 'The api key is not provided.')
+
+        sub = APISubscription.GetByKey(subscriptionKey)
+        if not sub:
+            raise LunaUserException(HTTPStatus.UNAUTHORIZED, 'The api key is invalid.')
+    else:
+        sub = APISubscription.Get(subscriptionId)
+        if not sub:
+            raise LunaUserException(HTTPStatus.NOT_FOUND, 'The subscription {} does not exist.'.format(subscriptionId))
+
+    version = APIVersion.Get(sub.ProductName, sub.DeploymentName, apiVersion)
+    if not version:
+        raise LunaUserException(HTTPStatus.NOT_FOUND, 'The api version {} does not exist.'.format(apiVersion))
+    
+    if not isRealTimePredict:
+        if os.environ["AGENT_MODE"] == "SAAS":
+            workspace = AMLWorkspace.GetById(version.AMLWorkspaceId)
+        elif os.environ["AGENT_MODE"] == "LOCAL":
+            if (not sub.AMLWorkspaceId) or sub.AMLWorkspaceId == 0:
+                raise LunaServerException(HTTPStatus.METHOD_NOT_ALLOWED, 'There is not an Azure Machine Learning workspace configured for this subscription. Please contact your admin to finish the configuration.'.format(version.AMLWorkspaceId))
+            workspace = AMLWorkspace.GetById(sub.AMLWorkspaceId)
+        
+        if not workspace:
+            raise LunaServerException('The workspace with id {} is not found.'.format(version.AMLWorkspaceId))
+
+        publisher = Publisher.Get(sub.PublisherId)
+        if version.VersionSourceType == 'git':
+            CodeUtils.getLocalCodeFolder(sub.SubscriptionId, sub.ProductName, sub.DeploymentName, version, pathlib.Path(__file__).parent.absolute(), publisher.ControlPlaneUrl)
+    else:
+        if version.AMLWorkspaceId and version.AMLWorkspaceId != 0:
+            workspace = AMLWorkspace.GetById(version.AMLWorkspaceId)
+        else:
+            workspace = None
+
+    return sub, version, workspace, apiVersion
+
 def getSubscriptionAPIVersionAndWorkspace(subscriptionId, apiVersion):
     sub = APISubscription.Get(subscriptionId)
     version = APIVersion.Get(sub.ProductName, sub.DeploymentName, apiVersion)
-    if app.config["AGENT_MODE"] == "SAAS":
+    if os.environ["AGENT_MODE"] == "SAAS":
         workspace = AMLWorkspace.GetById(version.AMLWorkspaceId)
-    elif app.config["AGENT_MODE"] == "LOCAL":
+    elif os.environ["AGENT_MODE"] == "LOCAL":
         workspace = AMLWorkspace.GetById(sub.AMLWorkspaceId)
 
     return sub, version, workspace
 
-@app.route('/api/<subscriptionId>/<operationVerb>', methods=['POST'])
-def executeOperation(subscriptionId, operationVerb):
+@app.route('/predict', methods=['POST'])
+@app.route('/<subscriptionId>/predict', methods=['POST'])
+def realtimePredict(subscriptionId = 'default'):
     
-    apiVersion = request.args.get('api-version')
-    userId = request.args.get('userId')
-    sub, version, workspace = getSubscriptionAPIVersionAndWorkspace(subscriptionId, apiVersion)
+    sub, version, workspace, apiVersion = getMetadata(subscriptionId, True)
+    
+    requestUrl = version.RealTimePredictAPI
+    headers = {'Content-Type': 'application/json'}
+    if version.AuthenticationType == 'Key':
+        secret = key_vault_client.get_secret(version.AuthenticationKeySecretName).value
+        headers['Authorization'] = 'Bearer {}'.format(secret)
+    response = requests.post(requestUrl, json.dumps(request.json), headers=headers)
+    if response.ok:
+        return response.json(), response.status_code
+    return response.text, response.status_code
+
+@app.route('/saas-api/<operationVerb>', methods=['POST'])
+@app.route('/api/<subscriptionId>/<operationVerb>', methods=['POST'])
+def executeOperation(operationVerb, subscriptionId = 'default'):
+    
+    sub, version, workspace, apiVersion = getMetadata(subscriptionId)
 
     amlUtil = AzureMLUtils(workspace)
     if version.VersionSourceType == 'git':
-        working_dir = CodeUtils.getLocalCodeFolder(subscriptionId, sub.ProductName, sub.DeploymentName, apiVersion, datetime.utcnow(), pathlib.Path(__file__).parent.absolute())
         opId = amlUtil.runProject(sub.ProductName, sub.DeploymentName, apiVersion, operationVerb, json.dumps(request.json), 'na', sub.UserId, sub.SubscriptionId)
     elif version.VersionSourceType == 'amlPipeline':
         url = None
         if operationVerb == 'train':
             url = version.TrainModelAPI
-        elif operationVerb == 'inference':
-            url = version.BatchInferenceAPI
-        elif operationVerb == 'deploy':
-            url = version.DeployModelAPI
 
         if url and url != "":
-            opId = amlUtil.submitPipelineRun(url, sub.ProductName, sub.DeploymentName, apiVersion, operationVerb, json.dumps(request.json), '', sub.UserId, sub.SubscriptionId)
+            opId = amlUtil.submitPipelineRun(url, sub.ProductName, sub.DeploymentName, apiVersion, operationVerb, json.dumps(request.json), 'na', sub.UserId, sub.SubscriptionId)
         else:
             return 'The operation {} is not supported'.format(operationVerb)
     
     return jsonify({'operationId': opId})
 
+@app.route('/saas-api/operations/<operationVerb>/<operationId>', methods=['GET'])
 @app.route('/api/<subscriptionId>/operations/<operationVerb>/<operationId>', methods=['GET'])
-def getOperationStatus(subscriptionId, operationVerb, operationId):
-    
-    apiVersion = request.args.get('api-version')
-    userId = request.args.get('userId')
-    sub, version, workspace = getSubscriptionAPIVersionAndWorkspace(subscriptionId, apiVersion)
+def getOperationStatus(operationVerb, operationId, subscriptionId = 'default'):
+    try:
+        sub, version, workspace, apiVersion = getMetadata(subscriptionId)
+        amlUtil = AzureMLUtils(workspace)
+        result = amlUtil.getOperationStatus(operationVerb, operationId, sub.UserId, sub.SubscriptionId)
+        if result:
+            return jsonify(result)
+        else:
+            raise LunaUserException(HTTPStatus.NOT_FOUND, 'Object with id {} does not exist.'.format(operationId))
+    except Exception as e:
+        return handleExceptions(e)
 
-    CodeUtils.getLocalCodeFolder(subscriptionId, sub.ProductName, sub.DeploymentName, apiVersion, datetime.utcnow(), pathlib.Path(__file__).parent.absolute())
-    amlUtil = AzureMLUtils(workspace)
-    result = amlUtil.getOperationStatus(operationVerb, operationId, userId, subscriptionId)
-    return jsonify(result)
-
+@app.route('/saas-api/operations/<operationVerb>', methods=['GET'])
 @app.route('/api/<subscriptionId>/operations/<operationVerb>', methods=['GET'])
-def listOperations(subscriptionId, operationVerb):
+def listOperations(operationVerb, subscriptionId='default'):
     
-    apiVersion = request.args.get('api-version')
-    userId = request.args.get('userId')
-    
-    sub, version, workspace = getSubscriptionAPIVersionAndWorkspace(subscriptionId, apiVersion)
-    CodeUtils.getLocalCodeFolder(subscriptionId, sub.ProductName, sub.DeploymentName, apiVersion, datetime.utcnow(), pathlib.Path(__file__).parent.absolute())
-    amlUtil = AzureMLUtils(workspace)
-    result = amlUtil.listAllOperations(operationVerb, userId, subscriptionId)
-    return jsonify(result)
+    try:
+        sub, version, workspace, apiVersion = getMetadata(subscriptionId)
+        amlUtil = AzureMLUtils(workspace)
+        result = amlUtil.listAllOperations(operationVerb, sub.UserId, sub.SubscriptionId)
+        return jsonify(result)
+    except Exception as e:
+        return handleExceptions(e)
 
+@app.route('/saas-api/<operationNoun>', methods=['GET'])
 @app.route('/api/<subscriptionId>/<operationNoun>', methods=['GET'])
-def listOperationOutputs(subscriptionId, operationNoun):
+def listOperationOutputs(operationNoun, subscriptionId = 'default'):
     
-    apiVersion = request.args.get('api-version')
-    userId = request.args.get('userId')
-    
-    sub, version, workspace = getSubscriptionAPIVersionAndWorkspace(subscriptionId, apiVersion)
-    CodeUtils.getLocalCodeFolder(subscriptionId, sub.ProductName, sub.DeploymentName, apiVersion, datetime.utcnow(), pathlib.Path(__file__).parent.absolute())
+    try:
+        sub, version, workspace, apiVersion = getMetadata(subscriptionId)
+        amlUtil = AzureMLUtils(workspace)
+        result = amlUtil.listAllOperationOutputs(operationNoun, sub.UserId, sub.SubscriptionId)
+        return jsonify(result)
+    except Exception as e:
+        return handleExceptions(e)
 
-    amlUtil = AzureMLUtils(workspace)
-    result = amlUtil.listAllOperationOutputs(operationNoun, userId, subscriptionId)
-    return jsonify(result)
-
+@app.route('/saas-api/<operationNoun>/<operationId>', methods=['GET'])
 @app.route('/api/<subscriptionId>/<operationNoun>/<operationId>', methods=['GET'])
-def getOperationOutput(subscriptionId, operationNoun, operationId):
+def getOperationOutput(operationNoun, operationId, subscriptionId = 'default'):
     
-    apiVersion = request.args.get('api-version')
-    userId = request.args.get('userId')
+    try:
+        sub, version, workspace, apiVersion = getMetadata(subscriptionId)
+        amlUtil = AzureMLUtils(workspace)
+        result = amlUtil.getOperationOutput(operationNoun, operationId, sub.UserId, sub.SubscriptionId)
+        return jsonify(result)
     
-    sub, version, workspace = getSubscriptionAPIVersionAndWorkspace(subscriptionId, apiVersion)
-    CodeUtils.getLocalCodeFolder(subscriptionId, sub.ProductName, sub.DeploymentName, apiVersion, datetime.utcnow(), pathlib.Path(__file__).parent.absolute())
+    except Exception as e:
+        return handleExceptions(e)
 
-    amlUtil = AzureMLUtils(workspace)
-    result = amlUtil.getOperationOutput(operationNoun, operationId, userId, subscriptionId)
-    return jsonify(result)
-
-
-
-
+@app.route('/saas-api/<parentOperationNoun>/<parentOperationId>/<operationVerb>', methods=['POST'])
 @app.route('/api/<subscriptionId>/<parentOperationNoun>/<parentOperationId>/<operationVerb>', methods=['POST'])
-def executeChildOperation(subscriptionId, parentOperationNoun, parentOperationId, operationVerb):
-    return jsonify({})
+def executeChildOperation(parentOperationNoun, parentOperationId, operationVerb, subscriptionId = 'default'):
+    
+    try:
+        sub, version, workspace, apiVersion = getMetadata(subscriptionId)
+        amlUtil = AzureMLUtils(workspace)
+        if version.VersionSourceType == 'git':
+            opId = amlUtil.runProject(sub.ProductName, sub.DeploymentName, apiVersion, operationVerb, json.dumps(request.json), parentOperationId, sub.UserId, sub.SubscriptionId)
+        elif version.VersionSourceType == 'amlPipeline':
+            if parentOperationNoun != 'models':
+                return 'The parent resource type {} is not supported'.format(parentOperationNoun)
+            url = None
+            if operationVerb == 'batchinference':
+                url = version.BatchInferenceAPI
+            elif operationVerb == 'deploy':
+                url = version.DeployModelAPI
 
+            if url and url != "":
+                opId = amlUtil.submitPipelineRun(url, sub.ProductName, sub.DeploymentName, apiVersion, operationVerb, json.dumps(request.json), parentOperationId, sub.UserId, sub.SubscriptionId)
+            else:
+                return 'The operation {} is not supported'.format(operationVerb)
+    
+        return jsonify({'operationId': opId})
+    
+    except Exception as e:
+        return handleExceptions(e)
+
+@app.route('/saas-api/<operationNoun>/<operationId>', methods=['DELETE'])
 @app.route('/api/<subscriptionId>/<operationNoun>/<operationId>', methods=['DELETE'])
-def deleteOperationOutput(subscriptionId, operationNoun, operationId):
+def deleteOperationOutput(operationNoun, operationId, subscriptionId = 'default'):
     return jsonify({})
 
 
 @app.route('/api/management/refreshMetadata', methods=['POST'])
 def refreshMetadata():
-    controlPlane = ControlPlane(app.config['CONTROL_PLANE_URL'], app.config['AGENT_ID'], app.config['AGENT_KEY'])
+    controlPlane = ControlPlane(os.environ['AGENT_ID'], os.environ['AGENT_KEY'])
     controlPlane.UpdateMetadataDatabase()
     return "The metadata database is refreshed", 200
 
@@ -157,6 +244,7 @@ def getSubscription(subscriptionId):
 
 @app.route('/api/management/subscriptions/<subscriptionId>', methods=['PUT'])
 def createOrUpdateSubscription(subscriptionId):
+    """ TODO: do we need this API? """
     subscription = APISubscription(**request.json)
     APISubscription.Update(subscription)
     return jsonify(request.json), 202

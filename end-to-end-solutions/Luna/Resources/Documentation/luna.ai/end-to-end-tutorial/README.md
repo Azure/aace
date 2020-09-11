@@ -26,7 +26,7 @@ We are going to use a simple sklearn Logistic Regression classification model as
 - [Create a ML project using Luna.AI project template](./use-luna-ml-project-template.md)
 - [Add your code to the ML project](./add-ml-code.md)
 - [Train and deploy a model using sklearn Iris sample data](./deploy-pre-trained-model.md)
-- [Test and publish Azure Machine Learning pipelines](./use-luna-ml-project-template.md)
+- [Test and publish Azure Machine Learning pipelines](./test-and-publish-aml-pipelines.md)
 
 ## Publish an AI service
 

@@ -10,7 +10,6 @@ Declare @sqlstmt nvarchar(512)
 
 SET @password = $(password)
 SET @username = $(username)
-SET @publisherId = $(publisherId)
 
 IF NOT EXISTS (SELECT * FROM sys.sysusers WHERE name = @username)
 BEGIN
@@ -589,10 +588,11 @@ CREATE TABLE [dbo].[APISubscriptions](
 	[userId] [nvarchar](512) NOT NULL,
 	[Status] [nvarchar](32) NULL,
 	[BaseUrl] [nvarchar](max) NULL,
-	[PrimaryKey] [nvarchar](64) NULL,
-	[SecondaryKey] [nvarchar](64) NULL,
+	[PrimaryKeySecretName] [nvarchar](64) NULL,
+	[SecondaryKeySecretName] [nvarchar](64) NULL,
 	[CreatedTime] [datetime2](7) NOT NULL,
 	[LastUpdatedTime] [datetime2](7) NOT NULL,
+	[AgentId] [uniqueidentifier] NULL,
 	PRIMARY KEY (SubscriptionId),
 	CONSTRAINT FK_DeploymentId_APISubscriptions FOREIGN KEY (DeploymentId) REFERENCES Deployments(Id)
 )
@@ -605,17 +605,33 @@ CREATE TABLE [dbo].[AIAgents](
 	[CreatedBy] [nvarchar](256) NOT NULL,
 	[LastHeartbeatReportedTime] [datetime2](7) NOT NULL,
 	[CreatedTime] [datetime2](7) NULL,
+	[IsSaaSAgent] [bit] NOT NULL,
 	PRIMARY KEY (Id)
 )
 GO
 
 CREATE TABLE [dbo].[Publishers](
+	[Id] [bigint] IDENTITY(1,1) NOT NULL,
 	[PublisherId] [uniqueidentifier] NOT NULL,
+	[ControlPlaneUrl] [nvarchar](max) NOT NULL,
 	PRIMARY KEY (PublisherId)
 )
 GO
 
-INSERT INTO [dbo].[Publishers] VALUES(@publisherId)
+Declare @publisherId nvarchar(64)
+Declare @controlPlaneUrl nvarchar(512)
+SET @publisherId = $(publisherId)
+SET @controlPlaneUrl = $(controlPlaneUrl)
+
+INSERT INTO [dbo].[Publishers] VALUES(@publisherId, @controlPlaneUrl)
+GO
+
+Declare @agentId nvarchar(64)
+Declare @agentKeySecretName nvarchar(64)
+SET @agentId = $(agentId)
+SET @agentKeySecretName = $(agentKeySecretName)
+
+INSERT INTO [dbo].[AIAgents] VALUES(@agentId, @agentKeySecretName, 'system', getutcdate(), getutcdate(), 1)
 GO
 
 -- Create Views
@@ -623,7 +639,7 @@ GO
 CREATE VIEW [dbo].[agent_apiversions]
 AS
 SELECT dbo.Deployments.DeploymentName, dbo.Products.ProductName, dbo.APIVersions.VersionName, dbo.APIVersions.RealTimePredictAPI, dbo.APIVersions.TrainModelAPI, dbo.APIVersions.BatchInferenceAPI, dbo.APIVersions.DeployModelAPI, dbo.APIVersions.AuthenticationType, dbo.APIVersions.CreatedTime, dbo.APIVersions.LastUpdatedTime, dbo.APIVersions.VersionSourceType, dbo.APIVersions.ProjectFileUrl, 
-          dbo.APIVersions.Id, dbo.APIVersions.AMLWorkspaceId, dbo.APISubscriptions.AgentId, dbo.APISubscriptions.SubscriptionId, dbo.Publishers.PublisherId
+          dbo.APIVersions.Id, dbo.APIVersions.AMLWorkspaceId, dbo.Publishers.PublisherId, dbo.APIVersions.AuthenticationKeySecretName, dbo.APISubscriptions.SubscriptionId, dbo.APISubscriptions.AgentId
 FROM   dbo.APIVersions INNER JOIN
           dbo.Deployments ON dbo.APIVersions.DeploymentId = dbo.Deployments.Id INNER JOIN
           dbo.Products ON dbo.Deployments.ProductId = dbo.Products.Id INNER JOIN
@@ -633,14 +649,14 @@ GO
 
 CREATE VIEW [dbo].[agent_subscriptions]
 AS
-SELECT dbo.APISubscriptions.Id, dbo.APISubscriptions.SubscriptionId, dbo.Deployments.DeploymentName, dbo.Products.ProductName, dbo.Products.ProductType, dbo.APISubscriptions.userId, dbo.APISubscriptions.SubscriptionName, dbo.APISubscriptions.Status, dbo.Products.HostType, dbo.APISubscriptions.CreatedTime, dbo.APISubscriptions.BaseUrl, dbo.APISubscriptions.PrimaryKey, dbo.APISubscriptions.SecondaryKey, 
+SELECT dbo.APISubscriptions.Id, dbo.APISubscriptions.SubscriptionId, dbo.Deployments.DeploymentName, dbo.Products.ProductName, dbo.Products.ProductType, dbo.APISubscriptions.userId, dbo.APISubscriptions.SubscriptionName, dbo.APISubscriptions.Status, dbo.Products.HostType, dbo.APISubscriptions.CreatedTime, dbo.APISubscriptions.BaseUrl, dbo.APISubscriptions.PrimaryKeySecretName, dbo.APISubscriptions.SecondaryKeySecretName, 
           dbo.APISubscriptions.AgentId, dbo.Publishers.PublisherId, 0 AS AMLWorkspaceId, '' AS AMLWorkspaceComputeClusterName, '' AS AMLWorkspaceDeploymentTargetType, '' AS AMLWorkspaceDeploymentClusterName, dbo.Offers.OfferName, dbo.Plans.PlanName
-FROM   dbo.APISubscriptions INNER JOIN
+FROM   dbo.Offers INNER JOIN
+          dbo.Subscriptions ON dbo.Offers.Id = dbo.Subscriptions.OfferId INNER JOIN
+          dbo.Plans ON dbo.Subscriptions.PlanId = dbo.Plans.Id AND dbo.Offers.Id = dbo.Plans.OfferId RIGHT OUTER JOIN
+          dbo.APISubscriptions INNER JOIN
           dbo.Deployments ON dbo.APISubscriptions.DeploymentId = dbo.Deployments.Id INNER JOIN
-          dbo.Products ON dbo.Deployments.ProductId = dbo.Products.Id INNER JOIN
-          dbo.Subscriptions ON dbo.APISubscriptions.SubscriptionId = dbo.Subscriptions.SubscriptionId INNER JOIN
-          dbo.Offers ON dbo.Subscriptions.OfferId = dbo.Offers.Id INNER JOIN
-          dbo.Plans ON dbo.Subscriptions.PlanId = dbo.Plans.Id AND dbo.Offers.Id = dbo.Plans.OfferId CROSS JOIN
+          dbo.Products ON dbo.Deployments.ProductId = dbo.Products.Id ON dbo.Subscriptions.SubscriptionId = dbo.APISubscriptions.SubscriptionId CROSS JOIN
           dbo.Publishers
 GO
 
@@ -648,4 +664,10 @@ CREATE VIEW [dbo].[agent_amlworkspaces]
 AS
 SELECT Id, WorkspaceName, ResourceId, AADApplicationId, AADTenantId, AADApplicationSecretName, Region, '' AS AADApplicationSecret
 FROM   dbo.AMLWorkspaces
+GO
+
+CREATE VIEW [dbo].[agent_publishers]
+AS
+SELECT dbo.Publishers.*
+FROM   dbo.Publishers
 GO

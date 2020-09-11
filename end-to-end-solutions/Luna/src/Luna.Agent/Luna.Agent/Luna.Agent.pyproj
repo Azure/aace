@@ -17,10 +17,9 @@
     <SuppressCollectPythonCloudServiceFiles>true</SuppressCollectPythonCloudServiceFiles>
     <Name>Luna.Agent</Name>
     <RootNamespace>Luna.Agent</RootNamespace>
-    <InterpreterId>MSBuild|env-64|$(MSBuildProjectFullPath)</InterpreterId>
-    <Environment>AZURE_CLIENT_ID=93b1363e-54fb-44b0-928a-5f732cbda317
-AZURE_TENANT_ID=72f988bf-86f1-41af-91ab-2d7cd011db47
-KEY_VAULT_NAME=lunaaidep-keyvault</Environment>
+    <InterpreterId>MSBuild|env|$(MSBuildProjectFullPath)</InterpreterId>
+    <Environment>
+    </Environment>
     <WebBrowserPort>23456</WebBrowserPort>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
@@ -44,6 +43,9 @@ KEY_VAULT_NAME=lunaaidep-keyvault</Environment>
     <Compile Include="Agent\Code\__init__.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Agent\Data\KeyVaultHelper.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Agent\Data\Publisher.py" />
     <Compile Include="Agent\Data\AlchemyEncoder.py">
       <SubType>Code</SubType>
@@ -59,6 +61,9 @@ KEY_VAULT_NAME=lunaaidep-keyvault</Environment>
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Agent\Data\__init__.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Agent\Exception\LunaExceptions.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Agent\Mgmt\AgentManager.py">
@@ -84,17 +89,25 @@ KEY_VAULT_NAME=lunaaidep-keyvault</Environment>
     <Folder Include="Agent\ML\" />
     <Folder Include="Agent\Mgmt\" />
     <Folder Include="Agent\Data\" />
+    <Folder Include="Agent\Exception\" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="lunaagent.pubxml" />
+    <Content Include=".dockerignore">
+      <SubType>Content</SubType>
+      <DependentUpon>Dockerfile</DependentUpon>
+    </Content>
+    <None Include="Dockerfile" />
+    <None Include="aigent-saas - Web Deploy.pubxml" />
     <Content Include="web.config" />
     <None Include="aigent - Web Deploy.pubxml" />
     <Content Include="requirements.txt" />
   </ItemGroup>
   <ItemGroup>
-    <Interpreter Include="env-64\">
-      <Id>env-64</Id>
+    <Interpreter Include="env\">
+      <Id>env</Id>
       <Version>3.7</Version>
-      <Description>env-64 (Python 3.7 (64-bit))</Description>
+      <Description>env (Python 3.7 (64-bit))</Description>
       <InterpreterPath>Scripts\python.exe</InterpreterPath>
       <WindowsInterpreterPath>Scripts\pythonw.exe</WindowsInterpreterPath>
       <PathEnvironmentVariable>PYTHONPATH</PathEnvironmentVariable>

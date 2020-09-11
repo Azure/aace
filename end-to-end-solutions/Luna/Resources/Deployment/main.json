@@ -525,57 +525,6 @@
         }
     },
         {
-            "condition": "[parameters('deployAPIM')]",
-            "apiVersion": "2019-01-01",
-            "name": "[parameters('apimName')]",
-            "location": "[parameters('location')]",
-            "type": "Microsoft.ApiManagement/service",
-            "sku": {
-                "name": "[parameters('apimTier')]",
-                "capacity": "[parameters('apimCapacity')]"
-            },
-            "properties": {
-                "publisherEmail": "[parameters('apimAdminEmail')]",
-                "publisherName": "[parameters('orgName')]"
-            },
-            "resources": [
-                {
-                    "condition": "[parameters('deployAPIM')]",
-                    "apiVersion": "2019-01-01",
-                    "type": "loggers",
-                    "name": "[parameters('apiWebAppInsightsName')]",
-                    "dependsOn": [
-                        "[concat('Microsoft.ApiManagement/service/', parameters('apimName'))]"
-                    ],
-                    "properties": {
-                        "loggerType": "applicationInsights",
-                        "resourceId": "resourceId('microsoft.insights/components', parameters('apiWebAppInsightsName'))",
-                        "credentials": {
-                            "instrumentationKey": "[reference(concat('microsoft.insights/components/', parameters('apiWebAppInsightsName')), '2015-05-01').InstrumentationKey]"
-                        }
-                    }
-                },
-                {
-                    "condition": "[parameters('deployAPIM')]",
-                    "apiVersion": "2019-01-01",
-                    "type": "diagnostics",
-                    "name": "applicationinsights",
-                    "dependsOn": [
-                        "[concat('Microsoft.ApiManagement/service/', parameters('apimName'))]",
-                        "[concat('Microsoft.ApiManagement/service/', parameters('apimName'), '/loggers/', parameters('apiWebAppInsightsName'))]"
-                    ],
-                    "properties": {
-                        "loggerId": "[concat('/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.ApiManagement/service/', parameters('apimName'), '/loggers/', parameters('apiWebAppInsightsName'))]",
-                        "alwaysLog": "allErrors",
-                        "sampling": {
-                            "percentage": 100,
-                            "samplingType": "fixed"
-                        }
-                    }
-                }
-            ]
-        },
-        {
             "condition": "[parameters('deployAML')]",
             "type": "Microsoft.MachineLearningServices/workspaces",
             "apiVersion": "2020-04-01",

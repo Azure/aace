@@ -1,5 +1,4 @@
-﻿using Luna.Clients.Azure.APIM;
-using Luna.Clients.Exceptions;
+﻿using Luna.Clients.Exceptions;
 using Luna.Clients.Logging;
 using Luna.Data.Entities;
 using Luna.Data.Repository;
@@ -14,7 +13,9 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-
+using Luna.Clients.Azure.Storage;
+using Luna.Clients.GitUtils;
+using Luna.Clients.Azure;
 
 namespace Luna.Services.Data.Luna.AI
 {
@@ -25,12 +26,10 @@ namespace Luna.Services.Data.Luna.AI
         private readonly IDeploymentService _deploymentService;
         private readonly IAMLWorkspaceService _amlWorkspaceService;
         private readonly ILogger<APIVersionService> _logger;
-        private readonly IAPIVersionAPIM _apiVersionAPIM;
-        private readonly IProductAPIVersionAPIM _productAPIVersionAPIM;
-        private readonly IOperationAPIM _operationAPIM;
-        private readonly IPolicyAPIM _policyAPIM;
         private readonly IKeyVaultHelper _keyVaultHelper;
-        private readonly IOptionsMonitor<APIMConfigurationOption> _options;
+        private readonly IStorageUtility _storageUtillity;
+        private readonly IGitUtility _gitUtility;
+        private readonly IOptionsMonitor<AzureConfigurationOption> _options;
 
         /// <summary>
         /// Constructor that uses dependency injection.
@@ -39,68 +38,18 @@ namespace Luna.Services.Data.Luna.AI
         /// <param name="productService">The service to be injected.</param>
         /// <param name="deploymentService">The service to be injected.</param>
         /// <param name="logger">The logger.</param>
-        /// <param name="apiVersionAPIM">The apim service.</param>
-        /// <param name="productAPIVersionAPIM">The apim service.</param>
-        /// <param name="operationAPIM">The apim service.</param>
-        /// <param name="policyAPIM">The apim service.</param>
         public APIVersionService(ISqlDbContext sqlDbContext, IProductService productService, IDeploymentService deploymentService, IAMLWorkspaceService amlWorkspaceService,
-            ILogger<APIVersionService> logger, 
-            IAPIVersionAPIM apiVersionAPIM, IProductAPIVersionAPIM productAPIVersionAPIM, IOperationAPIM operationAPIM, IPolicyAPIM policyAPIM,
-            IOptionsMonitor<APIMConfigurationOption> options, IKeyVaultHelper keyVaultHelper)
+            ILogger<APIVersionService> logger, IKeyVaultHelper keyVaultHelper, IStorageUtility storageUtility, IGitUtility gitUtility, IOptionsMonitor<AzureConfigurationOption> options)
         {
             _context = sqlDbContext ?? throw new ArgumentNullException(nameof(sqlDbContext));
             _productService = productService ?? throw new ArgumentNullException(nameof(productService));
             _deploymentService = deploymentService ?? throw new ArgumentNullException(nameof(deploymentService));
             _amlWorkspaceService = amlWorkspaceService ?? throw new ArgumentNullException(nameof(amlWorkspaceService));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _apiVersionAPIM = apiVersionAPIM ?? throw new ArgumentNullException(nameof(apiVersionAPIM));
-            _productAPIVersionAPIM = productAPIVersionAPIM ?? throw new ArgumentNullException(nameof(productAPIVersionAPIM));
-            _operationAPIM = operationAPIM ?? throw new ArgumentNullException(nameof(operationAPIM));
-            _policyAPIM = policyAPIM ?? throw new ArgumentNullException(nameof(policyAPIM));
+            _storageUtillity = storageUtility ?? throw new ArgumentNullException(nameof(storageUtility));
+            _gitUtility = gitUtility ?? throw new ArgumentNullException(nameof(gitUtility));
+            _keyVaultHelper = keyVaultHelper ?? throw new ArgumentNullException(nameof(keyVaultHelper));
             _options = options ?? throw new ArgumentNullException(nameof(options));
-            _keyVaultHelper = keyVaultHelper;
-        }
-
-        private List<Clients.Models.Azure.OperationTypeEnum> GetOperationTypes(string productType)
-        {
-            switch (productType)
-            {
-                // Real Time Prediction
-                case "RTP":
-                    return new List<Clients.Models.Azure.OperationTypeEnum> {
-                        Clients.Models.Azure.OperationTypeEnum.RealTimePrediction,
-                    };
-                // Batch Inference
-                case "BI":
-                    return new List<Clients.Models.Azure.OperationTypeEnum>{
-                        Clients.Models.Azure.OperationTypeEnum.BatchInferenceWithDefaultModel,
-                        Clients.Models.Azure.OperationTypeEnum.GetABatchInferenceOperationWithDefaultModel,
-                        Clients.Models.Azure.OperationTypeEnum.ListAllInferenceOperationsByUserWithDefaultModel,
-                    };
-                // Train Your Own Model
-                case "TYOM":
-                    return new List<Clients.Models.Azure.OperationTypeEnum>{
-                        Clients.Models.Azure.OperationTypeEnum.TrainModel,
-                        Clients.Models.Azure.OperationTypeEnum.ListAllTrainingOperationsByUser,
-                        Clients.Models.Azure.OperationTypeEnum.GetATrainingOperationsByModelIdUser,
-                        Clients.Models.Azure.OperationTypeEnum.GetAModelByModelIdUserProductDeployment,
-                        Clients.Models.Azure.OperationTypeEnum.GetAllModelsByUserProductDeployment,
-                        Clients.Models.Azure.OperationTypeEnum.DeleteAModel,
-                        Clients.Models.Azure.OperationTypeEnum.BatchInference,
-                        Clients.Models.Azure.OperationTypeEnum.GetABatchInferenceOperation,
-                        Clients.Models.Azure.OperationTypeEnum.ListAllInferenceOperationsByUser,
-                        Clients.Models.Azure.OperationTypeEnum.DeployRealTimePredictionEndpoint,
-                        Clients.Models.Azure.OperationTypeEnum.GetADeployOperationByEndpointIdUser,
-                        Clients.Models.Azure.OperationTypeEnum.ListAllDeployOperationsByUser,
-                        Clients.Models.Azure.OperationTypeEnum.GetAllRealTimeServiceEndpointsByUserProductDeployment,
-                        Clients.Models.Azure.OperationTypeEnum.GetARealTimeServiceEndpointByEndpointIdUserProductDeployment,
-                        Clients.Models.Azure.OperationTypeEnum.DeleteAEndpoint
-                    };
-                default:
-                    throw new LunaBadRequestUserException(LoggingUtils.ComposePayloadNotProvidedErrorMessage(typeof(APIVersion).Name),
-                    UserErrorCode.PayloadNotProvided);
-
-            }
         }
 
         private string GetUrl(AMLWorkspace workspace, string pipelineId)
@@ -165,12 +114,12 @@ namespace Luna.Services.Data.Luna.AI
 
                 if (!string.IsNullOrEmpty(apiVersion.AuthenticationKeySecretName))
                 {
-                    apiVersion.AuthenticationKey = await _keyVaultHelper.GetSecretAsync(_options.CurrentValue.Config.VaultName, apiVersion.AuthenticationKeySecretName);
+                    apiVersion.AuthenticationKey = "notchanged";
                 }
 
                 if (!string.IsNullOrEmpty(apiVersion.GitPersonalAccessTokenSecretName))
                 {
-                    apiVersion.GitPersonalAccessToken = await _keyVaultHelper.GetSecretAsync(_options.CurrentValue.Config.VaultName, apiVersion.GitPersonalAccessTokenSecretName);
+                    apiVersion.GitPersonalAccessToken = "notchanged";
                 }    
             }
 
@@ -219,12 +168,12 @@ namespace Luna.Services.Data.Luna.AI
 
             if (!string.IsNullOrEmpty(apiVersion.AuthenticationKeySecretName))
             {
-                apiVersion.AuthenticationKey = await _keyVaultHelper.GetSecretAsync(_options.CurrentValue.Config.VaultName, apiVersion.AuthenticationKeySecretName);
+                apiVersion.AuthenticationKey = "notchanged";
             }
 
-            if (!string.IsNullOrEmpty(apiVersion.GitPersonalAccessToken))
+            if (apiVersion.VersionSourceType.Equals("git"))
             {
-                apiVersion.GitPersonalAccessToken = await _keyVaultHelper.GetSecretAsync(_options.CurrentValue.Config.VaultName, apiVersion.GitPersonalAccessTokenSecretName);
+                apiVersion.GitPersonalAccessToken = "notchanged";
             }
 
             _logger.LogInformation(LoggingUtils.ComposeReturnValueMessage(typeof(APIVersion).Name,
@@ -283,7 +232,7 @@ namespace Luna.Services.Data.Luna.AI
             if (!string.IsNullOrEmpty(version.AMLWorkspaceName))
             {
                 // Get the amlWorkspace associated with the AMLWorkspaceName provided
-                var amlWorkspace = await _amlWorkspaceService.GetAsync(version.AMLWorkspaceName);
+                var amlWorkspace = await _amlWorkspaceService.GetWithSecretsAsync(version.AMLWorkspaceName);
 
                 version.AMLWorkspaceName = amlWorkspace.WorkspaceName;
                 version.AMLWorkspaceId = amlWorkspace.Id;
@@ -311,16 +260,15 @@ namespace Luna.Services.Data.Luna.AI
                 version.GitPersonalAccessTokenSecretName = secretName;
             }
 
-            // Add apiVersion to APIM
-            await _apiVersionAPIM.CreateAsync(version);
-            await _productAPIVersionAPIM.CreateAsync(version);
-            
-            var operationTypes = GetOperationTypes(product.ProductType);
-            foreach (var operationType in operationTypes)
+            if (version.VersionSourceType.Equals("git"))
             {
-                var operation = _operationAPIM.GetOperation(operationType);
-                await _operationAPIM.CreateAsync(version, operation);
-                await _policyAPIM.CreateAsync(version, operation.name, operationType);
+                if (!await _storageUtillity.ContainerExistsAsync("mlprojects"))
+                {
+                    await _storageUtillity.CreateContainerAsync("mlprojects");
+                }
+                string fileName = string.Format(@"{0}/{1}/{2}.zip", version.ProductName, version.DeploymentName, version.VersionName);
+
+                version.ProjectFileUrl = await _gitUtility.DownloadProjectAsZipToAzureStorageAsync(version.GitUrl, version.GitVersion, version.GitPersonalAccessToken, "mlprojects", fileName);
             }
 
             // Add apiVersion to db
@@ -356,38 +304,42 @@ namespace Luna.Services.Data.Luna.AI
             }
 
             _logger.LogInformation(LoggingUtils.ComposeUpdateResourceMessage(typeof(APIVersion).Name, versionName, payload: JsonSerializer.Serialize(version)));
+            
+            // Get the apiVersion that matches the productName, deploymentName and versionName provided
+            var versionDb = await GetAsync(productName, deploymentName, versionName);
 
+            if (!versionDb.VersionSourceType.Equals(version.VersionSourceType, StringComparison.InvariantCultureIgnoreCase))
+            {
+                throw new LunaBadRequestUserException("Cannot change the version source type of an existing API version.", UserErrorCode.InvalidParameter);
+            }
             //check if amlworkspace is required
             if (!string.IsNullOrEmpty(version.AMLWorkspaceName))
             {
                 // Get the amlWorkspace associated with the AMLWorkspaceName provided
-                var amlWorkspace = await _amlWorkspaceService.GetAsync(version.AMLWorkspaceName);
+                var amlWorkspace = await _amlWorkspaceService.GetWithSecretsAsync(version.AMLWorkspaceName);
 
                 // Update the apiVersion API
                 version = UpdateUrl(version, amlWorkspace);
             }
 
-            // add athentication key to keyVault if authentication type is key
-            if (version.AuthenticationType.Equals("Key", StringComparison.InvariantCultureIgnoreCase))
+            // update athentication key to keyVault if authentication type is key
+            if (version.AuthenticationType.Equals("Key", StringComparison.InvariantCultureIgnoreCase) 
+                && version.AuthenticationKey != null 
+                && !version.AuthenticationKey.Equals("notchanged", StringComparison.InvariantCultureIgnoreCase))
             {
-                if (version.AuthenticationKey == null)
-                {
-                    throw new LunaBadRequestUserException("Authentication key is needed with the key authentication type", UserErrorCode.AuthKeyNotProvided);
-                }
-                string secretName = string.IsNullOrEmpty(version.AuthenticationKeySecretName) ? $"authkey-{Context.GetRandomString(12)}" : version.AuthenticationKeySecretName;
+                string secretName = string.IsNullOrEmpty(versionDb.AuthenticationKeySecretName) ? $"authkey-{Context.GetRandomString(12)}" : versionDb.AuthenticationKeySecretName;
+                
                 await (_keyVaultHelper.SetSecretAsync(_options.CurrentValue.Config.VaultName, secretName, version.AuthenticationKey));
-                version.AuthenticationKeySecretName = secretName;
+                versionDb.AuthenticationKeySecretName = secretName;
             }
 
             if (!string.IsNullOrEmpty(version.GitPersonalAccessToken))
             {
-                string secretName = string.IsNullOrEmpty(version.GitPersonalAccessTokenSecretName) ? $"gitpat-{Context.GetRandomString(12)}" : version.GitPersonalAccessTokenSecretName;
+                string secretName = string.IsNullOrEmpty(versionDb.GitPersonalAccessTokenSecretName) ? $"gitpat-{Context.GetRandomString(12)}" : versionDb.GitPersonalAccessTokenSecretName;
                 await (_keyVaultHelper.SetSecretAsync(_options.CurrentValue.Config.VaultName, secretName, version.GitPersonalAccessToken));
-                version.GitPersonalAccessTokenSecretName = secretName;
+                versionDb.GitPersonalAccessTokenSecretName = secretName;
             }
 
-            // Get the apiVersion that matches the productName, deploymentName and versionName provided
-            var versionDb = await GetAsync(productName, deploymentName, versionName);
             
             // Copy over the changes
             versionDb.Copy(version);
@@ -435,9 +387,6 @@ namespace Luna.Services.Data.Luna.AI
                     }
                 }
             }
-
-            // Remove the apiVersion from the APIM
-            await _apiVersionAPIM.DeleteAsync(version);
 
             // Remove the apiVersion from the db
             _context.APIVersions.Remove(version);

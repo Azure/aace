@@ -1,0 +1,6 @@
+*
+!obj\Docker\publish\*
+!obj\Docker\empty\
+!obj\Any CPU
+!obj\Debug
+!env\

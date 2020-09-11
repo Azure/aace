@@ -26,8 +26,7 @@ namespace Luna.Data.Entities
         {
             this.ProductName = subscription.ProductName;
             this.DeploymentName = subscription.DeploymentName;
-            this.BaseUrl = subscription.BaseUrl;
-            this.Status = subscription.Status;
+            this.AgentId = subscription.AgentId;
         }
 
         [Key]
@@ -53,9 +52,17 @@ namespace Luna.Data.Entities
 
         public string BaseUrl { get; set; }
 
+        [NotMapped]
         public string PrimaryKey { get; set; }
 
+        [JsonIgnore]
+        public string PrimaryKeySecretName { get; set; }
+
+        [NotMapped]
         public string SecondaryKey { get; set; }
+
+        [JsonIgnore]
+        public string SecondaryKeySecretName { get; set; }
 
         public DateTime CreatedTime { get; set; }
 

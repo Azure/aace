@@ -34,6 +34,8 @@ class APIVersion(Base):
 
     AMLWorkspaceId = Column(Integer)
 
+    AuthenticationKeySecretName = Column(String)
+
     @staticmethod
     def Get(productName, deploymentName, versionName):
         session = Session()

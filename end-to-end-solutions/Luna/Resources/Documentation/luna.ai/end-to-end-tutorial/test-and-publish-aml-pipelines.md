@@ -109,7 +109,7 @@ Before running the script, you should update the pipeline names to the values yo
 Run the following command in the Anaconda console from the root folder of the project
 
 ```shell
-python tests/azureml/src/luna_publish/azureml/publish_azureml_pipelines.py
+python ./src/luna_publish/azureml/publish_azureml_pipelines.py
 ```
 
 You can specify the following parameters:

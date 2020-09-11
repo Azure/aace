@@ -16,7 +16,7 @@ You can skip this section if you are not planning to publish a real time predict
 
 You can create a new AI product by click on the "New Product" button on the "Products" tab. You will need to provide the following information:
 
-- Id: the product id. In this example, we are going to use rtp_product
+- Id: the product id. In this example, we are going to use rtp-product
 - Product Type: the type of the product, choose Real-time Prediction
 - Host Type: choose SaaS. "Bring Your Own Compute" host type is not supported yet.
 - Owner: use your AAD id
@@ -31,7 +31,7 @@ After the product is created, you will see two sections on the "Product Details"
 
 To create a new deployment, click on the "New Deployment" button. You will need to provide the following information:
 
-- Deployment Name: the name of the deployment. We are going to use *rtp_deployment* in this example.
+- Deployment Name: the name of the deployment. We are going to use *rtp-deployment* in this example.
 - Description: the description of the deployment, you can write your own description here
 
 ![create-rtp-deployment](../../images/luna.ai/create-new-rtp-deployment.png)
@@ -52,7 +52,7 @@ You can skip this section if you are not planning to publish a train-your-own-mo
 
 ### Create a train-your-own-model product
 
-We are going to create a new product with name tyom_product for the train your own model AI service. For "Product Type", you should choose "Train Your Own Model"
+We are going to create a new product with name tyom-product for the train your own model AI service. For "Product Type", you should choose "Train Your Own Model"
 
 ![create-tyom-product](../../images/luna.ai/create-new-tyom-product.png)
 
@@ -90,15 +90,33 @@ Click on access control
 
 ### Create a train-your-own-model deployment
 
-You can create a new deployment in your product by click on the "New Deployment" button. Put in deployment name typm_deployment, write your own description and click on "Create" button
+You can create a new deployment in your product by click on the "New Deployment" button. Put in deployment name tyom-deployment, write your own description and click on "Create" button
 
 ![create-tyom-deployment](../../images/luna.ai/create-new-tyom-deployment.png)
 
-### Create a train-your-own-model API version
+### Create a train-your-own-model API version from published AML pipeline
 
-After the deployment is created, you can create a new API version by click on the "New Version" button. In the popped up window, put in "v1.0" as version name. TODO: finish when UI change is deployed.
+After the deployment is created, you can create a new API version by click on the "New Version" button. In the popped up window, put in "v1.0" as version name. In the dropdown list of "Source", choose "Azure ML Pipelines". In the dropdown list of "AML Workspace", choose the workspace you just registered. It will load all the published pipelines in the workspace. Pick the corresponding pipelines for training, batch inference and deploy operations. Click on Save to save the changes.
 
 ![create-tyom-version](../../images/luna.ai/create-new-tyom-version-1-old.png)
+
+### Create a train-your-own-model API version from Git repo
+
+You can also create the API version directly from the Git repo. Create another new API version by click on the "New version" button. In the popped up window, put in "v2.0" as the version name. In the dropdown list of "Source", choose "Git repo". 
+
+Go to the Github repo you created from the project template. Make sure you committed all the changes. Copy the Git HTTP URL and paste it to the "Git Url" textbox. 
+
+![get-git-url](../../images/luna.ai/get-git-url.png)
+
+For the "version", you can use your branch name (default is "main") to get the latest version from your branch or use the SHA for a specific commit
+
+![get-git-version](../../images/luna.ai/get-git-version.png)
+
+For personal access token, see [here](https://docs.github.com/en/enterprise/2.15/user/articles/creating-a-personal-access-token-for-the-command-line) about how to get the token from your GitHub account
+
+In the AML Workspace dropdown list, select the workspace you just registered and click on Save to save the changes
+
+![create-new-api-version-from-git](../../images/luna.ai/create-new-api-version-from-git.png)
 
 ## Save the Luna webhook URL
 

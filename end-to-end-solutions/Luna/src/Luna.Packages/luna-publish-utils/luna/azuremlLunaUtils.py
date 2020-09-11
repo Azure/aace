@@ -13,6 +13,8 @@ from luna.logging.azuremlLunaLogger import AzureMLLunaLogger
 
 import os
 import yaml
+import tempfile
+import json
 
 class AzureMLLunaUtils(BaseLunaUtils):
 
@@ -82,7 +84,8 @@ class AzureMLLunaUtils(BaseLunaUtils):
                 'deploymentName': self._args.deploymentName, 
                 'apiVersion':self._args.apiVersion,
                 'subscriptionId':self._args.subscriptionId,
-                'modelId': self._args.predecessorOperationId})
+                'modelId': self._args.predecessorOperationId,
+                'endpointId': self._args.operationId})
         
         service = Model.deploy(ws, self._args.predecessorOperationId, [model], inference_config, deployment_config)
         service.wait_for_deployment(show_output = True)
@@ -95,3 +98,49 @@ class AzureMLLunaUtils(BaseLunaUtils):
         os.makedirs(full_model_path, exist_ok=True)
         model.download(target_dir = full_model_path, exist_ok=True)
         return full_model_path
+
+    def FindPredecessorRun(self):
+        run = Run.get_context(allow_offline=False)
+        experiment = run.experiment
+        
+        tags={'userId': self._args.userId,
+              'subscriptionId':self._args.subscriptionId,
+              'operationId': self._args.predecessorOperationId}
+
+        runs = experiment.get_runs(type='azureml.PipelineRun', tags=tags)
+        return next(runs)
+
+    def GetJsonOutputFromPredecessorRun(self):
+        """
+        Get JSON output from predecessor run
+        """
+        predecessorRun = self.FindPredecessorRun()
+        with tempfile.TemporaryDirectory() as tmp:
+            path = os.path.join(tmp, self._args.predecessorOperationId, 'output.json')
+            predecessorRun.download_file('/outputs/output.json', path)
+            with open(path) as file:
+                return json.load(file)
+    
+    def DownloadOutputFilesFromPredecessorRun(self, targetFolder):
+        """
+        Download output files from predecessor run
+        """
+        predecessorRun = self.FindPredecessorRun()
+        predecessorRun.download_files(prefix = 'outputs', output_directory='targetFolder')
+
+    def WriteJsonOutput(self, content):
+        """
+        Write json output to current run
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            path = os.path.join(tmp, self._args.predecessorOperationId, 'output.json')
+            with open(path, 'w') as outfile:
+                json.dump(content, outfile)
+
+        self._logger.upload_artifacts(path, 'outputs/output.json')
+    
+    def UploadOutputFiles(self, sourceFolder):
+        """
+        Upload files to output of current run
+        """
+        self._logger.upload_artifacts(sourceFolder, 'outputs')

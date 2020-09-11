@@ -1,5 +1,4 @@
-﻿using Luna.Clients.Azure.APIM;
-using Luna.Clients.Exceptions;
+﻿using Luna.Clients.Exceptions;
 using Luna.Clients.Logging;
 using Luna.Data.Entities;
 using Luna.Data.Enums;
@@ -18,19 +17,16 @@ namespace Luna.Services.Data.Luna.AI
     {
         private readonly ISqlDbContext _context;
         private readonly ILogger<ProductService> _logger;
-        private readonly IProductAPIM _productAPIM;
 
         /// <summary>
         /// Constructor that uses dependency injection.
         /// </summary>
         /// <param name="sqlDbContext">The context to be injected.</param>
         /// <param name="logger">The logger.</param>
-        public ProductService(ISqlDbContext sqlDbContext, ILogger<ProductService> logger, 
-            IProductAPIM productAPIM, IUserAPIM userAPIM)
+        public ProductService(ISqlDbContext sqlDbContext, ILogger<ProductService> logger)
         {
             _context = sqlDbContext ?? throw new ArgumentNullException(nameof(sqlDbContext));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _productAPIM = productAPIM ?? throw new ArgumentNullException(nameof(productAPIM));
         }
         public async Task<List<Product>> GetAllAsync()
         {
@@ -83,8 +79,6 @@ namespace Luna.Services.Data.Luna.AI
             // Update the product last updated time
             product.LastUpdatedTime = product.CreatedTime;
 
-            await _productAPIM.CreateAsync(product);
-
             // Add product to db
             _context.Products.Add(product);
             await _context._SaveChangesAsync();
@@ -119,9 +113,6 @@ namespace Luna.Services.Data.Luna.AI
             // Update the product last updated time
             productDb.LastUpdatedTime = DateTime.UtcNow;
 
-            // Update productDb values and save changes in APIM
-            await _productAPIM.UpdateAsync(productDb);
-
             // Update productDb values and save changes in db
             _context.Products.Update(productDb);
             await _context._SaveChangesAsync();
@@ -137,9 +128,6 @@ namespace Luna.Services.Data.Luna.AI
 
             // Get the offer that matches the offerName provide
             var product = await GetAsync(productName);
-
-            // remove the product from the APIM
-            await _productAPIM.DeleteAsync(product);
 
             // Remove the product from the db
             _context.Products.Remove(product);

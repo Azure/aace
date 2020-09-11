@@ -145,14 +145,24 @@ The model can be deployed to a service endpoint (AKS or Azure Container Instance
 In this tutorial, you can add the following code to *load_context* function to load the model into memory and save it in *_model* property:
 
 ```python
+## DO NOT CHANGE! Set mlflow as default run mode
+if (self._run_mode != 'azureml'):
+    self._run_mode = 'mlflow'
+
+## DO NOT CHANGE! Get the model path
+model_path = LunaUtils.GetModelPath(run_mode = self._run_mode, context = context)
+
 model_file = os.path.join(model_path, 'models/model.pkl')
 self._model = pickle.load( open( model_file, "rb" ) )
 return
 ```
 
-Then you can add the following code to the *predict* function to predict the label using the model:
+Then you can add the following code to the *predict* function to predict the label using the model. The NumpyJSONEncoder is for encoding Numpy data types into JSON:
 
 ```python
+## DO NOT CHANGE! Get the model path
+model_path = LunaUtils.GetModelPath(run_mode = self._run_mode, context = context)
+        
 user_input = json.loads(model_input)
 
 scoring_result = {"result": self._model.predict(user_input["records"])}

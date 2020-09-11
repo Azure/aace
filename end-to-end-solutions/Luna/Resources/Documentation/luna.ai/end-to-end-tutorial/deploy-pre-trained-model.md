@@ -66,7 +66,7 @@ You can specify the following arguments:
 For example:
 
 ```shell
-python src/luna_publish/azureml/train_and_deploy_model.py --model_id iris_model --endpoint_id iris_endpoint --dns_name_label iris_classification
+python src/luna_publish/azureml/train_and_deploy_model.py --model_id iris-model --endpoint_id iris-endpoint --dns_name_label iris-classification
 ```
 
 The script will:
@@ -125,4 +125,4 @@ You can test the scoring endpoint with your test data in Postman:
 
 ## Next Step
 
-[Test and publish Azure Machine Learning pipelines](./test-and-publish-aml-pipeline.md)
+[Test and publish Azure Machine Learning pipelines](./test-and-publish-aml-pipelines.md)

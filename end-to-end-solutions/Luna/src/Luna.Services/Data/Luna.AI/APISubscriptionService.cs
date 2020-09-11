@@ -1,10 +1,13 @@
-﻿using Luna.Clients.Azure.APIM;
+﻿using Luna.Clients.Azure;
+using Luna.Clients.Azure.Auth;
 using Luna.Clients.Exceptions;
 using Luna.Clients.Logging;
 using Luna.Data.Entities;
 using Luna.Data.Repository;
+using Luna.Services.Utilities.ExpressionEvaluation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,9 +21,10 @@ namespace Luna.Services.Data.Luna.AI
         private readonly ISqlDbContext _context;
         private readonly IProductService _productService;
         private readonly IDeploymentService _deploymentService;
+        private readonly IAIAgentService _aiAgentService;
         private readonly ILogger<APISubscriptionService> _logger;
-        private readonly IAPISubscriptionAPIM _apiSubscriptionAPIM;
-        private readonly IUserAPIM _userAPIM;
+        private readonly IOptionsMonitor<AzureConfigurationOption> _options;
+        private readonly IKeyVaultHelper _keyVaultHelper;
 
         /// <summary>
         /// Constructor that uses dependency injection.
@@ -29,17 +33,16 @@ namespace Luna.Services.Data.Luna.AI
         /// <param name="productService">The service to be injected.</param>
         /// <param name="deploymentService">The service to be injected.</param>
         /// <param name="logger">The logger.</param>
-        /// <param name="apiSubscriptionAPIM">The apim service.</param>
-        /// <param name="userAPIM">The apim service.</param>
-        public APISubscriptionService(ISqlDbContext sqlDbContext, IProductService productService, IDeploymentService deploymentService, 
-            ILogger<APISubscriptionService> logger, IAPISubscriptionAPIM apiSubscriptionAPIM, IUserAPIM userAPIM)
+        public APISubscriptionService(ISqlDbContext sqlDbContext, IProductService productService, IDeploymentService deploymentService, IAIAgentService aiAgentService,
+            ILogger<APISubscriptionService> logger, IOptionsMonitor<AzureConfigurationOption> options, IKeyVaultHelper keyVaultHelper)
         {
             _context = sqlDbContext ?? throw new ArgumentNullException(nameof(sqlDbContext));
             _productService = productService ?? throw new ArgumentNullException(nameof(productService));
             _deploymentService = deploymentService ?? throw new ArgumentNullException(nameof(deploymentService));
+            _aiAgentService = aiAgentService ?? throw new ArgumentNullException(nameof(aiAgentService));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _apiSubscriptionAPIM = apiSubscriptionAPIM ?? throw new ArgumentNullException(nameof(apiSubscriptionAPIM));
-            _userAPIM = userAPIM ?? throw new ArgumentNullException(nameof(userAPIM));
+            _options = options ?? throw new ArgumentNullException(nameof(options));
+            _keyVaultHelper = keyVaultHelper;
         }
 
         /// <summary>
@@ -66,6 +69,8 @@ namespace Luna.Services.Data.Luna.AI
 
                 apiSubscription.ProductName = product.ProductName;
                 apiSubscription.DeploymentName = deployment.DeploymentName;
+                apiSubscription.PrimaryKey = await _keyVaultHelper.GetSecretAsync(_options.CurrentValue.Config.VaultName, apiSubscription.PrimaryKeySecretName);
+                apiSubscription.SecondaryKey = await _keyVaultHelper.GetSecretAsync(_options.CurrentValue.Config.VaultName, apiSubscription.SecondaryKeySecretName);
             }
             _logger.LogInformation(LoggingUtils.ComposeReturnCountMessage(typeof(APISubscription).Name, apiSubscriptions.Count()));
 
@@ -108,6 +113,8 @@ namespace Luna.Services.Data.Luna.AI
                     apiSubscriptionId.ToString()));
             }
             apiSubscription.ProductName = product.ProductName;
+            apiSubscription.PrimaryKey = await _keyVaultHelper.GetSecretAsync(_options.CurrentValue.Config.VaultName, apiSubscription.PrimaryKeySecretName);
+            apiSubscription.SecondaryKey = await _keyVaultHelper.GetSecretAsync(_options.CurrentValue.Config.VaultName, apiSubscription.SecondaryKeySecretName);
 
             _logger.LogInformation(LoggingUtils.ComposeReturnValueMessage(typeof(APISubscription).Name,
                 apiSubscriptionId.ToString(),
@@ -144,7 +151,7 @@ namespace Luna.Services.Data.Luna.AI
                 apiSubscription.SubscriptionId = Guid.NewGuid();
             }
 
-            apiSubscription.BaseUrl = _apiSubscriptionAPIM.GetBaseUrl(apiSubscription.ProductName, apiSubscription.DeploymentName);
+            apiSubscription.BaseUrl = _options.CurrentValue.Config.ControllerBaseUrl;
 
             var deployment = await _deploymentService.GetAsync(apiSubscription.ProductName, apiSubscription.DeploymentName);
             // Check if deployment exists
@@ -154,16 +161,6 @@ namespace Luna.Services.Data.Luna.AI
                     apiSubscription.SubscriptionId.ToString()));
             }
             apiSubscription.DeploymentId = deployment.Id;
-            apiSubscription.DeploymentName = deployment.DeploymentName;
-
-            var product = await _productService.GetAsync(apiSubscription.ProductName);
-            // Check if product exists
-            if (product is null || product.Id != deployment.ProductId)
-            {
-                throw new LunaNotFoundUserException(LoggingUtils.ComposeNotFoundErrorMessage(typeof(APISubscription).Name,
-                    apiSubscription.SubscriptionId.ToString()));
-            }
-            apiSubscription.ProductName = product.ProductName;
 
             // Update the apiSubscription created time
             apiSubscription.CreatedTime = DateTime.UtcNow;
@@ -171,13 +168,21 @@ namespace Luna.Services.Data.Luna.AI
             // Update the apiSubscription last updated time
             apiSubscription.LastUpdatedTime = apiSubscription.CreatedTime;
 
-            // Add apiSubscription to APIM
-            await _userAPIM.CreateAsync(apiSubscription.UserId);
-            var apiSubscriptionAPIM = await _apiSubscriptionAPIM.CreateAsync(apiSubscription);
-
             // Update the apiSubscription primary key and secondary key
-            apiSubscription.PrimaryKey = apiSubscriptionAPIM.properties.primaryKey;
-            apiSubscription.SecondaryKey = apiSubscriptionAPIM.properties.secondaryKey;
+            apiSubscription.PrimaryKeySecretName = $"primarykey-{apiSubscription.SubscriptionId.ToString()}";
+            apiSubscription.SecondaryKeySecretName = $"secondarykey-{apiSubscription.SubscriptionId.ToString()}";
+            apiSubscription.PrimaryKey = Guid.NewGuid().ToString("N");
+            apiSubscription.SecondaryKey = Guid.NewGuid().ToString("N");
+            await (_keyVaultHelper.SetSecretAsync(_options.CurrentValue.Config.VaultName, apiSubscription.PrimaryKeySecretName, apiSubscription.PrimaryKey));
+            await (_keyVaultHelper.SetSecretAsync(_options.CurrentValue.Config.VaultName, apiSubscription.SecondaryKeySecretName, apiSubscription.SecondaryKey));
+
+
+            // Assign SaaS agent id
+            if (apiSubscription.AgentId == null)
+            {
+                var agent = await _aiAgentService.GetSaaSAgentAsync();
+                apiSubscription.AgentId = agent.AgentId;
+            }
 
             // Add apiSubscription to db
             _context.APISubscriptions.Add(apiSubscription);
@@ -209,27 +214,27 @@ namespace Luna.Services.Data.Luna.AI
             {
                 throw new LunaBadRequestUserException("Owner name of an existing apiSubscription can not be changed.", UserErrorCode.InvalidParameter);
             }
-            // Check if (the apiSubscription has been updated) && 
-            //          (an apiSubscription with the same new Id does not already exist)
+
             if ((!apiSubscriptionId.Equals(apiSubscription.SubscriptionId)) && (await ExistsAsync(apiSubscription.SubscriptionId)))
             {
                 throw new LunaBadRequestUserException(LoggingUtils.ComposeNameMismatchErrorMessage(typeof(APISubscription).Name),
                     UserErrorCode.NameMismatch);
             }
 
+            var deployment = await _deploymentService.GetAsync(apiSubscription.ProductName, apiSubscription.DeploymentName);
+            // Check if deployment exists
+            if (deployment is null)
+            {
+                throw new LunaNotFoundUserException(LoggingUtils.ComposeNotFoundErrorMessage(typeof(APISubscription).Name,
+                    apiSubscription.SubscriptionId.ToString()));
+            }
+            apiSubscriptionDb.DeploymentId = deployment.Id;
+
             // Copy over the changes
             apiSubscriptionDb.Copy(apiSubscription);
 
             // Update the apiSubscription last updated time
             apiSubscriptionDb.LastUpdatedTime = DateTime.UtcNow;
-
-            // Update apiSubscription values and save changes in APIM
-            await _userAPIM.CreateAsync(apiSubscription.UserId);
-            var apiSubscriptionAPIM = await _apiSubscriptionAPIM.UpdateAsync(apiSubscriptionDb);
-
-            // Update the apiSubscription primary key and secondry key
-            apiSubscriptionDb.PrimaryKey = apiSubscriptionAPIM.properties.primaryKey;
-            apiSubscriptionDb.SecondaryKey = apiSubscriptionAPIM.properties.secondaryKey;
 
             // Update apiSubscription values and save changes in db
             _context.APISubscriptions.Update(apiSubscriptionDb);
@@ -250,9 +255,6 @@ namespace Luna.Services.Data.Luna.AI
 
             // Get the offer that matches the offerName provide
             var apiSubscription = await GetAsync(apiSubscriptionId);
-
-            // remove the product from the APIM
-            await _apiSubscriptionAPIM.DeleteAsync(apiSubscription);
 
             // Remove the product from the db
             _context.APISubscriptions.Remove(apiSubscription);
@@ -284,9 +286,18 @@ namespace Luna.Services.Data.Luna.AI
                JsonSerializer.Serialize(apiSubscription)));
 
             // Update apiSubscription primary key and secondary key and save changes in APIM
-            var apiSubscriptionProperties = await _apiSubscriptionAPIM.RegenerateKey(apiSubscriptionId, keyName);
-            apiSubscription.PrimaryKey = apiSubscriptionProperties.primaryKey;
-            apiSubscription.SecondaryKey = apiSubscriptionProperties.secondaryKey;
+            if (keyName.Equals("Primary"))
+            {
+                await (_keyVaultHelper.SetSecretAsync(_options.CurrentValue.Config.VaultName, apiSubscription.PrimaryKeySecretName, Guid.NewGuid().ToString("N")));
+            }
+            else if (keyName.Equals("Secondary"))
+            {
+                await (_keyVaultHelper.SetSecretAsync(_options.CurrentValue.Config.VaultName, apiSubscription.SecondaryKeySecretName, Guid.NewGuid().ToString("N")));
+            }
+            else
+            {
+                throw new LunaBadRequestUserException($"The key name {keyName} is invalid.", UserErrorCode.InvalidParameter);
+            }
 
             // Update apiSubscription primary key and secondary key and save changes in db
             _context.APISubscriptions.Update(apiSubscription);

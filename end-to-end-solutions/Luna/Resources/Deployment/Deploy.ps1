@@ -28,6 +28,12 @@
     [string]$isvWebAppName = "default",
     
     [string]$enduserWebAppName = "default",
+
+    [string]$controllerWebAppResourceGroupName = "default",
+    
+    [string]$controllerWebAppServicePlanName = "default",
+
+    [string]$controllerWebAppName = "default",
     
     [string]$apiWebAppName = "default",
 
@@ -94,6 +100,8 @@ else{
     Connect-AzureAD
     Connect-AzAccount
 }
+
+az login --only-show-errors
 
 
 function GetNameForAzureResources{
@@ -253,9 +261,19 @@ $apiWebAppInsightsName = GetNameForAzureResources -defaultName $apiWebAppInsight
 $apimName = GetNameForAzureResources -defaultName $apimName -resourceTypeSuffix "-apim" -uniqueName $uniqueName
 $amlWorkspaceName = GetNameForAzureResources -defaultName $amlWorkspaceName -resourceTypeSuffix "-aml" -uniqueName $uniqueName
 
+$controllerWebAppServicePlanName = GetNameForAzureResources -defaultName $controllerWebAppServicePlanName -resourceTypeSuffix "-crlsvrplan" -uniqueName $uniqueName
+
+$controllerWebAppName = GetNameForAzureResources -defaultName $controllerWebAppName -resourceTypeSuffix "-api" -uniqueName $uniqueName
+
+$controllerWebAppResourceGroupName = GetNameForAzureResources -defaultName $controllerWebAppResourceGroupName -resourceTypeSuffix "-linuxrg" -uniqueName $uniqueName
+
 $azureMarketplaceAADApplicationName = GetNameForAzureResources -defaultName $azureMarketplaceAADApplicationName -resourceTypeSuffix "-azuremarketplace-aad" -uniqueName $uniqueName
 $azureResourceManagerAADApplicationName = GetNameForAzureResources -defaultName $azureResourceManagerAADApplicationName -resourceTypeSuffix "-azureresourcemanager-aad" -uniqueName $uniqueName
 $webAppAADApplicationName = GetNameForAzureResources -defaultName $webAppAADApplicationName -resourceTypeSuffix "-apiapp-aad" -uniqueName $uniqueName
+
+$agentId = (New-Guid).ToString()
+$agentKey = (New-Guid).ToString("N")
+$publisherId = (New-Guid).ToString()
 
 add-type -AssemblyName System.Web
 
@@ -295,6 +313,9 @@ $objectId = $currentUser.Id
 Write-Host "Create resource group" $resourceGroupName
 New-AzResourceGroup -Name $resourceGroupName -Location $location
 
+Write-Host "Create resource group" $controllerWebAppResourceGroupName
+New-AzResourceGroup -Name $controllerWebAppResourceGroupName -Location $location
+
 Write-Host "Deploy ARM template in resource group" $resourceGroupName
 $deployAPIM = $enableV2 -eq 'true'
 $deployAML = $enableV2 -eq 'true'
@@ -323,7 +344,7 @@ New-AzResourceGroupDeployment -ResourceGroupName $resourceGroupName `
                               -deployAPIM $deployAPIM `
                               -workspaceName $amlWorkspaceName `
                               -workspaceSku $amlWorkspaceSku `
-                              -deployAML $deployAML
+                              -deployAML $deployAML `
 
 
 $filter = "AppId eq '"+$webAppAADApplicationId+"'"
@@ -404,9 +425,6 @@ if ($isNewApp){
     NewAzureRoleAssignment -objectId $principalId -scope $scope -retryCount 10
 }
 
-#grant key vault access to API app
-Write-Host "Grant key vault access to API app"
-GrantKeyVaultAccessToWebApp -resourceGroupName $resourceGroupName -keyVaultName $keyVaultName -webAppName $apiWebAppName
 
 Write-Host "Adding client ip to the SQL Server firewall rule"
 if ($firewallStartIpAddress -ne "clientIp" -or $firewallEndIpAddress -ne "clientIp"){
@@ -427,10 +445,21 @@ New-AzSqlServerFirewallRule -ResourceGroupName $resourceGroupName -ServerName $s
 Write-Host "Execute SQL script to create database user and objects."
 $sqlDatabaseUserName = "lunauser" + $uniqueName
 $sqlDatabaseUsernameVar = "username='" + $sqlDatabaseUserName + "'"
-$sqlDatabasePassword = ([System.Web.Security.Membership]::GeneratePassword(24,5)).Replace("=", "!")
+$sqlDatabasePassword = ([System.Web.Security.Membership]::GeneratePassword(24,5)).Replace("=", "!").Replace(";", "!").Replace("{", "$").Replace("}", "$")
 $sqlDatabasePasswordVar = "password='" + $sqlDatabasePassword + "'"
+$publisherIdVar = "publisherId='" + $publisherId + "'"
+$controlPlaneUrl = "https://"+ $apiWebAppName +".azurewebsites.net/api/"
+$controlPlaneUrlVar = "controlPlaneUrl='" + $controlPlaneUrl + "'"
+$agentIdVar = "agentId='" + $agentId + "'"
+$agentkeySecretNameVar = "agentKeySecretName='saas-agent-key'"
 
-$variables = $sqlDatabaseUsernameVar, $sqlDatabasePasswordVar
+
+$secretvalue = ConvertTo-SecureString $agentKey -AsPlainText -Force
+Set-AzKeyVaultSecret -VaultName $keyVaultName -Name 'saas-agent-key' -SecretValue $secretvalue
+
+$variables = $sqlDatabaseUsernameVar, $sqlDatabasePasswordVar, $publisherIdVar, $controlPlaneUrlVar, $agentIdVar, $agentkeySecretNameVar
+
+Write-Host $variables
 
 $sqlServerInstanceName = $sqlServerName + ".database.windows.net"
 $sqlServerInstanceName
@@ -444,28 +473,13 @@ Set-AzKeyVaultSecret -VaultName $keyVaultName -Name 'storage-key' -SecretValue $
 
 Write-Host "Store SQL connection string to Azure key vault"
 $connectionString = "Server=tcp:" + $sqlServerInstanceName + ",1433;Initial Catalog=" + $sqlDatabaseName + ";Persist Security Info=False;User ID=" + $sqlDatabaseUserName + ";Password='" + $sqlDatabasePassword + "';MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"
+$odbcConnectionString = "Driver={ODBC Driver 17 for SQL Server};Server=tcp:" + $sqlServerInstanceName + ",1433;Database="+$sqlDatabaseName+";Uid="+$sqlDatabaseUserName+";Pwd="+$sqlDatabasePassword+";"
 
 $secretvalue = ConvertTo-SecureString $connectionString -AsPlainText -Force
 Set-AzKeyVaultSecret -VaultName $keyVaultName -Name 'connection-string' -SecretValue $secretvalue
 
 $apimTenantAccessId = 'integration'
-$controllerBaseUrl = ''
-
-if ($enableV2 -eq 'true'){
-    Write-Host "Get APIM management key"
-    $apimContext = New-AzApiManagementContext -ResourceGroupName $resourceGroupName -ServiceName $apimName
-    Set-AzApiManagementTenantAccess -Context $apimContext -Enabled $True
-
-    $tenantAccess = Get-AzApiManagementTenantAccess -Context $apimContext
-    $tenantAccessSecret = Get-AzApiManagementTenantAccessSecret -Context $apimContext
-    $apimPrimaryKey = $tenantAccessSecret.PrimaryKey
-    $secretvalue = ConvertTo-SecureString $apimPrimaryKey -AsPlainText -Force
-    Set-AzKeyVaultSecret -VaultName $keyVaultName -Name 'apim-key' -SecretValue $secretvalue
-    
-    $apimTenantAccessId = $tenantAccess.Id
-    $controllerBaseUrl = "https://"+ $apiWebAppName +".azurewebsites.net"
-}
-
+$controllerBaseUrl = "https://"+ $controllerWebAppName +".azurewebsites.net"
 
 Write-Host "Update app settings"
 $appsettings = @{}
@@ -484,14 +498,8 @@ $appsettings["AzureAD:TenantId"] = $tenantId;
 $appsettings["ISVPortal:AdminAccounts"] = $adminAccounts;
 $appsettings["ISVPortal:AdminTenant"] = $adminTenantId;
 
-$appsettings["SecuredCredentials:APIM:Config:VaultName"] = $keyVaultName;
-$appsettings["SecuredCredentials:APIM:Config:SubscriptionId"] = $lunaServiceSubscriptionId;
-$appsettings["SecuredCredentials:APIM:Config:ResourceGroupName"] = $resourceGroupName;
-$appsettings["SecuredCredentials:APIM:Config:APIMServiceName"] = $apimName;
-$appsettings["SecuredCredentials:APIM:Config:APIVersion"] = '2019-12-01';
-$appsettings["SecuredCredentials:APIM:Config:UId"] = $apimTenantAccessId;
-$appsettings["SecuredCredentials:APIM:Config:Key"] = 'apim-key';
-$appsettings["SecuredCredentials:APIM:Config:ControllerBaseUrl"] = $controllerBaseUrl;
+$appsettings["SecuredCredentials:Azure:Config:VaultName"] = $keyVaultName;
+$appsettings["SecuredCredentials:Azure:Config:ControllerBaseUrl"] = $controllerBaseUrl;
 
 $appInsightsApp = Get-AzApplicationInsights -ResourceGroupName $resourceGroupName -name $apiWebAppInsightsName
 $appsettings["ApplicationInsights:InstrumentationKey"] = $appInsightsApp.InstrumentationKey;
@@ -526,6 +534,37 @@ UpdateScriptConfigFile -resourceGroupName $resourceGroupName -webAppName $enduse
 Write-Host "Deploy webjob."
 $webjobZipPath = $buildLocation + "/webjob.zip"
 Deploy-WebJob -resourceGroupName $resourceGroupName -webAppName $apiWebAppName -webJobName $apiWebJobName -webJobZipPath $webjobZipPath
+
+Write-Host "Deploy controller web app"
+az account set -s $lunaServiceSubscriptionId
+
+az appservice plan create -n $controllerWebAppServicePlanName -g $controllerWebAppResourceGroupName -l $location --is-linux --sku p1v2
+
+Push-Location -Path '..\..\src\luna.Agent\luna.agent'
+
+az webapp up -n $controllerWebAppName -p $controllerWebAppServicePlanName -g $controllerWebAppResourceGroupName -l $location --only-show-errors
+
+az webapp config set -n $controllerWebAppName --startup-file startup.sh
+
+Write-Host "enable managed identity"
+az webapp identity assign -g $controllerWebAppResourceGroupName -n $controllerWebAppName
+
+$setting = 'KEY_VAULT_NAME='+$keyVaultName
+az webapp config appsettings set -n $controllerWebAppName --settings $setting
+az webapp config appsettings set -n $controllerWebAppName --settings AGENT_MODE=SAAS
+$setting = 'ODBC_CONNECTION_STRING='+$odbcConnectionString
+az webapp config appsettings set -n $controllerWebAppName --settings $setting
+$setting = 'AGENT_ID='+$agentId
+az webapp config appsettings set -n $controllerWebAppName --settings $setting
+$setting = 'AGENT_KEY='+$agentKey
+az webapp config appsettings set -n $controllerWebAppName --settings $setting
+
+Pop-Location
+
+#grant key vault access to API app
+Write-Host "Grant key vault access to API app"
+GrantKeyVaultAccessToWebApp -resourceGroupName $resourceGroupName -keyVaultName $keyVaultName -webAppName $apiWebAppName
+GrantKeyVaultAccessToWebApp -resourceGroupName $controllerWebAppResourceGroupName -keyVaultName $keyVaultName -webAppName $controllerWebAppName
 
 Write-Host "Deployment finished successfully."
 
