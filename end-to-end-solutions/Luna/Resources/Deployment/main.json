@@ -71,7 +71,7 @@
         }
     },
     "sqlAdministratorLoginPassword": {
-      "type": "securestring",
+      "type": "string",
       "metadata": {
         "description": "The SQL Server admin password."
       }
@@ -338,7 +338,7 @@
     },
     { "name": "[parameters('sqlServerName')]",
       "type": "Microsoft.Sql/servers",
-      "apiVersion": "2014-04-01-preview",
+      "apiVersion": "2015-01-01",
       "location": "[parameters('location')]",
       "tags": {
         "displayName": "SqlServer"
@@ -370,7 +370,7 @@
               "comments": "Transparent Data Encryption",
               "name": "current",
               "type": "transparentDataEncryption",
-              "apiVersion": "2014-04-01-preview",
+              "apiVersion": "2015-01-01",
               "properties": {
                 "status": "Enabled"
               },

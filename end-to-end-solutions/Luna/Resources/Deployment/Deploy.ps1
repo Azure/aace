@@ -296,7 +296,7 @@ New-AzResourceGroupDeployment -ResourceGroupName $resourceGroupName `
                               -apiWebAppName $apiWebAppName `
                               -apiWebAppInsightsName $apiWebAppInsightsName `
                               -location $location `
-                              -sqlAdministratorLoginPassword $sqlServerAdminPassword `
+                              -sqlAdministratorLoginPassword $sqlServerAdminPasswordRaw `
                               -sqlAdministratorUsername $sqlServerAdminUsername `
                               -tenantId $tenantId `
                               -objectId $objectId `
