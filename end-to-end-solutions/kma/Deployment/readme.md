@@ -4,6 +4,10 @@ This repo contains all code, instructions, and data required to deploy the ACE T
 
 This solution was build to help KM demos, POCs, MVPs, and etc.
 
+## IMPORTANT UPDATE - October 2020
+
+This project has been discontinued and the code is provided as is, without support or maintenance. Please use the latest content at http://aka.ms/kma. 
+
 ## Pre Requisites
 
 These are the key pre-requisites to deploy this solution:
