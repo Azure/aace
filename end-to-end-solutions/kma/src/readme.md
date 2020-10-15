@@ -1,8 +1,10 @@
 # Source Code for Kanowledge Mining Accelerator - KMA-v1
 
-This is the source code folder for the KMA-v1 project. IT is an E2E Knowledge Mining for demos, POCs, MVPs, and other business scenario.
+This is the source code folder for the KMA-v1 project. IT is an E2E Knowledge Mining for demos, POCs, MVPs, and other business scenario. Code and datasets are open source.
 
-All code and datasets are open source.
+## IMPORTANT UPDATE - October 2020
+
+This project has been discontinued and the code is provided as is, without support or maintenance. Please use the latest content at http://aka.ms/kma. 
 
 ## Key Links
 
