@@ -9,7 +9,7 @@ The repositories listed here are created and maintained by the ACE team.
 
 | Repository                                | Description                                                                                                                          |
 | ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| [REPO NAME](repo url) | Sample description... |
+| [MLOPS_VideoAnomalyDetection](https://github.com/Microsoft/MLOps_VideoAnomalyDetection) | Video Anomaly Detection with Azure ML |
 | [REPO NAME](repo url) | Sample description... |
 | [REPO NAME](repo url) | Sample description... |
 | [REPO NAME](repo url) | Sample description... |
