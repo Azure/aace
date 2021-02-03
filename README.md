@@ -1,6 +1,22 @@
 
-# Contributing
+# ACE (Azure AI Customer Engineering) team
+TODO: Add Team's description...
 
+[Tech Community ACE Blog](https://techcommunity.microsoft.com/t5/ai-customer-engineering-team/bg-p/AICustomerEngineeringTeam)
+
+## Repositories
+The repositories listed here are created and maintained by the ACE team.
+
+| Repository                                | Description                                                                                                                          |
+| ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| [REPO NAME](repo url) | Sample description... |
+| [REPO NAME](repo url) | Sample description... |
+| [REPO NAME](repo url) | Sample description... |
+| [REPO NAME](repo url) | Sample description... |
+| [REPO NAME](repo url) | Sample description... |
+
+
+## General
 This project welcomes contributions and suggestions.  Most contributions require you to agree to a
 Contributor License Agreement (CLA) declaring that you have the right to, and actually do, grant us
 the rights to use your contribution. For details, visit https://cla.opensource.microsoft.com.
