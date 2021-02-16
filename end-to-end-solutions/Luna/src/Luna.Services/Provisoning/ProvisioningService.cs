@@ -507,6 +507,12 @@ namespace Luna.Services.Provisoning
             {
                 Offer offer = await FindOfferById(subscription.OfferId);
 
+                if (subscription.ProvisioningType.Equals(nameof(ProvisioningType.Unsubscribe)))
+                {
+                    var sub = await _fulfillmentClient.GetSubscriptionAsync(subscriptionId, Guid.NewGuid(), Guid.NewGuid());
+                    subscription.TermEndTime = sub.Term.EndDate;
+                }
+
                 if (subscription.ProvisioningStatus.Equals(ProvisioningState.NotificationPending.ToString(), StringComparison.InvariantCultureIgnoreCase)
                     && offer.ManualCompleteOperation)
                 {
@@ -516,7 +522,9 @@ namespace Luna.Services.Provisoning
                 }
 
                 // Don't need to update marketplace operation for delete data
-                if (!subscription.ProvisioningType.Equals(nameof(ProvisioningType.DeleteData)))
+                // 02-15-2021: Marketplace behavior change: Don't need to update marketplace operation for unsubscribe
+                if (!subscription.ProvisioningType.Equals(nameof(ProvisioningType.DeleteData)) &&
+                    !subscription.ProvisioningType.Equals(nameof(ProvisioningType.Unsubscribe)))
                 {
                     Plan plan = await FindPlanById(subscription.PlanId);
 
@@ -585,7 +593,14 @@ namespace Luna.Services.Provisoning
                 if (sub.Status.Equals(nameof(FulfillmentState.Unsubscribed)))
                 {
                     Plan plan = await FindPlanById(sub.PlanId);
-                    if (sub.UnsubscribedTime.Value.AddDays(plan.DataRetentionInDays) > DateTime.UtcNow)
+                    // Only delete data when
+                    // 1. run out of retention AND
+                    // 2. After term end time.
+                    if (sub.UnsubscribedTime.HasValue && sub.UnsubscribedTime.Value.AddDays(plan.DataRetentionInDays) > DateTime.UtcNow)
+                    {
+                        continue;
+                    }
+                    if (sub.TermEndTime.HasValue && sub.TermEndTime > DateTime.UtcNow)
                     {
                         continue;
                     }

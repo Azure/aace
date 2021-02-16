@@ -63,6 +63,7 @@ namespace Luna.Data.Entities
         public DateTime? LastSuspendedTime { get; set; }
         public DateTime? UnsubscribedTime { get; set; }
         public DateTime? DataDeletedTime { get; set; }
+        public DateTime? TermEndTime { get; set; }
         public Guid? OperationId { get; set; }
         
         public string DeploymentName { get; set; }

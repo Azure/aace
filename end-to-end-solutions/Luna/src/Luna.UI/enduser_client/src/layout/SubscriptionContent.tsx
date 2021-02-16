@@ -142,7 +142,7 @@ const SubscriptionContent: React.FunctionComponent<SubscriptionProps> = (props) 
             }
           }}>
             <span style={{marginRight: 20, fontSize: 18}}>
-              Operation History
+              Outstanding Operations
             </span>
               <span className={"offer-details-separator"}></span>
               <span style={{fontWeight: 600}}>

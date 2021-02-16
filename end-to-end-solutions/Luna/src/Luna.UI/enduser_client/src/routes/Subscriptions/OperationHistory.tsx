@@ -132,7 +132,7 @@ export const OperationHistoryList: React.FunctionComponent<IOperationHistoryProp
   const OperationHistory = ({data}) => {
     if (!data || data.length == 0) {
       return <tr>
-        <td colSpan={3}><span>No History</span></td>
+        <td colSpan={3}><span>No Outstanding Operation</span></td>
       </tr>;
     } else {
       return (

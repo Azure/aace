@@ -247,7 +247,7 @@ const SubscriptionDetail: React.FunctionComponent = () => {
                                 <tr>
                                     <td>
                                         <span style={{ fontWeight: 600 }}>Owner's Email:</span>
-                                        <span style={{ marginLeft: 8 }}>{userName}</span>
+                                        <span style={{ marginLeft: 8 }}>{state.owner}</span>
                                     </td>
                                 </tr>
                                 <tr>

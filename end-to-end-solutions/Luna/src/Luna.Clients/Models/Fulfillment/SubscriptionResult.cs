@@ -12,7 +12,13 @@ namespace Luna.Clients.Models.Fulfillment
         public string ContinuationToken { get; set; }
         public IEnumerable<SubscriptionResult> Subscriptions { get; set; }
     }
-    
+    public class SubscriptionTerm
+    {
+        public DateTime? StartDate { get; set; }
+        public DateTime? EndDate { get; set; }
+        public string TermUnit { get; set; }
+    }
+
     public class SubscriptionResult : FulfillmentRequestResult
     {
         /// <summary>
@@ -79,6 +85,8 @@ namespace Luna.Clients.Models.Fulfillment
         /// </summary>
         /// <value></value>
         public SessionModeEnum SessionMode { get; set; }
+
+        public SubscriptionTerm Term { get; set; }
 
         [JsonProperty("id")]
         public Guid SubscriptionId { get; set; }
