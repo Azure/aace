@@ -1,1 +1,0 @@
-image for end_user_experience documentation
