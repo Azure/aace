@@ -15,6 +15,14 @@ The repositories listed here are created and maintained by the ACE team.
 | [REPO NAME](repo url) | Sample description... |
 | [REPO NAME](repo url) | Sample description... |
 
+## End to End Solutions
+The repositories listed here are end-to-end solutions created and maintained by the ACE team.
+
+| Repository                                | Description                                                                                                                          |
+| ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| [Luna v1](https://github.com/Azure/ace-luna) | Sell your application through Azure Marketplace SaaS offer using Project Luna |
+| [Ditsributed Training of Image Segmentation](https://github.com/Azure/ace-dtis) | Distributed training of Image segmentation on Azure Machine Learning |
+| [Knowledge Mining getting started](https://github.com/Azure/ace-kma) | Microsoft Azure Knowledge Mining getting started sample |
 
 ## General
 This project welcomes contributions and suggestions.  Most contributions require you to agree to a
