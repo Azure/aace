@@ -10,7 +10,9 @@ The repositories listed here are created and maintained by the ACE team.
 | Repository                                | Description                                                                                                                          |
 | ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
 | [MLOPS_VideoAnomalyDetection](https://github.com/Microsoft/MLOps_VideoAnomalyDetection) | Video Anomaly Detection with Azure ML |
-| [REPO NAME](repo url) | Sample description... |
+| [datascience4managers](https://github.com/microsoft/datascience4managers) | Generalization, Utility, and Experimentation: ML Concepts for Making Better Business Decisions |
+| [icse2019](https://github.com/microsoft/icse2019) | ICSE Tutorial on Scalable Data Science with Python and R |
+| [kdd2017r](https://github.com/azure/kdd2017r) | KDD 2017 Tutorial: Using R for Scalable Data Science |
 | [REPO NAME](repo url) | Sample description... |
 | [REPO NAME](repo url) | Sample description... |
 | [REPO NAME](repo url) | Sample description... |
